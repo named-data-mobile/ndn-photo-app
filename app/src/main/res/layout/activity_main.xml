@@ -9,10 +9,10 @@
     <ListView
         android:id="@+id/listview"
         android:layout_width="352dp"
-        android:layout_height="337dp"
+        android:layout_height="245dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="156dp"
+        android:layout_marginTop="232dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -60,5 +60,15 @@
         android:text="Register with NFD"
         app:layout_constraintTop_toBottomOf="@+id/editText"
         tools:layout_editor_absoluteX="16dp" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:onClick="test_find_file"
+        android:text="Button"
+        app:layout_constraintTop_toBottomOf="@+id/button3"
+        tools:layout_editor_absoluteX="43dp" />
 
 </android.support.constraint.ConstraintLayout>

@@ -6,10 +6,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.OpenableColumns;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    Name registered_prefix;
 
     private boolean has_setup_security = false;
     public void setup_security() {
@@ -101,8 +104,6 @@ public class MainActivity extends AppCompatActivity {
         thread.run();
     }
 
-    public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,12 +122,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Called when the user taps the Send button */
     public void fetch_data(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
         EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
-        Interest interest = new Interest(new Name(message));
+        final Interest interest = new Interest(new Name(message));
 
         SegmentFetcher.fetch(
                 face,
@@ -134,25 +134,33 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.VerifySegment() {
                     @Override
                     public boolean verifySegment(Data data) {
-                        /* TODO: Implement this! */
                         return true;
                     }
                 },
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        /* TODO: Implement this! */
+                        try {
+                            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), interest.getName().toString());
+                            FileOutputStream os = new FileOutputStream(file);
+                            os.write(content.getImmutableArray());
+                            os.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                        builder.setTitle("File fetch complete").setMessage("Successfully fetched: " + interest.getName().toString()).show();
                     }
                 },
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        /* TODO: Implement this! */
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this, android.R.style.Theme_Material_Dialog_Alert);
+                        builder.setTitle("File fetch failed!").setMessage("Failed to fetch data: "
+                                + interest.getName().toString() + "!\nReason: " + message
+                                + "\nErrorcode: " + errorCode.toString());
                     }
                 });
-        intent.putExtra(EXTRA_MESSAGE, message);
-        startActivity(intent);
-        // Do something in response to button
     }
 
     public void test_packetize(byte[] bytes) {
@@ -169,7 +177,6 @@ public class MainActivity extends AppCompatActivity {
         }
         try {
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "testfile");
-            file.setWritable(true);
             FileOutputStream os = new FileOutputStream(file);
             os.write(file_bytes);
             os.close();
@@ -178,11 +185,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void switchActivity(View view) {
-        Intent intent = new Intent(this, FileSelectActivity.class);
-        startActivity(intent);
     }
 
     public void show_dialog(Name prefix, boolean didFail) {
@@ -194,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
     public void register_with_NFD(View view) throws IOException, PibImpl.Error {
         EditText editText = (EditText) findViewById(R.id.editText);
         String msg = editText.getText().toString();
-        Name name = new Name(msg);
+        final Name name = new Name(msg);
 
         if (!has_setup_security) {
             setup_security();
@@ -222,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
                                 Blob blob = new Blob(bytes, true);
                                 publishData(blob, prefix);
                             }
-                            find_file(prefix, interest);
                         }
                     },
                     new OnRegisterFailed() {
@@ -234,10 +235,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            CharSequence text = "Successfully registered prefix: " + prefix.toString();
-                            int duration = Toast.LENGTH_SHORT;
-                            Toast toast = Toast.makeText(MainActivity.this, text, duration);
-                            toast.show();
+                            registered_prefix = name;
                         }
                     });
         } catch (SecurityException e) {
@@ -264,9 +262,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void test_find_file(View view) {
+        Name prefix = new Name("/test/prefix/somefile");
+        Interest interest = new Interest(prefix);
+        Uri uri = find_file(prefix, interest);
+        boolean isNull = uri == null;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        builder.setTitle("interest and name").setMessage("Interest: "
+                + interest.getName() + "\nName: " + prefix.toUri()
+                + "\nnull uri: " + isNull).show();
+    }
+
     private Uri find_file(Name prefix, Interest interest) {
+        Name file_name = interest.getName().getSubName(registered_prefix.size()-1);
         for (Uri uri : filesList) {
-            if (uri.toString().contentEquals(prefix.toUri())) {
+            // Get everything after the prefix we registered in NFD, accounting for 0-indexing
+            if (getFileName(uri).contentEquals(file_name.toString())) {
                 return uri;
             }
         }
@@ -279,14 +290,9 @@ public class MainActivity extends AppCompatActivity {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
-        // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-
         // To search for all documents available via installed storage providers,
         // it would be "*/*".
         intent.setType("*/*");
-
         startActivityForResult(intent, 0);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -308,30 +314,47 @@ public class MainActivity extends AppCompatActivity {
         });
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-
         lv.setAdapter(adapter);
     }
 
+    /* This is where the file picker intent activity ends up.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
-
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
-        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
-        // response to some other intent, and the code below shouldn't run at all.
-
         Uri uri = null;
         if (resultData != null) {
             final ListView lv = (ListView) findViewById(R.id.listview);
-
             uri = resultData.getData();
             filesList.add(uri);
-            filesStrings.add(uri.toString());
+            filesStrings.add(getFileName(uri));
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
             lv.setAdapter(adapter);
             AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-            builder.setTitle("You selected a file").setMessage(uri.toString()).show();
+            builder.setTitle("You selected a file").setMessage(getFileName(uri)).show();
         }
+    }
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     public Data[] packetize(Blob raw_blob, Name prefix) {
@@ -369,5 +392,4 @@ public class MainActivity extends AppCompatActivity {
         } while (offset < raw_blob.size());
         return datas.toArray(new Data[datas.size()]);
     }
-
 }
