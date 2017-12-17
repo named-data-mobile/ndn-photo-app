@@ -1,14 +1,13 @@
 package memphis.myapplication;
 
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -36,16 +35,13 @@ import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -141,6 +137,30 @@ public class MainActivity extends AppCompatActivity {
         // Do something in response to button
     }
 
+    public void test_packetize(byte[] bytes) {
+        Data[] datas = packetize(new Blob(bytes), new Name("/dummy/name"));
+        List<Byte> reconstructed_file = new ArrayList<Byte>();
+        for (Data data : datas) {
+            for (byte data_byte : data.getContent().getImmutableArray()) {
+                reconstructed_file.add(data_byte);
+            }
+        }
+        byte[] file_bytes = new byte[reconstructed_file.size()];
+        for (int i = 0; i < reconstructed_file.size(); i++) {
+            file_bytes[i] = reconstructed_file.get(i);
+        }
+        try {
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "testfile");
+            FileOutputStream os = new FileOutputStream(file);
+            os.write(file_bytes);
+            os.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void switchActivity(View view) {
         Intent intent = new Intent(this, FileSelectActivity.class);
         startActivity(intent);
@@ -214,14 +234,14 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (KeyChain.Error error) {
-            error.printStackTrace();
-        } catch (TpmBackEnd.Error error) {
-            error.printStackTrace();
         } catch (PibImpl.Error error) {
             error.printStackTrace();
         } catch (SecurityException e) {
             e.printStackTrace();
+        } catch (TpmBackEnd.Error error) {
+            error.printStackTrace();
+        } catch (KeyChain.Error error) {
+            error.printStackTrace();
         }
     }
 
@@ -243,7 +263,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Filter to only show results that can be "opened", such as a
         // file (as opposed to a list of contacts or timezones)
-//        intent.addCategory(Intent.CATEGORY_OPENABLE);
 
         // To search for all documents available via installed storage providers,
         // it would be "*/*".
@@ -263,6 +282,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     bytes = new byte[0];
                 }
+                test_packetize(bytes);
                 AlertDialog.Builder builder = new AlertDialog.Builder(lv.getContext(), android.R.style.Theme_Material_Dialog_Alert);
                 builder.setTitle("rst").setMessage(Arrays.toString(bytes)).show();
             }
@@ -296,8 +316,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public Data[] packetize(Blob raw_blob, Name prefix) {
-        final int PACKET_SIZE = 1400;
         final int VERSION_NUMBER = 0;
+        final int DEFAULT_PACKET_SIZE = 1400;
+        final int PACKET_SIZE;
+        PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
         List<Data> datas = new ArrayList<Data>();
         byte[] segment_buffer = new byte[PACKET_SIZE];
         int segment_number = 0;
@@ -308,7 +330,11 @@ public class MainActivity extends AppCompatActivity {
             segment_name.appendVersion(VERSION_NUMBER);
             segment_name.appendSegment(0);
             data.setName(segment_name);
-            raw_blob.buf().get(segment_buffer, offset, PACKET_SIZE);
+            try {
+                raw_blob.buf().get(segment_buffer, 0 , PACKET_SIZE);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
             data.setContent(new Blob(segment_buffer));
             MetaInfo meta_info = new MetaInfo();
             meta_info.setFreshnessPeriod(1000);
@@ -322,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
             datas.add(data);
 
         } while (offset < raw_blob.size());
+        return datas.toArray(new Data[datas.size()]);
     }
 
 }
