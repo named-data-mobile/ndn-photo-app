@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="net.named-data:jndn-android:0.16@jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.named-data/jndn-android/0.16/32b58171e9d3a46c1fa661b0fa6f697f5ba02c63/jndn-android-0.16.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.named-data/jndn-android/0.16/49f4505b34e04820b59ac6a0d7e031b9e07ef56b/jndn-android-0.16-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
