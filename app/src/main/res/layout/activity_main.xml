@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context="memphis.myapplication.MainActivity">
 
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="352dp"
+        android:layout_height="337dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="156dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <EditText
         android:id="@+id/editText"
         android:layout_width="wrap_content"
@@ -14,7 +26,7 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="Name"
+        android:text="/test/prefix"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -34,7 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
-        android:onClick="switchActivity"
+        android:onClick="select_files"
         android:text="Files"
         app:layout_constraintStart_toEndOf="@+id/editText"
         app:layout_constraintTop_toBottomOf="@+id/button" />

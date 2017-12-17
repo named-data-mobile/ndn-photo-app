@@ -26,4 +26,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile group: 'net.named-data', name: 'jndn-android', version: '0.16'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
