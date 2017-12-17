@@ -1,6 +1,7 @@
 package memphis.myapplication;
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,6 +20,7 @@ import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
+import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
@@ -35,12 +37,15 @@ import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -168,8 +173,15 @@ public class MainActivity extends AppCompatActivity {
                         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
                             Uri uri = find_file(prefix, interest);
                             if (uri != null) {
-                                // read bytes of file into blob
-//                                publishData(blob, prefix);
+                                byte[] bytes;
+                                try {
+                                    bytes = IOUtils.toByteArray(MainActivity.this.getContentResolver().openInputStream(uri));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    bytes = new byte[0];
+                                }
+                                Blob blob = new Blob(bytes, true);
+                                publishData(blob, prefix);
                             }
                             find_file(prefix, interest);
                         }
@@ -194,6 +206,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void publishData(Blob blob, Name prefix) {
+        try {
+            for (Data data : packetize(blob, prefix)) {
+                keyChain.sign(data);
+                face.putData(data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (KeyChain.Error error) {
+            error.printStackTrace();
+        } catch (TpmBackEnd.Error error) {
+            error.printStackTrace();
+        } catch (PibImpl.Error error) {
+            error.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
+    }
+
     private Uri find_file(Name prefix, Interest interest) {
         for (Uri uri : filesList) {
             if (uri.toString().contentEquals(prefix.toUri())) {
@@ -212,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Filter to only show results that can be "opened", such as a
         // file (as opposed to a list of contacts or timezones)
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
 
         // To search for all documents available via installed storage providers,
         // it would be "*/*".
@@ -224,17 +255,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
                 Uri uri = filesList.get(pos);
-                File file = new File(uri.getEncodedPath());
-
-                int fileSize = (int) file.length();
-                byte[] bytes = new byte[0];
+                byte[] bytes;
                 try {
-                    bytes = FileUtils.readFileToByteArray(file);
+                    InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                    bytes = IOUtils.toByteArray(is);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    bytes = new byte[0];
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(lv.getContext(), android.R.style.Theme_Material_Dialog_Alert);
-//                builder.setTitle("You selected a file").setMessage("" + "size: "+ fileSize + ":" + Arrays.toString(bytes)).show();
                 builder.setTitle("rst").setMessage(Arrays.toString(bytes)).show();
             }
         });
@@ -264,6 +293,35 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
             builder.setTitle("You selected a file").setMessage(uri.toString()).show();
         }
+    }
+
+    public Data[] packetize(Blob raw_blob, Name prefix) {
+        final int PACKET_SIZE = 1400;
+        final int VERSION_NUMBER = 0;
+        List<Data> datas = new ArrayList<Data>();
+        byte[] segment_buffer = new byte[PACKET_SIZE];
+        int segment_number = 0;
+        int offset = 0;
+        do {
+            Data data = new Data();
+            Name segment_name = new Name(prefix);
+            segment_name.appendVersion(VERSION_NUMBER);
+            segment_name.appendSegment(0);
+            data.setName(segment_name);
+            raw_blob.buf().get(segment_buffer, offset, PACKET_SIZE);
+            data.setContent(new Blob(segment_buffer));
+            MetaInfo meta_info = new MetaInfo();
+            meta_info.setFreshnessPeriod(1000);
+            segment_number++;
+            offset += 1401; // Add another to start from
+            if (offset > raw_blob.size()) {
+                // Set the final component to have a final block id.
+                meta_info.setFinalBlockId(data.getName().get(-1));
+                data.setMetaInfo(meta_info);
+            }
+            datas.add(data);
+
+        } while (offset < raw_blob.size());
     }
 
 }
