@@ -25,7 +25,50 @@ import net.named_data.jndn.security.pib.PibImpl;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
+
+    MemoryIdentityStorage identityStorage;
+    MemoryPrivateKeyStorage privateKeyStorage;
+    IdentityManager identityManager;
+    KeyChain keyChain;
+    protected Face face;
+
+    private boolean has_setup_security = false;
+    public void setup_security() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                face = new Face();
+                identityStorage = new MemoryIdentityStorage();
+                privateKeyStorage = new MemoryPrivateKeyStorage();
+                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+                keyChain = new KeyChain(identityManager);
+                keyChain.setFace(face);
+
+                // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
+                Name testIdName = new Name("/test/identity");
+                Name defaultCertificateName;
+                try {
+                    defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
+                    keyChain.getIdentityManager().setDefaultIdentity(testIdName);
+                } catch (SecurityException e2) {
+                    defaultCertificateName = new Name("/bogus/certificate/name");
+                }
+                face.setCommandSigningInfo(keyChain, defaultCertificateName);
+                has_setup_security = true;
+                try {
+                    face.processEvents();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (EncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.run();
+    }
+
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,26 +101,18 @@ public class MainActivity extends AppCompatActivity {
     public void register_with_NFD(View view) throws IOException, PibImpl.Error {
         EditText editText = (EditText) findViewById(R.id.editText);
         String msg = editText.getText().toString();
-        Face face = new Face();
-
         Name name = new Name(msg);
-        try {
-            MemoryIdentityStorage identityStorage = new MemoryIdentityStorage();
-            MemoryPrivateKeyStorage privateKeyStorage = new MemoryPrivateKeyStorage();
-            IdentityManager identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-            KeyChain keyChain = new KeyChain(identityManager);
-            keyChain.setFace(face);
 
-            // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
-            Name testIdName = new Name("/test/identity");
-            Name defaultCertificateName;
-            try {
-                defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
-                keyChain.getIdentityManager().setDefaultIdentity(testIdName);
-            } catch (SecurityException e2) {
-                defaultCertificateName = new Name("/bogus/certificate/name");
-            }
-            face.setCommandSigningInfo(keyChain, defaultCertificateName);
+        if (!has_setup_security) {
+            setup_security();
+            while (!has_setup_security)
+                try {
+                    wait(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+        }
+        try {
             long prefixId = face.registerPrefix(name,
                     new OnInterestCallback() {
                         @Override
@@ -91,10 +126,7 @@ public class MainActivity extends AppCompatActivity {
                             show_dialog(prefix, true);
                         }
                     });
-            face.processEvents();
         } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (EncodingException e) {
             e.printStackTrace();
         }
     }
