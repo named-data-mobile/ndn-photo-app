@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\95c9c220ae6ac636171acc639a4a5d9459784679\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="425c7b17887e5c3f8cbdf67ba171bc246f29b42c">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_8dd985d093afa5c9fc926605c138b1d5f1b2e029\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\9cf3f48d99561ba017973351dd82b14d43c356e3\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="93c10d68ab5ea070f15782ae6d3a28d1f1d8f45e">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_72f8bf7390cc74894e754e6af7f9aa319851c646\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\524340f1fbf7d775ab4d49b86b63ddfcc5da015a\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="fbb206f7a119f66ce171d95aae1225a5b209a8b7">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_2e8abf4d791334205303d2333941f39a6a270c40\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\db87ced74c652d0af3851960dec426e8e75d181c\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="70f23cb87278f89aa51e6f57e8f0fd5266572d95">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_a431f5ebce9e5d7b80fdc0a4fb21f2e96317ab6b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\fbd3285ebad71e7ac4b5f3beec5fe3d76d163b07\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="518768f3200963fbfec652f498da2c9d39245234">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_77ebd5ad52d0ab7b7f24c596999c4f2071dd2dc9\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\173a7fff083fb7b2084690d0a7ef1ad68a7525b1\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d7c42c80f6509b9ea4db28ca7859ffae08ec5741">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_753505bf01d7cfbc2109f3043bc643dde0690346\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="96ade10b321764d22efe417be34e05b9547bc5e7">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run-bootstrap_406bdd4460e5294bbb98788d287e428efd69601b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\e18b2b7316dbe86d4d149335bdbc266bb763e0d0\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="93c1199fcb0a34b980e6fff8350daff62e696ec2">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_434a1e2d329f7b0dfd4bc2e7b0e21d3fc4ae06c6\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\AppData\Local\Android\sdk\extras\m2repository\com\android\support\constraint\constraint-layout-solver\1.0.2\constraint-layout-solver-1.0.2.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="b9cd8fc6bd15cb915735d34535db30ece0c44603">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\constraint-layout-solver-1.0.2_9f580f9064359df5050be689473806206bc890b7\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\bcf57f7d88000fb470b27bd551e44ddce05eb7c3\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="9ab787a20aae245b5b3651ae0b9c38459eb37715">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_ce24a492065db77e0f6a9094d4f381434d756fdd\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\475170efab4a461277904dee117cbb1701d6b891\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="4b746ef0fd46acb5aaf3d9ab9a4cec22c28d3211">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_b66a22190708e9134a0c5f973dcb339741018ac0\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\7ef8efa6c0aac5ae7e4a577020709afd0a81f862\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="5cc5ef8347a6bafa14556cbd35230aa9b3431bb0">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_1cb7749dfb6e8960aeb9e521a35a597d1753a13b\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\25.3.0\support-annotations-25.3.0.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="dd84903d2e1af25a6081ef9038ad863cb14ca3a0">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-25.3.0_1a857c78a421ecbf06adc674135a6e6a0475b531\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\libs\core-3.3.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="bd5bb06f4ae0fef8e67044131272905eb8895230">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\2\core-3.3.1_8482b3d683bc7151dd6014740dec078ea971fd03\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="c82741bc129dd5f99f11a4ab8666ae24262053b6">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10000\instant-run_128cbf6f3bee7a10ff7fb1d773410e8e1e46470f\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\5da1054c31cabfb637b76dd6972f0884e1906d00\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="44ee06abb66da30f5855e6bf54574e64cdcd982a">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_10e629f6224d3061653a37883e70eda662a14db8\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\9dfb1f5a2721afc7e90bda4d43401607f6f81710\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="a3e61044038fb54cddf6b8dc79f41d2b57f42caf">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_42b25f26a95e0effc87108957d9bfdc782379615\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Damian\.android\build-cache\6a9a541861756bd0b3012952b954331993e66c67\output\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.2"
+        sha1="d6a04527c17597019dad82777c5094a3d60d1c33">
+        <dex dex="C:\Users\Damian\AndroidStudioProjects\ndn-snapchat\app\build\intermediates\transforms\dex\debug\folders\1000\10\classes_9d2985fe0f296edb6580e0171cf7874ed25ce505\classes.dex" />
+    </item>
+
+</items>
