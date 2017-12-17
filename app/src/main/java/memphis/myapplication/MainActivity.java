@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
+import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
@@ -21,6 +22,8 @@ import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.identity.MemoryIdentityStorage;
 import net.named_data.jndn.security.identity.MemoryPrivateKeyStorage;
 import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.util.Blob;
+import net.named_data.jndn.util.SegmentFetcher;
 
 import java.io.IOException;
 
@@ -30,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     MemoryPrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
     KeyChain keyChain;
-    protected Face face;
+    public Face face;
+    SegmentFetcher fetcher;
 
     private boolean has_setup_security = false;
     public void setup_security() {
@@ -78,10 +82,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** Called when the user taps the Send button */
-    public void sendMessage(View view) {
+    public void fetch_data(View view) {
         Intent intent = new Intent(this, DisplayMessageActivity.class);
         EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
+        Interest interest = new Interest(new Name(message));
+
+        SegmentFetcher.fetch(
+                face,
+                interest,
+                new SegmentFetcher.VerifySegment() {
+                    @Override
+                    public boolean verifySegment(Data data) {
+                        /* TODO: Implement this! */
+                        return true;
+                    }
+                },
+                new SegmentFetcher.OnComplete() {
+                    @Override
+                    public void onComplete(Blob content) {
+                        /* TODO: Implement this! */
+                    }
+                },
+                new SegmentFetcher.OnError() {
+                    @Override
+                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
+                        /* TODO: Implement this! */
+                    }
+                });
         intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
         // Do something in response to button
@@ -117,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnInterestCallback() {
                         @Override
                         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-                            show_dialog(prefix, false);
+                            find_file(prefix, interest);
                         }
                     },
                     new OnRegisterFailed() {
@@ -131,6 +159,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void find_file(Name prefix, Interest interest) {
+    }
 
 
 }
