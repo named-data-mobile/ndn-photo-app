@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">ndn-snapchat</string>
+    <string name="scan">Scan</string>
     <string name="action_settings">Settings</string>
 </resources>
