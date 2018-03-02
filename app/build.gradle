@@ -6,7 +6,7 @@ android {
         buildToolsVersion "26.0.2"
         defaultConfig {
             applicationId "memphis.myapplication"
-            minSdkVersion 23
+            minSdkVersion 22
             targetSdkVersion 26
             versionCode 1
             versionName "1.0"

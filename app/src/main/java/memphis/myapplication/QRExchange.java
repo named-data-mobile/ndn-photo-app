@@ -1,6 +1,7 @@
 package memphis.myapplication;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -13,7 +14,11 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -26,7 +31,12 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.encoder.QRCode;
 
+import static android.support.v4.print.PrintHelper.SCALE_MODE_FIT;
+
 public class QRExchange extends AppCompatActivity {
+
+    private final int BIT_HEIGHT = 400;
+    private final int BIT_WIDTH = 400;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,28 +77,92 @@ public class QRExchange extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // right now we have a single chain of methods to display the QR upon clicking the button
+    // "QR ME", but we are going to need to separate methods and rename some things so I can
+    // create specific types of QR codes (key pairs vs images/files)
+    // also, registering a user will have their username and their public key
+
+    public KeyPair generateKeys() {
+        try {
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            KeyPair keyPair = keyGen.generateKeyPair();
+            try {
+                // save keys to storage; need to develop a filesystem
+                // we'll generate the QR code for public key on demand
+            }
+            // Be more specific about the type of Exception. Should be storage related.
+            catch (Exception e) {
+                Log.d("Internal Storage", "Keys not saved. Err: " + e.toString());
+                return null;
+            }
+            return keyPair;
+        }
+        catch (NoSuchAlgorithmException e) {
+            Log.d("QR", "RSA algorithm not found. Keys were not generated.");
+            return null;
+        }
+    }
+
+    ////////This is not working as it should. The problem is the context is null, so it is dying
+    ////////somewhere.
+    public void displayMyQR(View view) {
+        FileManager manager = new FileManager(view);
+        String imgPath = manager.getYourself();
+        try {
+            ImageView imgView = new ImageView(this);
+            Bitmap bitmap = BitmapFactory.decodeFile(imgPath);
+            Log.d("displayMyQR", bitmap.toString());
+            //imgView.setImageBitmap(bitmap);
+        }
+        catch(Exception e) {
+            Log.d("displayMyQR", e.toString());
+            Toast.makeText(this, "displayMyQR " + e.toString(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     *
+     */
+    public Bitmap makeQRFriendCode(View view) {
+        FileManager manager = new FileManager(view);
+        String name = manager.getUsername();
+        String pubKey = manager.getPubKey();
+        // make sure we check later during registration that a username has no spaces
+        String qrContents = name + " " + pubKey;
+        QRCodeWriter qrWriter = new QRCodeWriter();
+        try {
+            BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
+            Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
+            for (int i = 0; i < BIT_HEIGHT; i++) {
+                for (int j = 0; j < BIT_WIDTH; j++) {
+                    bitmap.setPixel(i, j, qrMatrix.get(i, j) ? Color.BLACK : Color.WHITE);
+                }
+            }
+            return bitmap;
+        }
+        catch(WriterException we) {
+            Log.d("makeQrFriendCode", "qrWriter failed");
+        }
+        catch(Exception e) {
+            Log.d("makeQrFriendCode", "bitmap was not created");
+        }
+        // if it failed to make the bitmap
+        return null;
+    }
+    // setup function should take a string (username && pubKey, filename) and create its QR code
     public void setupQR(View view) {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             KeyPair keyPair = keyGen.generateKeyPair();
             PublicKey pubKey = keyPair.getPublic();
-            //byte[] pieces = pubKey.getEncoded();
-            //Log.d("QR", "pubKey: " + pubKey.toString());
-            //String stringKey = "";
-            /*try {
-                stringKey = new String(pieces, "UTF-8");
-            }
-            catch(UnsupportedEncodingException e) {
-                Log.d("QR", "bytes to string problem");
-            }*/
             String test = pubKey.toString();
 
             try {
                 QRCodeWriter qrWriter = new QRCodeWriter();
-                BitMatrix qrMatrix = qrWriter.encode(test, BarcodeFormat.QR_CODE, 400, 400);
+                BitMatrix qrMatrix = qrWriter.encode(test, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
                 displayQR(view, qrMatrix);
             }
-            catch (WriterException e) {
+            catch (WriterException we) {
                 Log.d("QR", "qrMatrix not encoded");
             }
         }
@@ -100,7 +174,7 @@ public class QRExchange extends AppCompatActivity {
     public void qrPrefix(View view, String prefix) {
         try {
             QRCodeWriter qrWriter = new QRCodeWriter();
-            BitMatrix qrMatrix = qrWriter.encode(prefix, BarcodeFormat.QR_CODE, 400, 400);
+            BitMatrix qrMatrix = qrWriter.encode(prefix, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
             displayQR(view, qrMatrix);
         }
         catch (WriterException e) {
@@ -115,17 +189,15 @@ public class QRExchange extends AppCompatActivity {
     }
 
     public void displayQR(View view, BitMatrix qrMatrix) {
-        int bitWidth = 400;
-        int bitHeight = 400;
-        Bitmap bitmap = Bitmap.createBitmap(bitWidth, bitHeight, Bitmap.Config.ARGB_8888);
-        for (int i = 0; i < bitHeight; i++) {
-            for (int j = 0; j < bitWidth; j++) {
+        Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
+        for (int i = 0; i < BIT_HEIGHT; i++) {
+            for (int j = 0; j < BIT_WIDTH; j++) {
                 bitmap.setPixel(i, j, qrMatrix.get(i, j) ? Color.BLACK : Color.WHITE);
             }
         }
         try {
             PrintHelper phPrinter = new PrintHelper(view.getContext());
-            phPrinter.setScaleMode(phPrinter.SCALE_MODE_FIT);
+            phPrinter.setScaleMode(SCALE_MODE_FIT);
             phPrinter.printBitmap("QRCode", bitmap);
         }
         catch (Exception e){
