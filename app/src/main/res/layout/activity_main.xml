@@ -26,7 +26,8 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="/test/prefix"
+        android:text="/ndn-snapchat/username"
+        android:labelFor="@id/editText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

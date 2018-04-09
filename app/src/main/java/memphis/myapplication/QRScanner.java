@@ -60,8 +60,10 @@ public class QRScanner extends AppCompatActivity implements View.OnClickListener
                 Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
             }
             else {
-                String name = result.getContents();
-                Toast.makeText(this, name, Toast.LENGTH_LONG).show();
+                String content = result.getContents();
+                Toast.makeText(this, content, Toast.LENGTH_LONG).show();
+                //Intent intent = new Intent();
+                //Save friend's information
             }
         }
         else {

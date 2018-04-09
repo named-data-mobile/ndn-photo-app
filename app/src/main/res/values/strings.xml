@@ -2,4 +2,8 @@
     <string name="app_name">ndn-snapchat</string>
     <string name="scan">Scan</string>
     <string name="action_settings">Settings</string>
+    <string name="register">Register</string>
+    <string name="publish">Publish</string>
+    <string name="advertise">Advertise</string>
+    <string name="cancel">Cancel</string>
 </resources>

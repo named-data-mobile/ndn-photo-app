@@ -11,8 +11,6 @@ import android.view.View;
 import android.util.Base64;
 import android.widget.Toast;
 
-import com.google.zxing.common.BitMatrix;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,7 +21,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import android.widget.Toast;
 
 import static java.security.AccessController.getContext;
 
