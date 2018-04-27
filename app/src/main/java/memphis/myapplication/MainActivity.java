@@ -22,12 +22,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
+import net.named_data.jndn.OnData;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
@@ -58,6 +60,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    MainActivity mainActivity = this;
     String retrieved_data = "";
     MemoryIdentityStorage identityStorage;
     MemoryPrivateKeyStorage privateKeyStorage;
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     KeyChain keyChain;
     public Face face;
     public Face face2;
-    SegmentFetcher fetcher;
+    public FaceProxy faceProxy;
     List<String> filesStrings = new ArrayList<String>();
     List<Uri> filesList = new ArrayList<Uri>();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -74,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
+
+
     private boolean has_setup_security = false;
     public void setup_security() {
         Thread thread = new Thread(new Runnable() {
@@ -81,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 face = new Face();
                 face2 = new Face();
+                faceProxy = new FaceProxy();
                 Face[] faces = {face, face2};
                 for(int i = 0; i < faces.length; i++) {
                     identityStorage = new MemoryIdentityStorage();
@@ -105,9 +111,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("setup_security", "Security was setup successfully");
                     try {
                         faces[i].processEvents();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (EncodingException e) {
+                    } catch (IOException | EncodingException e) {
                         e.printStackTrace();
                     }
                 }
@@ -139,21 +143,21 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Send button */
     public void fetch_data(View view) {
         Log.d("fetch_data", "Called fetch_data");
-        Intent intent = new Intent(this, DisplayMessageActivity.class);
+        // Intent intent = new Intent(this, DisplayMessageActivity.class);
         EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
         Log.d("fetch_data", "Message from editText: " + message);
         Interest interest = new Interest(new Name(message));
         Log.d("fetch_data", "Interest: " + interest.getName().toString());
-        //interest.setInterestLifetimeMilliseconds(50000);
+        // interest.setInterestLifetimeMilliseconds(20000);
 
+        final boolean[] enabled = new boolean[] { true };
         SegmentFetcher.fetch(
                 face,
                 interest,
                 new SegmentFetcher.VerifySegment() {
                     @Override
                     public boolean verifySegment(Data data) {
-                        /* TODO: Implement this! */
                         Log.d("VerifySegment", "We just return true.");
                         return true;
                     }
@@ -161,28 +165,39 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        /* TODO: Implement this! */
                         //!!!!!!!!! TEMPORARY !!!!!!!!!!!!
-                        retrieved_data = content.toString();
+                        enabled[0] = false;
+                        Log.d("fetch_data onComplete", "we got content");
+                        retrieved_data = new String(content.getImmutableArray());
                         Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
                     }
                 },
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        /* TODO: Implement this! */
+                        enabled[0] = false;
                         Log.d("fetch_data onError", message);
                     }
                 });
 
         try {
-            Thread.sleep(5000);
+            while (enabled[0]) {
+                face.processEvents();
+                // We need to sleep for a few milliseconds so we don't use 100% of
+                //   the CPU.
+                try {
+                    Thread.sleep(5);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
-        catch(java.lang.InterruptedException e) {
-            Log.d("PublisherAndFetcherTest", "Refused to sleep thread.");
+        catch(IOException | EncodingException e) {
+            e.printStackTrace();
         }
-        intent.putExtra(EXTRA_MESSAGE, message);
-        startActivity(intent);
+        /*intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);*/
         // Do something in response to button
     }
 
@@ -236,10 +251,12 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
         }
+        final boolean[] enabled = new boolean[] { true };
         try {
             Log.d("register_with_nfd", "Starting registration process.");
             long prefixId = face2.registerPrefix(name,
-                    new OnInterestCallback() {
+                    onDataInterest,
+                    /*new OnInterestCallback() {
                         @Override
                         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
                             Uri uri = find_file(prefix, interest);
@@ -256,10 +273,11 @@ public class MainActivity extends AppCompatActivity {
                             }
                             find_file(prefix, interest);
                         }
-                    },
+                    },*/
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
+                            enabled[0] = false;
                             Log.d("OnRegisterFailed", "Registration Failure");
                             show_dialog(prefix, true);
                         }
@@ -267,14 +285,30 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success");
+                            enabled[0] = false;
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             CharSequence text = "Successfully registered prefix: " + prefix.toString();
                             int duration = Toast.LENGTH_SHORT;
                             Toast toast = Toast.makeText(MainActivity.this, text, duration);
                             toast.show();
                         }
                     });
-        } catch (SecurityException e) {
+            try {
+                while (enabled[0]) {
+                    face2.processEvents();
+                    try {
+                        Thread.sleep(5);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            catch(IOException | EncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
     }
@@ -284,7 +318,16 @@ public class MainActivity extends AppCompatActivity {
             for (Data data : packetize(blob, prefix)) {
                 Log.d("publishData", "Publishing with prefix: "+ prefix);
                 keyChain.sign(data);
+                faceProxy.putInCache(data);
                 face2.putData(data);
+                try {
+                    face2.processEvents();
+                    Thread.sleep(10);
+                }
+                catch(IOException | EncodingException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+                // face2.setInterestFilter(prefix, onDataInterest);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -404,7 +447,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public Data[] packetize(Blob raw_blob, Name prefix) {
-        final int VERSION_NUMBER = 0;
+        Name.Component finalBlockId =
+                new Name.Component(new Blob(new byte[] { (byte)0 }, false));
+        final int VERSION_NUMBER = 1;
         final int DEFAULT_PACKET_SIZE = 1400;
         final int PACKET_SIZE;
         PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
@@ -416,29 +461,28 @@ public class MainActivity extends AppCompatActivity {
             Data data = new Data();
             Name segment_name = new Name(prefix);
             segment_name.appendVersion(VERSION_NUMBER);
-            //Nick's segment_name.appendSegment(0);
-            //my change... (didn't fix)
             segment_name.appendSegment(segment_number);
             data.setName(segment_name);
             try {
-                Log.d("packetize things", data.getFullName().toString());
-            }
-            catch(EncodingException e) {
+                Log.d("packetize things", "full data name: " + data.getFullName().toString());
+            } catch (EncodingException e) {
                 Log.d("packetize things", "unable to print full name");
             }
             try {
-                raw_blob.buf().get(segment_buffer, 0 , PACKET_SIZE);
+                raw_blob.buf().get(segment_buffer, 0, PACKET_SIZE);
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
             data.setContent(new Blob(segment_buffer));
             MetaInfo meta_info = new MetaInfo();
-            meta_info.setFreshnessPeriod(1000);
+            meta_info.setType(ContentType.BLOB);
+            // not sure what is a good freshness period
+            meta_info.setFreshnessPeriod(30000);
             segment_number++;
             offset += 1401; // Add another to start from
             if (offset > raw_blob.size()) {
                 // Set the final component to have a final block id.
-                meta_info.setFinalBlockId(data.getName().get(-1));
+                meta_info.setFinalBlockId(finalBlockId);
                 data.setMetaInfo(meta_info);
             }
             datas.add(data);
@@ -447,4 +491,21 @@ public class MainActivity extends AppCompatActivity {
         return datas.toArray(new Data[datas.size()]);
     }
 
+    private final OnInterestCallback onDataInterest = new OnInterestCallback() {
+        @Override
+        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
+                               InterestFilter filterData) {
+            /*try {
+                face2.processEvents();
+            }
+            catch(IOException | EncodingException e) {
+                e.printStackTrace();
+            }*/
+            Name interestName = interest.getName();
+            Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interestName.toUri());
+            faceProxy.process(interest, mainActivity);
+        }
+    };
+
+    // maybe we need our own onData callback since it is used in expressInterest (which is called by the SegmentFetcher)
 }
