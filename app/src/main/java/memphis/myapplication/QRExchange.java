@@ -1,9 +1,13 @@
 package memphis.myapplication;
 
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.print.PrintHelper;
@@ -15,9 +19,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
@@ -35,8 +42,8 @@ import static android.support.v4.print.PrintHelper.SCALE_MODE_FIT;
 
 public class QRExchange extends AppCompatActivity {
 
-    private final int BIT_HEIGHT = 400;
-    private final int BIT_WIDTH = 400;
+    private static final int BIT_HEIGHT = 400;
+    private static final int BIT_WIDTH = 400;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +51,6 @@ public class QRExchange extends AppCompatActivity {
         setContentView(R.layout.activity_qr_exchange);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
     }
 
     @Override
@@ -106,13 +104,13 @@ public class QRExchange extends AppCompatActivity {
     ////////This is not working as it should. The problem is the context is null, so it is dying
     ////////somewhere.
     public void displayMyQR(View view) {
-        FileManager manager = new FileManager(view);
+        FileManager manager = new FileManager(view.getContext());
         String imgPath = manager.getYourself();
         try {
             ImageView imgView = new ImageView(this);
             Bitmap bitmap = BitmapFactory.decodeFile(imgPath);
             Log.d("displayMyQR", bitmap.toString());
-            //imgView.setImageBitmap(bitmap);
+            imgView.setImageBitmap(bitmap);
         }
         catch(Exception e) {
             Log.d("displayMyQR", e.toString());
@@ -122,7 +120,7 @@ public class QRExchange extends AppCompatActivity {
 
     // currently a duplicate of content in makeQRFriendCode, but we may need multiple QR generation
     // processes (file names), so I'm just leaving this here.
-    private Bitmap makeQRCode(String qrContents){
+    private static Bitmap makeQRCode(String qrContents){
         QRCodeWriter qrWriter = new QRCodeWriter();
         try {
             BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
@@ -146,8 +144,8 @@ public class QRExchange extends AppCompatActivity {
     /**
      *
      */
-    public Bitmap makeQRFriendCode(View view) {
-        FileManager manager = new FileManager(view);
+    public Bitmap makeQRFriendCode(Context context) {
+        FileManager manager = new FileManager(context);
         String name = manager.getUsername();
         String pubKey = manager.getPubKey();
         // make sure we check later during registration that a username has no spaces
@@ -173,11 +171,31 @@ public class QRExchange extends AppCompatActivity {
         return null;
     }
 
-    /* // This might not be necessary. It depends on implementation. We may be passing completely
+    // This might not be necessary. It depends on implementation. We may be passing completely
     // different parameters depending on the file activity we do.
-    public Bitmap makeQRFileCode(View view, String path) {
-        return makeQRCode(qrContents);
-    }*/
+    public static void makeQRFileCode(Context context, String path) {
+        FileManager manager = new FileManager(context);
+        int index = path.lastIndexOf("/");
+        String filePath = manager.getAppRootPath() + "/files" + path.substring(index);
+        File qrFile = new File(filePath);
+        // check if we already stored it
+        if(!qrFile.exists()) {
+            try {
+                qrFile.createNewFile();
+                Bitmap fileCode = makeQRCode(path);
+                FileOutputStream fostream = new FileOutputStream(qrFile);
+                fileCode.compress(Bitmap.CompressFormat.PNG, 90, fostream);
+                fostream.close();
+            }
+            catch(IOException e) {
+                e.printStackTrace();
+            }
+            catch(NullPointerException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     // setup function should take a string (username && pubKey, filename) and create its QR code
     public void setupQR(View view) {
         try {
@@ -211,13 +229,9 @@ public class QRExchange extends AppCompatActivity {
         }
     }
 
-    public void getInput(View view) {
-        EditText editText = (EditText) findViewById(R.id.editText2);
-        String text = editText.getText().toString();
-        qrPrefix(view, text);
-    }
-
-    public void displayQR(View view, BitMatrix qrMatrix) {
+    // This is outdated. We should be able to just set up an intent with our data and send it to the
+    // DisplayFileQRCode Activity
+    public static void displayQR(View view, BitMatrix qrMatrix) {
         Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
         for (int i = 0; i < BIT_HEIGHT; i++) {
             for (int j = 0; j < BIT_WIDTH; j++) {
@@ -225,6 +239,7 @@ public class QRExchange extends AppCompatActivity {
             }
         }
         try {
+            // Intent display = new Intent(this, DisplayFileQRCode.class); Careful. This requires uri Data
             PrintHelper phPrinter = new PrintHelper(view.getContext());
             phPrinter.setScaleMode(SCALE_MODE_FIT);
             phPrinter.printBitmap("QRCode", bitmap);

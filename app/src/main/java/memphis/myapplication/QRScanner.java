@@ -62,6 +62,8 @@ public class QRScanner extends AppCompatActivity implements View.OnClickListener
             else {
                 String content = result.getContents();
                 Toast.makeText(this, content, Toast.LENGTH_LONG).show();
+                FileManager manager = new FileManager(getApplicationContext());
+                manager.saveFriend(content);
                 //Intent intent = new Intent();
                 //Save friend's information
             }

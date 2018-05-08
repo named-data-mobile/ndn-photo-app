@@ -85,10 +85,11 @@ public class SignUp extends AppCompatActivity {
             Log.d("setUpAccount", "currContext: " + currContext);
             Log.d("setUpAccount", "view.getContext(): " + view.getContext());
             QRExchange generator = new QRExchange();
-            FileManager manager = new FileManager(view);
+            Context appContext = getApplicationContext();
+            FileManager manager = new FileManager(appContext);
             boolean areKeysSaved = manager.saveKeys();
             if (areKeysSaved) {
-                Bitmap myQRCode = generator.makeQRFriendCode(view);
+                Bitmap myQRCode = generator.makeQRFriendCode(appContext);
                 // save QR code of your information
                 manager.saveYourself(myQRCode);
                 generator.displayMyQR(view);

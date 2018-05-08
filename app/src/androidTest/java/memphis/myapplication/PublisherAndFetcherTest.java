@@ -75,7 +75,7 @@ public class PublisherAndFetcherTest {
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
             MainActivity.class);
 
-    @Test
+    /*@Test
     public void checkCacheContent() {
         String stuff = "This is a test string to insert into the cache.";
         byte[] bytes = stuff.getBytes(StandardCharsets.UTF_8);
@@ -96,7 +96,7 @@ public class PublisherAndFetcherTest {
                 Log.d("checkCacheContentTest", "Index " + i + ": " + cache[i].getContent().toString());
             }
         }
-    }
+    }*/
 
     @Test
     public void pubfetchSimpleString() {

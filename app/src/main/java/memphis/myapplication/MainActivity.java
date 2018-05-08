@@ -3,23 +3,32 @@ package memphis.myapplication;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.support.annotation.VisibleForTesting;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import net.named_data.jndn.ContentType;
@@ -61,6 +70,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     MainActivity mainActivity = this;
+    public static Context mContext;
     String retrieved_data = "";
     MemoryIdentityStorage identityStorage;
     MemoryPrivateKeyStorage privateKeyStorage;
@@ -77,8 +87,11 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
+    // maybe add a thread that runs and constantly calls face.processEvents; Ashlesh said that if
+    // we have 2 faces, they could be blocking one another if they are on the same thread. So, if
+    // we keep the two faces, they'll need their own threads.
 
-
+    private boolean appThreadShouldStop = true;
     private boolean has_setup_security = false;
     public void setup_security() {
         Thread thread = new Thread(new Runnable() {
@@ -89,6 +102,9 @@ public class MainActivity extends AppCompatActivity {
                 faceProxy = new FaceProxy();
                 Face[] faces = {face, face2};
                 for(int i = 0; i < faces.length; i++) {
+                    // look at File equivalents to Memory in jndn; That should accomplish your basic
+                    // idea while using Nick's use of jndn
+                    // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
                     identityStorage = new MemoryIdentityStorage();
                     privateKeyStorage = new MemoryPrivateKeyStorage();
                     identityManager = new IdentityManager(identityStorage, privateKeyStorage);
@@ -120,6 +136,40 @@ public class MainActivity extends AppCompatActivity {
         thread.run();
     }
 
+    /*private final Thread appThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            if(!has_setup_security) {
+                setup_security();
+            }
+            while(!appThreadShouldStop) {
+                try {
+                    face.processEvents();
+                    appThread.sleep(100);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+
+    private void startAppThread() {
+        if (!appThread.isAlive()) {
+            appThreadShouldStop = false;
+            appThread.start();
+        }
+    }
+
+    private void stopNetworkThread() {
+        appThreadShouldStop = true;
+    }
+
+    protected boolean networkThreadIsRunning() {
+        return appThread.isAlive();
+    }*/
+
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
     @Override
@@ -138,6 +188,12 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+        // this is not available when we are signing up, we need a universal main function to set this
+        // context so I can use it elsewhere
+        mContext = getApplicationContext();
+        // check if logged in; if not, go to Login Page. From there you can access the signup page.
+        // this is where we should check that we have all of our security setup maybe? If not, we
+        // need to generate things again.
     }
 
     /** Called when the user taps the Send button */
@@ -237,10 +293,19 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void register_with_NFD(View view) throws IOException, PibImpl.Error {
-        EditText editText = (EditText) findViewById(R.id.editText);
+    public void register_with_NFD(View view) {
+        EditText editText = findViewById(R.id.editText);
         String msg = editText.getText().toString();
-        Name name = new Name(msg);
+        try {
+            Name name = new Name(msg);
+            register_with_NFD(name);
+        }
+        catch(IOException | PibImpl.Error e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void register_with_NFD(Name name) throws IOException, PibImpl.Error {
 
         if (!has_setup_security) {
             setup_security();
@@ -371,6 +436,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
                 final Uri uri = filesList.get(pos);
+                // add symbolic link to this path if not present?
                 Log.d("onItemClick", "uri: " + uri);
                 byte[] bytes;
                 try {
@@ -382,23 +448,25 @@ public class MainActivity extends AppCompatActivity {
                     bytes = new byte[0];
                 }
 
-                // String prefix = getFilenamePrefix() + filename;
-                Blob blob = new Blob(bytes, true);
-                //publishData(blob, prefix);
-                // test_packetize(bytes);
+                final Blob blob = new Blob(bytes, true);
+                String s = addFilenamePrefix(uri.toString());
+                final Name prefix = new Name(s);
+                publishData(blob, prefix);
+                try {
+                    register_with_NFD(prefix);
+                }
+                catch (IOException | PibImpl.Error e) {
+                    e.printStackTrace();
+                }
+
+                QRExchange.makeQRFileCode(view.getContext(), s);
+
                 AlertDialog.Builder builder = new AlertDialog.Builder(lv.getContext(), android.R.style.Theme_Material_Dialog_Alert);
                 // Add the buttons
                 builder.setPositiveButton(R.string.publish, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // User clicked register button
-                        // Publish? Convert pathname to ndn prefix?
-                        // This is /ndn-snapchat/username/
-                        String s = getFilenamePrefix(uri.toString());
-                        Name prefix = new Name(s);
-                        /*Blob blob = new Blob(bytes, true);
-                        publishData(blob, prefix);*/
+                        publishData(blob, prefix);
                         Log.d("Publish Button", prefix.toString());
-                        // create name with s
                     }
                 });
                 builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -419,31 +487,75 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
 
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
-        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
-        // response to some other intent, and the code below shouldn't run at all.
-
+        Log.d("onActivityResult", "requestCode: " + requestCode);
         Uri uri = null;
         if (resultData != null) {
-            final ListView lv = (ListView) findViewById(R.id.listview);
+            if (requestCode == 0) {
+                final ListView lv = (ListView) findViewById(R.id.listview);
 
-            uri = resultData.getData();
-            filesList.add(uri);
-            filesStrings.add(uri.toString());
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-            lv.setAdapter(adapter);
-            AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-            builder.setTitle("You selected a file").setMessage(uri.toString()).show();
+                uri = resultData.getData();
+                filesList.add(uri);
+                filesStrings.add(uri.toString());
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
+                lv.setAdapter(adapter);
+                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+                builder.setTitle("You selected a file").setMessage(uri.toString()).show();
+            }
+            // We received a request to display a QR image
+            else if (requestCode == 1) {
+                try {
+                    // set up a new Activity for displaying. This way the back button brings us back
+                    // to main activity.
+                    Intent display = new Intent(this, DisplayFileQRCode.class);
+                    display.setData(resultData.getData());
+                    startActivity(display);
+                }
+                catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                Log.d("onActivityResult", "Unexpected activity requestcode caught");
+            }
         }
     }
 
-    public String getFilenamePrefix(String path) {
-        String name;
+    /**
+     * Start a file selection activity to find an QR image to display. This is triggered by pressing
+     * the "Display QR" button.
+     * @param view The view of MainActivity passed by our button press.
+     */
+    public void lookup_file_QR(View view) {
+        // ACTION_GET_CONTENT is used for reading; no modifications
+        // We're going to find a png file of our choosing (should be used for displaying QR codes,
+        // but it can display any image)
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        // fix this: this displays every file. We should limit the scope to a specific directory and
+        // image files, if possible.
+        intent.setType("*/*");
+        // requestCode: 1 was arbitrary. Our select_file function sends a requestCode: 0 (also arbitrary)
+        startActivityForResult(intent, 1);
+    }
+
+    public String addFilenamePrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
         // /ndn-snapchat/<username>/
-        int index = path.lastIndexOf('/');
-        name = "/ndn-snapchat/<username>" + path.substring(index);
-        return name;
+        // int index = path.lastIndexOf('/');
+        // name = "/ndn-snapchat/<username>" + path.substring(index);
+        FileManager manager = new FileManager(getApplicationContext());
+        String username = manager.getUsername();
+        if (username != null) {
+            // check that path already comes with "/" prepended
+            if(path.charAt(0) == '/') {
+                return "/ndn-snapchat/" + username + path;
+            }
+            else {
+                return "/ndn-snapchat/" + username + "/" + path;
+            }
+        }
+        else {
+            return null;
+        }
     }
 
     public Data[] packetize(Blob raw_blob, Name prefix) {
@@ -495,12 +607,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
-            /*try {
-                face2.processEvents();
-            }
-            catch(IOException | EncodingException e) {
-                e.printStackTrace();
-            }*/
+
             Name interestName = interest.getName();
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interestName.toUri());
             faceProxy.process(interest, mainActivity);
