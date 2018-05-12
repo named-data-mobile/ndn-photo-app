@@ -21,28 +21,32 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/fetchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:onClick="fetch_data"
         android:text="Fetch data"
         app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toTopOf="@+id/editText" />
+        app:layout_constraintTop_toTopOf="@+id/editText"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/fileSelectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
         android:onClick="select_files"
         android:text="Files"
         app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@+id/button" />
+        app:layout_constraintTop_toBottomOf="@+id/fetchButton"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/registerButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -50,7 +54,9 @@
         android:onClick="register_with_NFD"
         android:text="Register with NFD"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@+id/editText"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
 
     <ListView
         android:id="@+id/listview"
@@ -73,6 +79,21 @@
         android:onClick="lookup_file_QR"
         android:text="Display QR"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button3" />
+        app:layout_constraintTop_toBottomOf="@+id/registerButton"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/scanFileQR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="32dp"
+        android:onClick="scanFileQR"
+        android:text="Scan File QR"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerButton"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
 
 </android.support.constraint.ConstraintLayout>

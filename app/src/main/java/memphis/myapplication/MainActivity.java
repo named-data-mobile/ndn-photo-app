@@ -31,6 +31,9 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+
 import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -67,6 +70,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
+
 public class MainActivity extends AppCompatActivity {
 
     MainActivity mainActivity = this;
@@ -86,12 +91,15 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    private final int FILE_SELECT_REQUEST_CODE = 0;
+    private final int FILE_QR_REQUEST_CODE = 1;
+    private final int SCAN_QR_REQUEST_CODE = 2;
 
     // maybe add a thread that runs and constantly calls face.processEvents; Ashlesh said that if
     // we have 2 faces, they could be blocking one another if they are on the same thread. So, if
     // we keep the two faces, they'll need their own threads.
 
-    private boolean appThreadShouldStop = true;
+    // private boolean appThreadShouldStop = true;
     private boolean has_setup_security = false;
     public void setup_security() {
         Thread thread = new Thread(new Runnable() {
@@ -430,7 +438,7 @@ public class MainActivity extends AppCompatActivity {
         // it would be "*/*".
         intent.setType("*/*");
 
-        startActivityForResult(intent, 0);
+        startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -490,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("onActivityResult", "requestCode: " + requestCode);
         Uri uri = null;
         if (resultData != null) {
-            if (requestCode == 0) {
+            if (requestCode == FILE_SELECT_REQUEST_CODE) {
                 final ListView lv = (ListView) findViewById(R.id.listview);
 
                 uri = resultData.getData();
@@ -502,7 +510,7 @@ public class MainActivity extends AppCompatActivity {
                 builder.setTitle("You selected a file").setMessage(uri.toString()).show();
             }
             // We received a request to display a QR image
-            else if (requestCode == 1) {
+            else if (requestCode == FILE_QR_REQUEST_CODE) {
                 try {
                     // set up a new Activity for displaying. This way the back button brings us back
                     // to main activity.
@@ -512,6 +520,28 @@ public class MainActivity extends AppCompatActivity {
                 }
                 catch (NullPointerException e) {
                     e.printStackTrace();
+                }
+            }
+            else if (requestCode == SCAN_QR_REQUEST_CODE) {
+                IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, resultData);
+                if (result == null) {
+                    Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
+                }
+                if (result != null) {
+                    // check resultCode to determine what type of code we're scanning, file or friend
+
+                    if (result.getContents() == null) {
+                        Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
+                    }
+                    else {
+                        String content = result.getContents();
+                        // need to check this content to determine if we are scanning file or friend code
+                        Toast.makeText(this, content, Toast.LENGTH_LONG).show();
+                        FileManager manager = new FileManager(getApplicationContext());
+                    }
+                }
+                else {
+                    super.onActivityResult(requestCode, resultCode, resultData);
                 }
             }
             else {
@@ -534,7 +564,18 @@ public class MainActivity extends AppCompatActivity {
         // image files, if possible.
         intent.setType("*/*");
         // requestCode: 1 was arbitrary. Our select_file function sends a requestCode: 0 (also arbitrary)
-        startActivityForResult(intent, 1);
+        startActivityForResult(intent, FILE_QR_REQUEST_CODE);
+    }
+
+    public void scanFileQR(View view) {
+        IntentIntegrator scanner = new IntentIntegrator(this);
+        // only want QR code scanner
+        scanner.setDesiredBarcodeFormats(QR_CODE_TYPES);
+        scanner.setOrientationLocked(true);
+        // back facing camera id
+        scanner.setCameraId(0);
+        Intent intent = scanner.createScanIntent();
+        startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
     }
 
     public String addFilenamePrefix(String path) {

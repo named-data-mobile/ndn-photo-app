@@ -113,8 +113,8 @@ public class PublisherAndFetcherTest {
         onView(withId(R.id.editText)).check(matches((isDisplayed())));
         onView(withId(R.id.editText)).perform(clearText());
         onView(withId(R.id.editText)).perform(typeText("/test/shortContent"));
-        onView(withId(R.id.button3)).check(matches((isDisplayed())));
-        onView(withId(R.id.button3)).perform(click());
+        onView(withId(R.id.registerButton)).check(matches((isDisplayed())));
+        onView(withId(R.id.registerButton)).perform(click());
 
         try {
             Thread.sleep(2000);
@@ -132,8 +132,8 @@ public class PublisherAndFetcherTest {
             Log.d("PublisherAndFetcherTest", "Refused to sleep thread.");
         }
 
-        onView(withId(R.id.button)).check(matches((isDisplayed())));
-        onView(withId(R.id.button)).perform(click());
+        onView(withId(R.id.fetchButton)).check(matches((isDisplayed())));
+        onView(withId(R.id.fetchButton)).perform(click());
         try {
             Thread.sleep(2000);
         }

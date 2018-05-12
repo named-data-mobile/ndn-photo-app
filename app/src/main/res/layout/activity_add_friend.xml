@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/showYourCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="68dp"
+        android:layout_marginTop="244dp"
+        android:text="Display QR"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/scanFriendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="244dp"
+        android:onClick="scanFriendQR"
+        android:text="Scan QR"
+        app:layout_constraintStart_toEndOf="@+id/showYourCode"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF"/>
+</android.support.constraint.ConstraintLayout>
