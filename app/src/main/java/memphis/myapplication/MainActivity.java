@@ -5,16 +5,20 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.annotation.VisibleForTesting;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
@@ -70,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static android.os.Environment.getExternalStorageDirectory;
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
 public class MainActivity extends AppCompatActivity {
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     // private boolean appThreadShouldStop = true;
     private boolean has_setup_security = false;
+
     public void setup_security() {
         Thread thread = new Thread(new Runnable() {
             @Override
@@ -109,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 face2 = new Face();
                 faceProxy = new FaceProxy();
                 Face[] faces = {face, face2};
-                for(int i = 0; i < faces.length; i++) {
+                for (int i = 0; i < faces.length; i++) {
                     // look at File equivalents to Memory in jndn; That should accomplish your basic
                     // idea while using Nick's use of jndn
                     // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
@@ -204,7 +210,9 @@ public class MainActivity extends AppCompatActivity {
         // need to generate things again.
     }
 
-    /** Called when the user taps the Send button */
+    /**
+     * Called when the user taps the fetch data button
+     */
     public void fetch_data(View view) {
         Log.d("fetch_data", "Called fetch_data");
         // Intent intent = new Intent(this, DisplayMessageActivity.class);
@@ -215,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("fetch_data", "Interest: " + interest.getName().toString());
         // interest.setInterestLifetimeMilliseconds(20000);
 
-        final boolean[] enabled = new boolean[] { true };
+        final boolean[] enabled = new boolean[]{true};
         SegmentFetcher.fetch(
                 face,
                 interest,
@@ -234,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("fetch_data onComplete", "we got content");
                         retrieved_data = new String(content.getImmutableArray());
                         Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
+                        Toast.makeText(getApplicationContext(), "content: " + retrieved_data, Toast.LENGTH_LONG).show();
                     }
                 },
                 new SegmentFetcher.OnError() {
@@ -248,16 +257,14 @@ public class MainActivity extends AppCompatActivity {
             while (enabled[0]) {
                 face.processEvents();
                 // We need to sleep for a few milliseconds so we don't use 100% of
-                //   the CPU.
+                // the CPU.
                 try {
                     Thread.sleep(5);
-                }
-                catch (InterruptedException e) {
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-        }
-        catch(IOException | EncodingException e) {
+        } catch (IOException | EncodingException e) {
             e.printStackTrace();
         }
         /*intent.putExtra(EXTRA_MESSAGE, message);
@@ -290,10 +297,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void switchActivity(View view) {
+    /*public void switchActivity(View view) {
         Intent intent = new Intent(this, FileSelectActivity.class);
         startActivity(intent);
-    }
+    }*/
 
     public void show_dialog(Name prefix, boolean didFail) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
@@ -307,8 +314,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             Name name = new Name(msg);
             register_with_NFD(name);
-        }
-        catch(IOException | PibImpl.Error e) {
+        } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
     }
@@ -324,29 +330,11 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
         }
-        final boolean[] enabled = new boolean[] { true };
+        final boolean[] enabled = new boolean[]{true};
         try {
             Log.d("register_with_nfd", "Starting registration process.");
             long prefixId = face2.registerPrefix(name,
                     onDataInterest,
-                    /*new OnInterestCallback() {
-                        @Override
-                        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-                            Uri uri = find_file(prefix, interest);
-                            if (uri != null) {
-                                byte[] bytes;
-                                try {
-                                    bytes = IOUtils.toByteArray(MainActivity.this.getContentResolver().openInputStream(uri));
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    bytes = new byte[0];
-                                }
-                                Blob blob = new Blob(bytes, true);
-                                publishData(blob, prefix);
-                            }
-                            find_file(prefix, interest);
-                        }
-                    },*/
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
@@ -371,17 +359,14 @@ public class MainActivity extends AppCompatActivity {
                     face2.processEvents();
                     try {
                         Thread.sleep(5);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-            }
-            catch(IOException | EncodingException e) {
+            } catch (IOException | EncodingException e) {
                 e.printStackTrace();
             }
-        }
-        catch (IOException | SecurityException e) {
+        } catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
     }
@@ -389,17 +374,17 @@ public class MainActivity extends AppCompatActivity {
     public void publishData(Blob blob, Name prefix) {
         try {
             for (Data data : packetize(blob, prefix)) {
-                Log.d("publishData", "Publishing with prefix: "+ prefix);
+                Log.d("publishData", "Publishing with prefix: " + prefix);
                 keyChain.sign(data);
                 faceProxy.putInCache(data);
                 face2.putData(data);
-                try {
+                /*try {
                     face2.processEvents();
                     Thread.sleep(10);
-                }
-                catch(IOException | EncodingException | InterruptedException e) {
+                } catch (IOException | EncodingException | InterruptedException e) {
+                    Log.d("pubishData", "This is the place where the interrupt is happening.");
                     e.printStackTrace();
-                }
+                }*/
                 // face2.setInterestFilter(prefix, onDataInterest);
             }
         } catch (IOException e) {
@@ -439,56 +424,6 @@ public class MainActivity extends AppCompatActivity {
         intent.setType("*/*");
 
         startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
-
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
-                final Uri uri = filesList.get(pos);
-                // add symbolic link to this path if not present?
-                Log.d("onItemClick", "uri: " + uri);
-                byte[] bytes;
-                try {
-                    InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
-                    bytes = IOUtils.toByteArray(is);
-                } catch (IOException e) {
-                    Log.d("onItemClick", "failed to byte");
-                    e.printStackTrace();
-                    bytes = new byte[0];
-                }
-
-                final Blob blob = new Blob(bytes, true);
-                String s = addFilenamePrefix(uri.toString());
-                final Name prefix = new Name(s);
-                publishData(blob, prefix);
-                try {
-                    register_with_NFD(prefix);
-                }
-                catch (IOException | PibImpl.Error e) {
-                    e.printStackTrace();
-                }
-
-                QRExchange.makeQRFileCode(view.getContext(), s);
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(lv.getContext(), android.R.style.Theme_Material_Dialog_Alert);
-                // Add the buttons
-                builder.setPositiveButton(R.string.publish, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        publishData(blob, prefix);
-                        Log.d("Publish Button", prefix.toString());
-                    }
-                });
-                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                    }
-                });
-                builder.setTitle("rst").setMessage(Arrays.toString(bytes)).show();
-            }
-        });
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-
-        lv.setAdapter(adapter);
     }
 
     @Override
@@ -502,12 +437,36 @@ public class MainActivity extends AppCompatActivity {
                 final ListView lv = (ListView) findViewById(R.id.listview);
 
                 uri = resultData.getData();
-                filesList.add(uri);
-                filesStrings.add(uri.toString());
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-                lv.setAdapter(adapter);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-                builder.setTitle("You selected a file").setMessage(uri.toString()).show();
+                String path = getFilePath(uri);
+
+                if (path != null) {
+                    // Log.d("file select result", "String s: " + uri.getPath().toString());
+                    filesList.add(uri);
+                    // filesStrings.add(uri.toString());
+                    filesStrings.add(path);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
+                    lv.setAdapter(adapter);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder.setTitle("You selected a file").setMessage(path).show();
+                    byte[] bytes;
+                    try {
+                        InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                        bytes = IOUtils.toByteArray(is);
+                    } catch (IOException e) {
+                        Log.d("onItemClick", "failed to byte");
+                        e.printStackTrace();
+                        bytes = new byte[0];
+                    }
+                    Log.d("file selection result", "file path: " + path);
+                    final Blob blob = new Blob(bytes, true);
+                    String prefix = addFilenamePrefix(path);
+                    Log.d("added file prefix", "prefix: " + prefix);
+                    publishData(blob, new Name(prefix));
+                    // QRExchange.makeQRFileCode(getApplicationContext(), path);
+                }
+                else {
+                    Toast.makeText(this, "File path could not be resolved.", Toast.LENGTH_LONG).show();
+                }
             }
             // We received a request to display a QR image
             else if (requestCode == FILE_QR_REQUEST_CODE) {
@@ -517,12 +476,10 @@ public class MainActivity extends AppCompatActivity {
                     Intent display = new Intent(this, DisplayFileQRCode.class);
                     display.setData(resultData.getData());
                     startActivity(display);
-                }
-                catch (NullPointerException e) {
+                } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
-            }
-            else if (requestCode == SCAN_QR_REQUEST_CODE) {
+            } else if (requestCode == SCAN_QR_REQUEST_CODE) {
                 IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, resultData);
                 if (result == null) {
                     Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
@@ -532,26 +489,73 @@ public class MainActivity extends AppCompatActivity {
 
                     if (result.getContents() == null) {
                         Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
-                    }
-                    else {
+                    } else {
                         String content = result.getContents();
                         // need to check this content to determine if we are scanning file or friend code
                         Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                         FileManager manager = new FileManager(getApplicationContext());
                     }
-                }
-                else {
+                } else {
                     super.onActivityResult(requestCode, resultCode, resultData);
                 }
-            }
-            else {
+            } else {
                 Log.d("onActivityResult", "Unexpected activity requestcode caught");
             }
         }
     }
 
+    public String getFilePath(Uri uri) {
+        String selection = null;
+        String[] selectionArgs = null;
+        if (DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
+            if (uri.getAuthority().equals("com.android.externalstorage.documents")) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                Log.d("file selection", "docId: " + docId);
+                final String[] split = docId.split(":");
+                return Environment.getExternalStorageDirectory() + "/" + split[1];
+            }
+            else if (uri.getAuthority().equals("com.android.providers.downloads.documents")) {
+                final String id = DocumentsContract.getDocumentId(uri);
+                uri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+            }
+            else if (uri.getAuthority().equals("com.android.providers.media.documents")) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+                if ("image".equals(type)) {
+                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+                selection = "_id=?";
+                selectionArgs = new String[]{split[1]};
+            }
+        }
+
+        if (uri.getScheme().equalsIgnoreCase("content")) {
+            String[] projection = {MediaStore.Images.Media.DATA};
+            Cursor cursor = null;
+            try {
+                cursor = getApplicationContext().getContentResolver().query(uri, projection, selection, selectionArgs, null);
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        else if (uri.getScheme().equalsIgnoreCase("file")) {
+            return uri.getPath();
+        }
+        return null;
+    }
+
     /**
-     * Start a file selection activity to find an QR image to display. This is triggered by pressing
+     * Start a file selection activity to find a QR image to display. This is triggered by pressing
      * the "Display QR" button.
      * @param view The view of MainActivity passed by our button press.
      */
@@ -584,8 +588,8 @@ public class MainActivity extends AppCompatActivity {
         // int index = path.lastIndexOf('/');
         // name = "/ndn-snapchat/<username>" + path.substring(index);
         FileManager manager = new FileManager(getApplicationContext());
-        String username = manager.getUsername();
-        if (username != null) {
+        // String username = manager.getUsername();
+        /*if (username != null) {
             // check that path already comes with "/" prepended
             if(path.charAt(0) == '/') {
                 return "/ndn-snapchat/" + username + path;
@@ -596,6 +600,12 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             return null;
+        }*/
+        if(path.charAt(0) == '/') {
+            return "/ndn-snapchat/test-user" + path;
+        }
+        else {
+            return "/ndn-snapchat/test-user/" + path;
         }
     }
 
@@ -651,6 +661,13 @@ public class MainActivity extends AppCompatActivity {
 
             Name interestName = interest.getName();
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interestName.toUri());
+            try {
+                    face2.processEvents();
+                    Thread.sleep(10);
+                } catch (IOException | EncodingException | InterruptedException e) {
+                    Log.d("pubishData", "This is the place where the interrupt is happening.");
+                    e.printStackTrace();
+                }
             faceProxy.process(interest, mainActivity);
         }
     };

@@ -70,8 +70,8 @@ public class FaceProxy {
 
             Blob blob = new Blob(bytes, true);
             FileManager manager = new FileManager(mainActivity.getApplicationContext());
-            // String s = "/ndn-snapchat/username" + filePath;
-            String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
+            String s = "/ndn-snapchat/test-user" + filePath;
+            // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
             Name prefix = new Name(s);
             mainActivity.publishData(blob, prefix);
             // try again; temporary; this could form a loop if we don't actually have this content
