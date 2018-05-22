@@ -49,28 +49,34 @@ public class FaceProxy {
             // Nick said we should have a FaceProxy.process() function where we pass a fallback
             // function (publishing) if we do not see what we want to see (answer to below comments)
             // if we call publishData with the right content, it will be put in the face and the faceProxy
+            Log.d("process", "We hit that -404.");
+            Log.d("process", "-404 with interest: " + interest.getName().toString());
             String interestName = interest.getName().toUri();
-            int fileIndex = 0;
+            String temp = FileManager.removeAppPrefix(interestName);
+            /*int fileIndex = 0;
             String temp = interestName.substring(fileIndex);
+            Log.d("Faceproxy Process", "temp string before manipulations: " + temp);
             // name is of the form /ndn-snapchat/username/full-file-path; find third instance of "/"
-            for(int i = 3; i > 0; i--) {
+            for(int i = 0; i < 3; i++) {
                 fileIndex = temp.indexOf("/");
                 temp = temp.substring(fileIndex + 1);
+                Log.d("Faceproxy Process", "temp string after " + i + "th change: " + temp);
             }
-            String filePath = interestName.substring(fileIndex);
+            // String filePath = interestName.substring(fileIndex);
+            Log.d("FaceProxy process", "filepath: " + temp);*/
             byte[] bytes;
             try {
-                InputStream is = FileUtils.openInputStream(new File(filePath));
+                InputStream is = FileUtils.openInputStream(new File(temp));
                 bytes = IOUtils.toByteArray(is);
             } catch (IOException e) {
-                Log.d("onItemClick", "failed to byte");
+                Log.d("FaceProxy Process", "failed to byte");
                 e.printStackTrace();
                 bytes = new byte[0];
             }
 
             Blob blob = new Blob(bytes, true);
             FileManager manager = new FileManager(mainActivity.getApplicationContext());
-            String s = "/ndn-snapchat/test-user" + filePath;
+            String s = "/ndn-snapchat/test-user/" + temp;
             // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
             Name prefix = new Name(s);
             mainActivity.publishData(blob, prefix);
@@ -80,18 +86,19 @@ public class FaceProxy {
         // otherwise, we know the name prefix has matched and we know where it is in the cache
         else {
             try {
-                Log.d("process", "face2.putData with index: " + index);
+                Log.d("process", "face.putData with index: " + index);
                 Log.d("process", "data name: " + mCache[index].getName().toUri());
-                Log.d("process", "data in face2: " + mCache[index].getFullName().toUri());
+                Log.d("process", "data in face: " + mCache[index].getFullName().toUri());
                 // Log.d("process", "data's metaInfo: " + mCache[index].getMetaInfo().getFinalBlockId().toEscapedString());
-                mainActivity.face2.putData(mCache[index]);
-                mainActivity.face2.processEvents();
+                // mainActivity.face2.putData(mCache[index]);
+                mainActivity.face.putData(mCache[index]);
+                /*mainActivity.face2.processEvents();
                 try {
                     Thread.sleep(500);
                 }
                 catch(java.lang.InterruptedException e) {
                     Log.d("PublisherAndFetcherTest", "Refused to sleep thread.");
-                }
+                }*/
             }
             catch(IOException | EncodingException e) {
                 Log.d("process", "Data not put in face.");
@@ -120,7 +127,8 @@ public class FaceProxy {
             }
 
             if (mCache[mCurrentIndex] != null) {
-                Name cachedDataName = mCache[mCurrentIndex].getName().getPrefix(2);
+                // Name cachedDataName = mCache[mCurrentIndex].getName().getPrefix(2);
+                Name cachedDataName = mCache[mCurrentIndex].getName();
                 Log.d("findDataSegmentIndex", "Interest name: " + requestedName.toUri() + " , cache data name: " + cachedDataName.toUri());
                 /* if name prefix is same and segment number is same, we found what we were looking for
                 if(cachedDataName.get(0).equals(requestedName.get(0)) &&

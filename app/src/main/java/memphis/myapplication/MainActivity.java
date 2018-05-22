@@ -87,8 +87,9 @@ public class MainActivity extends AppCompatActivity {
     IdentityManager identityManager;
     KeyChain keyChain;
     public Face face;
-    public Face face2;
+    // public Face face2;
     public FaceProxy faceProxy;
+    // think about adding a memoryContentCache instead of faceProxy
     List<String> filesStrings = new ArrayList<String>();
     List<Uri> filesList = new ArrayList<Uri>();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
     // we have 2 faces, they could be blocking one another if they are on the same thread. So, if
     // we keep the two faces, they'll need their own threads.
 
-    // private boolean appThreadShouldStop = true;
+    private boolean appThreadShouldStop = true;
     private boolean has_setup_security = false;
 
     public void setup_security() {
@@ -112,54 +113,62 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 face = new Face();
-                face2 = new Face();
+                // face2 = new Face();
                 faceProxy = new FaceProxy();
-                Face[] faces = {face, face2};
-                for (int i = 0; i < faces.length; i++) {
-                    // look at File equivalents to Memory in jndn; That should accomplish your basic
-                    // idea while using Nick's use of jndn
-                    // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
-                    identityStorage = new MemoryIdentityStorage();
-                    privateKeyStorage = new MemoryPrivateKeyStorage();
-                    identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-                    keyChain = new KeyChain(identityManager);
-                    keyChain.setFace(faces[i]);
+                // Face[] faces = {face, face2};
+                //for (int i = 0; i < faces.length; i++) {
+                // look at File equivalents to Memory in jndn; That should accomplish your basic
+                // idea while using Nick's use of jndn
+                // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
+                identityStorage = new MemoryIdentityStorage();
+                privateKeyStorage = new MemoryPrivateKeyStorage();
+                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+                keyChain = new KeyChain(identityManager);
+                //keyChain.setFace(faces[i]);
+                keyChain.setFace(face);
 
-                    // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
-                    Name testIdName = new Name("/test/identity");
-                    Name defaultCertificateName;
-                    try {
-                        defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
-                        keyChain.getIdentityManager().setDefaultIdentity(testIdName);
-                        Log.d("setup_security", "Certificate was generated.");
+                // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
+                Name testIdName = new Name("/test/identity");
+                Name defaultCertificateName;
+                try {
+                    defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
+                    keyChain.getIdentityManager().setDefaultIdentity(testIdName);
+                    Log.d("setup_security", "Certificate was generated.");
 
-                    } catch (SecurityException e2) {
-                        defaultCertificateName = new Name("/bogus/certificate/name");
-                    }
-                    faces[i].setCommandSigningInfo(keyChain, defaultCertificateName);
-                    has_setup_security = true;
-                    Log.d("setup_security", "Security was setup successfully");
-                    try {
-                        faces[i].processEvents();
+                } catch (SecurityException e2) {
+                    defaultCertificateName = new Name("/bogus/certificate/name");
+                }
+                // faces[i].setCommandSigningInfo(keyChain, defaultCertificateName);
+                face.setCommandSigningInfo(keyChain, defaultCertificateName);
+                has_setup_security = true;
+                Log.d("setup_security", "Security was setup successfully");
+                    /*try {
+                        // faces[i].processEvents();
+                        face.processEvents();
                     } catch (IOException | EncodingException e) {
                         e.printStackTrace();
-                    }
-                }
+                    }*/
             }
+            //}
         });
         thread.run();
     }
 
-    /*private final Thread appThread = new Thread(new Runnable() {
+    private final Thread appThread = new Thread(new Runnable() {
         @Override
         public void run() {
-            if(!has_setup_security) {
+            if (!has_setup_security) {
                 setup_security();
             }
-            while(!appThreadShouldStop) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (!appThreadShouldStop) {
                 try {
                     face.processEvents();
-                    appThread.sleep(100);
+                    Thread.sleep(100);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -182,7 +191,16 @@ public class MainActivity extends AppCompatActivity {
 
     protected boolean networkThreadIsRunning() {
         return appThread.isAlive();
-    }*/
+    }
+
+    public Runnable makeToast(final String s) {
+        Runnable show_toast = new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            }
+        };
+        return show_toast;
+    }
 
     public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
@@ -202,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+        startAppThread();
         // this is not available when we are signing up, we need a universal main function to set this
         // context so I can use it elsewhere
         mContext = getApplicationContext();
@@ -215,11 +234,10 @@ public class MainActivity extends AppCompatActivity {
      */
     public void fetch_data(View view) {
         Log.d("fetch_data", "Called fetch_data");
-        // Intent intent = new Intent(this, DisplayMessageActivity.class);
         EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
         Log.d("fetch_data", "Message from editText: " + message);
-        Interest interest = new Interest(new Name(message));
+        final Interest interest = new Interest(new Name(message));
         Log.d("fetch_data", "Interest: " + interest.getName().toString());
         // interest.setInterestLifetimeMilliseconds(20000);
 
@@ -237,39 +255,29 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        //!!!!!!!!! TEMPORARY !!!!!!!!!!!!
-                        enabled[0] = false;
                         Log.d("fetch_data onComplete", "we got content");
                         retrieved_data = new String(content.getImmutableArray());
                         Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
-                        Toast.makeText(getApplicationContext(), "content: " + retrieved_data, Toast.LENGTH_LONG).show();
+                        FileManager manager = new FileManager(getApplicationContext());
+                        String interestName = manager.removeAppPrefix(interest.getName().toString());
+                        boolean wasSaved = manager.saveContentToFile(content, interestName);
+                        if(wasSaved) {
+                            String msg = "We got content: " + retrieved_data;
+                            runOnUiThread(makeToast(msg));
+                        }
+                        else {
+                            String msg = "Failed to save retrieved content";
+                            runOnUiThread(makeToast(msg));
+                        }
                     }
                 },
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        enabled[0] = false;
                         Log.d("fetch_data onError", message);
+                        runOnUiThread(makeToast(message));
                     }
                 });
-
-        try {
-            while (enabled[0]) {
-                face.processEvents();
-                // We need to sleep for a few milliseconds so we don't use 100% of
-                // the CPU.
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException | EncodingException e) {
-            e.printStackTrace();
-        }
-        /*intent.putExtra(EXTRA_MESSAGE, message);
-        startActivity(intent);*/
-        // Do something in response to button
     }
 
     public void test_packetize(byte[] bytes) {
@@ -333,40 +341,31 @@ public class MainActivity extends AppCompatActivity {
         final boolean[] enabled = new boolean[]{true};
         try {
             Log.d("register_with_nfd", "Starting registration process.");
-            long prefixId = face2.registerPrefix(name,
+            //long prefixId = face2.registerPrefix(name,
+            long prefixId = face.registerPrefix(name,
                     onDataInterest,
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
-                            enabled[0] = false;
+                            // enabled[0] = false;
                             Log.d("OnRegisterFailed", "Registration Failure");
-                            show_dialog(prefix, true);
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                            // show_dialog(prefix, true);
                         }
                     },
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            enabled[0] = false;
+                            // enabled[0] = false;
                             Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
-                            CharSequence text = "Successfully registered prefix: " + prefix.toString();
-                            int duration = Toast.LENGTH_SHORT;
-                            Toast toast = Toast.makeText(MainActivity.this, text, duration);
-                            toast.show();
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                            // final CharSequence text = "Successfully registered prefix: " + prefix.toString();
                         }
                     });
-            try {
-                while (enabled[0]) {
-                    face2.processEvents();
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } catch (IOException | EncodingException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException | SecurityException e) {
+        }
+        catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
     }
@@ -377,15 +376,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("publishData", "Publishing with prefix: " + prefix);
                 keyChain.sign(data);
                 faceProxy.putInCache(data);
-                face2.putData(data);
-                /*try {
-                    face2.processEvents();
-                    Thread.sleep(10);
-                } catch (IOException | EncodingException | InterruptedException e) {
-                    Log.d("pubishData", "This is the place where the interrupt is happening.");
-                    e.printStackTrace();
-                }*/
-                // face2.setInterestFilter(prefix, onDataInterest);
+                face.putData(data);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -459,7 +450,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Log.d("file selection result", "file path: " + path);
                     final Blob blob = new Blob(bytes, true);
-                    String prefix = addFilenamePrefix(path);
+                    String prefix = FileManager.addFilenamePrefix(path);
                     Log.d("added file prefix", "prefix: " + prefix);
                     publishData(blob, new Name(prefix));
                     // QRExchange.makeQRFileCode(getApplicationContext(), path);
@@ -571,6 +562,9 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, FILE_QR_REQUEST_CODE);
     }
 
+    /**
+     * initiate scan for QR codes upon button press
+     */
     public void scanFileQR(View view) {
         IntentIntegrator scanner = new IntentIntegrator(this);
         // only want QR code scanner
@@ -580,33 +574,6 @@ public class MainActivity extends AppCompatActivity {
         scanner.setCameraId(0);
         Intent intent = scanner.createScanIntent();
         startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
-    }
-
-    public String addFilenamePrefix(String path) {
-        // we could also allow the user to state their own name which will attach to the end of
-        // /ndn-snapchat/<username>/
-        // int index = path.lastIndexOf('/');
-        // name = "/ndn-snapchat/<username>" + path.substring(index);
-        FileManager manager = new FileManager(getApplicationContext());
-        // String username = manager.getUsername();
-        /*if (username != null) {
-            // check that path already comes with "/" prepended
-            if(path.charAt(0) == '/') {
-                return "/ndn-snapchat/" + username + path;
-            }
-            else {
-                return "/ndn-snapchat/" + username + "/" + path;
-            }
-        }
-        else {
-            return null;
-        }*/
-        if(path.charAt(0) == '/') {
-            return "/ndn-snapchat/test-user" + path;
-        }
-        else {
-            return "/ndn-snapchat/test-user/" + path;
-        }
     }
 
     public Data[] packetize(Blob raw_blob, Name prefix) {
@@ -661,13 +628,6 @@ public class MainActivity extends AppCompatActivity {
 
             Name interestName = interest.getName();
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interestName.toUri());
-            try {
-                    face2.processEvents();
-                    Thread.sleep(10);
-                } catch (IOException | EncodingException | InterruptedException e) {
-                    Log.d("pubishData", "This is the place where the interrupt is happening.");
-                    e.printStackTrace();
-                }
             faceProxy.process(interest, mainActivity);
         }
     };

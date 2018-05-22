@@ -2,15 +2,14 @@ package memphis.myapplication;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.inputmethodservice.Keyboard;
-import android.os.Environment;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.view.View;
 import android.util.Base64;
 import android.widget.Toast;
+
+import net.named_data.jndn.util.Blob;
+
+//import org.apache.commons.io.FileUtils;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -24,10 +23,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.EncodedKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
 
 public class FileManager {
 
@@ -54,10 +49,6 @@ public class FileManager {
             Log.d("m_keysDir", m_keysDir.toString());
             m_photosDir = new File(m_appRootPath, "/photos");
             Log.d("m_photosDir", m_photosDir.toString());
-        //}
-        /*catch(IOException e) {
-            Log.d("FileManager Constructor", e.toString());
-        }*/
     }
 
     public String getAppRootPath() {
@@ -284,12 +275,44 @@ public class FileManager {
         return -1;
     }
 
+    public boolean saveContentToFile(Blob content, String path) {
+        String filename = path.substring(path.lastIndexOf("/")+1);
+        File dir = new File(m_appRootPath + "/received_files");
+        dir.mkdirs();
+        File file = new File(m_appRootPath + "/received_files/" + filename);
+        if(file.exists()) {
+            boolean exists = true;
+            int copyNum = 1;
+            while(exists) {
+                file = new File(m_appRootPath + "/received_files/" + filename + "(" + copyNum + ")");
+                copyNum++;
+                if(!file.exists()) {
+                    exists = false;
+                }
+            }
+        }
+        byte[] byteContent = content.getImmutableArray();
+        try {
+            FileOutputStream fostream = new FileOutputStream(file);
+            fostream.write(byteContent);
+            fostream.close();
+            return true;
+        }
+        catch(FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean saveFileQR(Bitmap bitmap, String filename) {
-        File FileQR = new File(m_appRootPath + "/files" + filename);
-        if (!FileQR.exists()) {
+        File fileQR = new File(m_appRootPath + "/files/" + filename);
+        if (!fileQR.exists()) {
             try {
-                FileQR.createNewFile();
-                FileOutputStream fostream = new FileOutputStream(FileQR);
+                fileQR.createNewFile();
+                FileOutputStream fostream = new FileOutputStream(fileQR);
                 bitmap.compress(Bitmap.CompressFormat.PNG, 90, fostream);
                 fostream.close();
                 return true;
@@ -335,6 +358,49 @@ public class FileManager {
         // maybe we hash and then we make a symbolic link based on the hash; this way we obscure
         // the path location, but there are no collisions in the common directory
 
+    }
+
+    /**
+     * prepends /ndn-snapchat/<username> to file path
+     * @param path the provided absolute path of the file
+     * @return string of the form /ndn-snapchat/<username>/<path-to-file>
+     */
+    public static String addFilenamePrefix(String path) {
+        // we could also allow the user to state their own name which will attach to the end of
+        // /ndn-snapchat/<username>/
+        // int index = path.lastIndexOf('/');
+        // name = "/ndn-snapchat/<username>" + path.substring(index);
+        // FileManager manager = new FileManager(getApplicationContext());
+        // String username = manager.getUsername();
+        /*if (username != null) {
+            // check that path already comes with "/" prepended
+            if(path.charAt(0) == '/') {
+                return "/ndn-snapchat/" + username + path;
+            }
+            else {
+                return "/ndn-snapchat/" + username + "/" + path;
+            }
+        }
+        else {
+            return null;
+        }*/
+        if(path.charAt(0) == '/') {
+            return "/ndn-snapchat/test-user" + path;
+        }
+        else {
+            return "/ndn-snapchat/test-user/" + path;
+        }
+    }
+
+    public static String removeAppPrefix(String fullname) {
+        int fileIndex = 0;
+        String temp = fullname.substring(fileIndex);
+        // name is of the form /ndn-snapchat/username/full-file-path; find third instance of "/"
+        for(int i = 0; i < 3; i++) {
+            fileIndex = temp.indexOf("/");
+            temp = temp.substring(fileIndex + 1);
+        }
+        return temp;
     }
 
     // we need to hash to some common directory or we will need to have a table that contain links to the files
