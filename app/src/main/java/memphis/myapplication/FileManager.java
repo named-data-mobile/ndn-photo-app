@@ -284,6 +284,8 @@ public class FileManager {
             boolean exists = true;
             int copyNum = 1;
             while(exists) {
+                // this makes it e.g. psync.pdf(1) which will not open properly.
+                // filename.substring(filename.lastIndexOf("."); // this way we can add the (1)
                 file = new File(m_appRootPath + "/received_files/" + filename + "(" + copyNum + ")");
                 copyNum++;
                 if(!file.exists()) {
@@ -361,11 +363,11 @@ public class FileManager {
     }
 
     /**
-     * prepends /ndn-snapchat/<username> to file path
+     * prepends /ndn-snapchat/<username> to file path; temporarily static for testing purposes
      * @param path the provided absolute path of the file
      * @return string of the form /ndn-snapchat/<username>/<path-to-file>
      */
-    public static String addFilenamePrefix(String path) {
+    public static String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
         // /ndn-snapchat/<username>/
         // int index = path.lastIndexOf('/');

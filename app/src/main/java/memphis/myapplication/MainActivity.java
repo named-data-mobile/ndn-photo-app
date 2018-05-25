@@ -70,6 +70,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -113,10 +114,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 face = new Face();
-                // face2 = new Face();
                 faceProxy = new FaceProxy();
-                // Face[] faces = {face, face2};
-                //for (int i = 0; i < faces.length; i++) {
                 // look at File equivalents to Memory in jndn; That should accomplish your basic
                 // idea while using Nick's use of jndn
                 // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
@@ -255,14 +253,15 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        Log.d("fetch_data onComplete", "we got content");
-                        retrieved_data = new String(content.getImmutableArray());
-                        Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
+                        // Log.d("fetch_data onComplete", "we got content");
+                        // retrieved_data = new String(content.getImmutableArray());
+                        // Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
                         FileManager manager = new FileManager(getApplicationContext());
-                        String interestName = manager.removeAppPrefix(interest.getName().toString());
-                        boolean wasSaved = manager.saveContentToFile(content, interestName);
+                        // String interestName = manager.removeAppPrefix(interest.getName().toString());
+                        // boolean wasSaved = manager.saveContentToFile(content, interestName);
+                        boolean wasSaved = manager.saveContentToFile(content, interest.getName().toUri());
                         if(wasSaved) {
-                            String msg = "We got content: " + retrieved_data;
+                            String msg = "We got content.";
                             runOnUiThread(makeToast(msg));
                         }
                         else {
@@ -278,42 +277,6 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(makeToast(message));
                     }
                 });
-    }
-
-    public void test_packetize(byte[] bytes) {
-        Data[] datas = packetize(new Blob(bytes), new Name("/dummy/name"));
-        List<Byte> reconstructed_file = new ArrayList<Byte>();
-        for (Data data : datas) {
-            for (byte data_byte : data.getContent().getImmutableArray()) {
-                reconstructed_file.add(data_byte);
-            }
-        }
-        byte[] file_bytes = new byte[reconstructed_file.size()];
-        for (int i = 0; i < reconstructed_file.size(); i++) {
-            file_bytes[i] = reconstructed_file.get(i);
-        }
-        try {
-            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "testfile");
-            file.setWritable(true);
-            FileOutputStream os = new FileOutputStream(file);
-            os.write(file_bytes);
-            os.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /*public void switchActivity(View view) {
-        Intent intent = new Intent(this, FileSelectActivity.class);
-        startActivity(intent);
-    }*/
-
-    public void show_dialog(Name prefix, boolean didFail) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-        builder.setTitle("Prefix Registration failed? " + didFail).setMessage(prefix.toString()).show();
-
     }
 
     public void register_with_NFD(View view) {
@@ -372,37 +335,22 @@ public class MainActivity extends AppCompatActivity {
 
     public void publishData(Blob blob, Name prefix) {
         try {
+            ArrayList<Data> fileData = new ArrayList<>();
+            Log.d("publishData", "Publishing with prefix: " + prefix);
             for (Data data : packetize(blob, prefix)) {
-                Log.d("publishData", "Publishing with prefix: " + prefix);
                 keyChain.sign(data);
-                faceProxy.putInCache(data);
-                face.putData(data);
+                fileData.add(data);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (PibImpl.Error error) {
-            error.printStackTrace();
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (TpmBackEnd.Error error) {
-            error.printStackTrace();
-        } catch (KeyChain.Error error) {
-            error.printStackTrace();
+            faceProxy.putInCache(fileData);
         }
-    }
-
-    private Uri find_file(Name prefix, Interest interest) {
-        for (Uri uri : filesList) {
-            if (uri.toString().contentEquals(prefix.toUri())) {
-                return uri;
-            }
-        }
-        return null;
+          catch (PibImpl.Error | SecurityException | TpmBackEnd.Error | KeyChain.Error e) {
+              e.printStackTrace();
+          }
     }
 
     public void select_files(View view) {
-        final ListView lv = (ListView) findViewById(R.id.listview);
-        List<String> filesStrings = new ArrayList<String>();
+        /* final ListView lv = (ListView) findViewById(R.id.listview);
+        List<String> filesStrings = new ArrayList<String>();*/
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -443,6 +391,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
                         bytes = IOUtils.toByteArray(is);
+                        Log.d("select file activity", "file byte array size: " + bytes.length);
                     } catch (IOException e) {
                         Log.d("onItemClick", "failed to byte");
                         e.printStackTrace();
@@ -450,7 +399,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Log.d("file selection result", "file path: " + path);
                     final Blob blob = new Blob(bytes, true);
-                    String prefix = FileManager.addFilenamePrefix(path);
+                    String prefix = FileManager.addAppPrefix(path);
                     Log.d("added file prefix", "prefix: " + prefix);
                     publishData(blob, new Name(prefix));
                     // QRExchange.makeQRFileCode(getApplicationContext(), path);
@@ -558,7 +507,6 @@ public class MainActivity extends AppCompatActivity {
         // fix this: this displays every file. We should limit the scope to a specific directory and
         // image files, if possible.
         intent.setType("*/*");
-        // requestCode: 1 was arbitrary. Our select_file function sends a requestCode: 0 (also arbitrary)
         startActivityForResult(intent, FILE_QR_REQUEST_CODE);
     }
 
@@ -576,18 +524,21 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
     }
 
-    public Data[] packetize(Blob raw_blob, Name prefix) {
-        Name.Component finalBlockId =
-                new Name.Component(new Blob(new byte[] { (byte)0 }, false));
-        final int VERSION_NUMBER = 1;
-        final int DEFAULT_PACKET_SIZE = 1400;
-        final int PACKET_SIZE;
-        PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
-        List<Data> datas = new ArrayList<Data>();
-        byte[] segment_buffer = new byte[PACKET_SIZE];
+    public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
+        final int VERSION_NUMBER = 0;
+        final int DEFAULT_PACKET_SIZE = 8000;
+        int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
+        ArrayList<Data> datas = new ArrayList<>();
         int segment_number = 0;
-        int offset = 0;
+        ByteBuffer byteBuffer = raw_blob.buf();
         do {
+            // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
+            // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
+            if(byteBuffer.remaining() < PACKET_SIZE) {
+                PACKET_SIZE = byteBuffer.remaining();
+            }
+            Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
+            byte[] segment_buffer = new byte[PACKET_SIZE];
             Data data = new Data();
             Name segment_name = new Name(prefix);
             segment_name.appendVersion(VERSION_NUMBER);
@@ -599,7 +550,8 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("packetize things", "unable to print full name");
             }
             try {
-                raw_blob.buf().get(segment_buffer, 0, PACKET_SIZE);
+                Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
+                byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
@@ -608,26 +560,23 @@ public class MainActivity extends AppCompatActivity {
             meta_info.setType(ContentType.BLOB);
             // not sure what is a good freshness period
             meta_info.setFreshnessPeriod(30000);
-            segment_number++;
-            offset += 1401; // Add another to start from
-            if (offset > raw_blob.size()) {
+            if (!byteBuffer.hasRemaining()) {
                 // Set the final component to have a final block id.
+                Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
                 meta_info.setFinalBlockId(finalBlockId);
-                data.setMetaInfo(meta_info);
             }
+            data.setMetaInfo(meta_info);
             datas.add(data);
-
-        } while (offset < raw_blob.size());
-        return datas.toArray(new Data[datas.size()]);
+            segment_number++;
+        } while (byteBuffer.hasRemaining());
+        return datas;
     }
 
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
-
-            Name interestName = interest.getName();
-            Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interestName.toUri());
+            Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
             faceProxy.process(interest, mainActivity);
         }
     };

@@ -33,75 +33,88 @@ import java.util.function.Function;
 public class FaceProxy {
 
     private Data[] mCache;
+    // private ArrayList<ArrayList<Data>> mCache;
+    // private ArrayList[] mCache;
     private int mCurrentIndex;
 
     public FaceProxy() {
         mCache = new Data[500];
+        // mCache = new ArrayList<ArrayList<Data>>(15);
+        // mCache = new ArrayList[15];
         mCurrentIndex = 0;
     }
 
     public void process(Interest interest, MainActivity mainActivity) {
+        // we should add a Nack or something for when we receive an interest of the wrong format.
+        // for instance we sometimes try to publish something like /name/version/segNum/version/segNum
         Log.d("process", "Called process in FaceProxy");
         int index = findDataSegmentIndex(interest);
         // we don't have the data stored in the cache. Let's retrieve the requested segment and go
         // ahead and push future segments to the cache for faster retrieval
-        if(index == -404) {
-            // Nick said we should have a FaceProxy.process() function where we pass a fallback
-            // function (publishing) if we do not see what we want to see (answer to below comments)
-            // if we call publishData with the right content, it will be put in the face and the faceProxy
-            Log.d("process", "We hit that -404.");
-            Log.d("process", "-404 with interest: " + interest.getName().toString());
-            String interestName = interest.getName().toUri();
-            String temp = FileManager.removeAppPrefix(interestName);
-            /*int fileIndex = 0;
-            String temp = interestName.substring(fileIndex);
-            Log.d("Faceproxy Process", "temp string before manipulations: " + temp);
-            // name is of the form /ndn-snapchat/username/full-file-path; find third instance of "/"
-            for(int i = 0; i < 3; i++) {
-                fileIndex = temp.indexOf("/");
-                temp = temp.substring(fileIndex + 1);
-                Log.d("Faceproxy Process", "temp string after " + i + "th change: " + temp);
-            }
-            // String filePath = interestName.substring(fileIndex);
-            Log.d("FaceProxy process", "filepath: " + temp);*/
-            byte[] bytes;
+        /*if(index == 777) {
+            Name requestedName = interest.getName();
+            requestedName.appendVersion(0);
+            requestedName.appendSegment(0);
+            Data data = new Data();
+            data.setName(requestedName);
             try {
-                InputStream is = FileUtils.openInputStream(new File(temp));
-                bytes = IOUtils.toByteArray(is);
-            } catch (IOException e) {
-                Log.d("FaceProxy Process", "failed to byte");
-                e.printStackTrace();
-                bytes = new byte[0];
+                mainActivity.face.putData(data);
             }
+            catch(IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }*/
+        if(index == -404) {
+            Log.d("process", "-404 with interest: " + interest.getName().toString());
+            Name interestName = interest.getName();
+            // String interestName = interest.getName().toUri();
+            // need to add this
+            if(interestName.get(-1).isSegment() && interestName.get(-2).isVersion()) {
+                interestName = interestName.getPrefix(-2);
+                Log.d("process", "interestName after removal of version && segNum: " + interestName.toUri());
+                // malformed interest with one or more version and segment numbers (i.e., /prefix/version/segNum/version/segNum/
+                if(interestName.get(-1).isSegment() && interestName.get(-2).isVersion()) {
+                    interestName = new Name("/");
+                }
+            }
+            else {
+                // malformed interest; let's change it to "/" and check for that so we do not attempt to publish
+                interestName = new Name("/");
+            }
+            if(!interestName.toUri().equals("/")) {
+                String temp = FileManager.removeAppPrefix(interestName.toUri());
 
-            Blob blob = new Blob(bytes, true);
-            FileManager manager = new FileManager(mainActivity.getApplicationContext());
-            String s = "/ndn-snapchat/test-user/" + temp;
-            // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
-            Name prefix = new Name(s);
-            mainActivity.publishData(blob, prefix);
-            // try again; temporary; this could form a loop if we don't actually have this content
-            // return process(interest, mainActivity);
+                byte[] bytes;
+                try {
+                    InputStream is = FileUtils.openInputStream(new File(temp));
+                    bytes = IOUtils.toByteArray(is);
+                } catch (IOException e) {
+                    Log.d("FaceProxy Process", "failed to byte");
+                    e.printStackTrace();
+                    bytes = new byte[0];
+                }
+
+                Blob blob = new Blob(bytes, true);
+                // FileManager manager = new FileManager(mainActivity.getApplicationContext());
+                // String s = "/ndn-snapchat/test-user/" + temp;
+                String s = FileManager.addAppPrefix(temp);
+                // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
+                Name prefix = new Name(s);
+                mainActivity.publishData(blob, prefix);
+            }
         }
         // otherwise, we know the name prefix has matched and we know where it is in the cache
         else {
             try {
-                Log.d("process", "face.putData with index: " + index);
-                Log.d("process", "data name: " + mCache[index].getName().toUri());
-                Log.d("process", "data in face: " + mCache[index].getFullName().toUri());
-                // Log.d("process", "data's metaInfo: " + mCache[index].getMetaInfo().getFinalBlockId().toEscapedString());
-                // mainActivity.face2.putData(mCache[index]);
+                Log.d("FaceProxy Process", "face.putData with index: " + index);
+                Log.d("FaceProxy Process", "data name: " + mCache[index].getName().toUri());
+                Log.d("FaceProxy Process", "data in face: " + mCache[index].getFullName().toUri());
+                // Log.d("FaceProxy Process", "data's metaInfo: " + mCache[index].getMetaInfo().getFinalBlockId().toEscapedString());
                 mainActivity.face.putData(mCache[index]);
-                /*mainActivity.face2.processEvents();
-                try {
-                    Thread.sleep(500);
-                }
-                catch(java.lang.InterruptedException e) {
-                    Log.d("PublisherAndFetcherTest", "Refused to sleep thread.");
-                }*/
             }
             catch(IOException | EncodingException e) {
-                Log.d("process", "Data not put in face.");
+                Log.d("FaceProxy Process", "Data not put in face.");
                 e.printStackTrace();
             }
         }
@@ -119,9 +132,13 @@ public class FaceProxy {
         // it's technically physically there, but we do not have access. Obviously, it is still accessible
         // for my cache but as he said, treat it like memory in that case. All or nothing.
         Name requestedName = requested_data.getName();
+        if(!requestedName.get(-2).isVersion()) {
+            // no version known; set to 0 for now and add interest for segment 0;
+            requestedName.appendVersion(0);
+            requestedName.appendSegment(0);
+        }
         Log.d("findDataSegmentIndex", "Looking for data with Interest name: " + requestedName.toUri());
         for(int i = 0; i < mCache.length; i++) {
-            mCurrentIndex += 1;
             if(mCurrentIndex > mCache.length - 1) {
                 mCurrentIndex = mCurrentIndex%mCache.length;
             }
@@ -129,34 +146,38 @@ public class FaceProxy {
             if (mCache[mCurrentIndex] != null) {
                 // Name cachedDataName = mCache[mCurrentIndex].getName().getPrefix(2);
                 Name cachedDataName = mCache[mCurrentIndex].getName();
-                Log.d("findDataSegmentIndex", "Interest name: " + requestedName.toUri() + " , cache data name: " + cachedDataName.toUri());
+                Log.d("findDataSegmentIndex", "Interest name: " + requestedName.toString() +
+                        " , cache data name: " + cachedDataName.toString());
                 /* if name prefix is same and segment number is same, we found what we were looking for
                 if(cachedDataName.get(0).equals(requestedName.get(0)) &&
                     cachedDataName.get(2).equals(requestedName.get(2))) {*/
                 if (cachedDataName.equals(requestedName)) {
-                    // increment one more time so if we require more sequential segment numbers, we will
-                    // have the right index when we return for future segments in the best case scenario.
+                    // return index of content and then increment the variable one more time so if we
+                    // require more sequential segment numbers, we will have the right index when we return
+                    // for future segments in the best case scenario.
                     return mCurrentIndex++;
                 }
             }
+            mCurrentIndex++;
         }
         // If we don't find it, return a negative 404; this will trigger publishing of data
         return -404;
     }
 
     // need to put the newly published data segment in the cache
-    public void putInCache(Data data) {
+    //public void putInCache(Data data) {
+    public void putInCache(ArrayList<Data> fileData) {
         // take data array and cycle through its content; put each segment into an index in cache
         // or it might just be a single segment sent each time
         if(mCurrentIndex > mCache.length - 1) {
             mCurrentIndex = mCurrentIndex%mCache.length;
         }
-        mCache[mCurrentIndex++] = data;
-        Log.d("putInCache", "Put " + data.getName().toUri() + " in the cache.");
-        Log.d("putInCache", "Content: " + new String(data.getContent().getImmutableArray()));
-        //Log.d("putInCache", "Fresh?: " + data.getMetaInfo().getFreshnessPeriod());
-        Log.d("putInCache", "MetaInfo: " + data.getMetaInfo().getFinalBlockId().toEscapedString());
-        Log.d("putInCache", "MetaInfo Value: " + data.getMetaInfo().getFinalBlockId().getValue().size());
+        for(Data data : fileData) {
+            mCache[mCurrentIndex++] = data;
+            Log.d("putInCache", "Put " + data.getName().toUri() + " in the cache.");
+            // Log.d("putInCache", "Content: " + new String(data.getContent().getImmutableArray()));
+            //Log.d("putInCache", "Fresh?: " + data.getMetaInfo().getFreshnessPeriod());
+        }
     }
 
     public Data[] getCache() {
@@ -165,5 +186,5 @@ public class FaceProxy {
 }
 
 // find the file and publish the specific segment...maybe? Dr. Wang wants this
-// make a deterministic mapping of your file directories (/snapchat/username/<fullpath>)
+// make a deterministic mapping of your file directories (/ndn-snapchat/username/<fullpath>)
    // Nick said this is a security issue so maybe we can hash them (need a reverse hash to "decode")
