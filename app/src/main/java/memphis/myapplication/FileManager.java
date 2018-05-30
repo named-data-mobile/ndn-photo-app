@@ -28,31 +28,46 @@ public class FileManager {
 
     private String m_appRootPath;
     private File m_friendsDir;
-    private File m_keysDir;
+    private File m_selfDir;
     private File m_photosDir;
-
-    /*public FileManager() {
-
-    }*/
+    private File m_filesDir;
+    public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
-        //try {
-            // m_appRootPath = view.getContext().getFilesDir().getPath();
-            // this just worked and when I tried it one more time, it failed????? talking about createDirs below with these paths
-            // we might need to check this. I found out that getExternalFilesDir() might not be available
-            // in some cases (sd card removed or connected to computer)
-            m_appRootPath = context.getExternalFilesDir(null).toString();
-            Log.d("m_appRootPath", m_appRootPath);
-            m_friendsDir = new File(m_appRootPath, "/friends");
-            Log.d("m_friendsDir", m_friendsDir.toString());
-            m_keysDir = new File(m_appRootPath, "/keys");
-            Log.d("m_keysDir", m_keysDir.toString());
-            m_photosDir = new File(m_appRootPath, "/photos");
-            Log.d("m_photosDir", m_photosDir.toString());
+        m_appRootPath = context.getExternalFilesDir(null).toString();
+        Log.d("m_appRootPath", m_appRootPath);
+        m_friendsDir = new File(m_appRootPath, "/friends");
+        Log.d("m_friendsDir", m_friendsDir.toString());
+        m_selfDir = new File(m_appRootPath, "/self");
+        Log.d("m_selfDir", m_selfDir.toString());
+        m_photosDir = new File(m_appRootPath, "/photos");
+        Log.d("m_photosDir", m_photosDir.toString());
+        m_filesDir = new File(m_appRootPath, "/files");
+        Log.d("m_filesDir", m_filesDir.toString());
+
+        if(!dirsCreated) {
+            createDirs();
+        }
     }
 
     public String getAppRootPath() {
         return m_appRootPath;
+    }
+
+    public String getFriendsDir() {
+        return m_friendsDir.toString();
+    }
+
+    public String getSelfDir() {
+        return m_selfDir.toString();
+    }
+
+    public String getPhotosDir() {
+        return m_photosDir.toString();
+    }
+
+    public String getFilesDir() {
+        return m_filesDir.toString();
     }
 
     /**
@@ -62,18 +77,20 @@ public class FileManager {
      * stores the user's own photos. This method is intended to be called once upon successful
      * signup for an account.
      *
-     * @return Returns a boolean value indicating whether all 3 directories were created or not.
+     * @return Returns a boolean value indicating whether all directories were created or not.
      */
     private boolean createDirs() {
 
         Log.d("createDirs", m_friendsDir.toString());
         boolean madeFriends = (m_friendsDir).mkdir();
-        boolean madeKeys = (m_keysDir).mkdir();
+        boolean madeSelf = (m_selfDir).mkdir();
         boolean madePhotos = (m_photosDir).mkdir();
-        String s = ("" + madeFriends + " " + madeKeys + " " + madePhotos);
+        boolean madeFiles = (m_filesDir).mkdir();
+        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles);
         Log.d("createDirs", s);
+        dirsCreated = true;
 
-        return (madeFriends && madeKeys && madePhotos);
+        return (madeFriends && madeSelf && madePhotos && madeFiles);
     }
 
     /**
@@ -114,8 +131,8 @@ public class FileManager {
             String privateKey = Base64.encodeToString(encodedPrivateKey, 0);
             String pubKey = Base64.encodeToString(encodedPubKey, 0);
 
-            File privateKeyFile = new File(m_keysDir, "/id_rsa");
-            File pubKeyFile = new File(m_keysDir, "/id_rsa.pub");
+            File privateKeyFile = new File(m_selfDir, "/id_rsa");
+            File pubKeyFile = new File(m_selfDir, "/id_rsa.pub");
 
             try {
                 FileWriter writer = new FileWriter(privateKeyFile);
@@ -136,8 +153,13 @@ public class FileManager {
         return false;
     }
 
+    /**
+     * Saves your username to file so we can retrieve it later.
+     * @param username is the chosen name of the user
+     * @return whether the file operation was successful or not.
+     */
     protected boolean saveUsername(String username) {
-        File user = new File(m_appRootPath + "/self/username");
+        File user = new File(m_selfDir + "/username");
         if (!user.exists()) {
             try {
                 user.createNewFile();
@@ -158,8 +180,12 @@ public class FileManager {
         return false;
     }
 
+    /**
+     * Retrieves your username from file. Needed for namespacing.
+     * @return String of username
+     */
     public String getUsername() {
-        File user = new File(m_appRootPath + "/self/username");
+        File user = new File(m_selfDir + "/username");
         try {
             BufferedReader reader = new BufferedReader(new FileReader(user));
             String username = reader.readLine();
@@ -172,8 +198,12 @@ public class FileManager {
         return null;
     }
 
+    /**
+     * Saves your personal QR code to a png file.
+     * @param myInfo is the bitmap of our QR code we are saving.
+     */
     protected void saveYourself(Bitmap myInfo) {
-        File myQRFile = new File(m_appRootPath + "/self/myQR");
+        File myQRFile = new File(m_selfDir + "/myQR");
         try {
             FileOutputStream fostream = new FileOutputStream(myQRFile);
             myInfo.compress(Bitmap.CompressFormat.PNG, 90, fostream);
@@ -186,8 +216,12 @@ public class FileManager {
         }
     }
 
+    /**
+     * Gives the path to your personal QR code.
+     * @return String path to QR code
+     */
     protected String getYourself() {
-        return (m_appRootPath + "/self/myQR");
+        return (m_selfDir + "/myQR");
     }
 
     /**
@@ -197,7 +231,7 @@ public class FileManager {
     public String getPubKey() {
         try {
             StringBuilder key = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new FileReader(m_keysDir + "/id_rsa.pub"));
+            BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa.pub"));
             // first line of the public key file is ----BEGIN PUBLIC KEY---- so we need to skip it
             String line = reader.readLine();
             if (line != null) {
@@ -224,7 +258,7 @@ public class FileManager {
     public String getPrivateKey() {
         try {
             StringBuilder key = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new FileReader(m_keysDir + "/id_rsa"));
+            BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa"));
             // first line of the public key file is ----BEGIN PRIVATE KEY---- so we need to skip it
             String line = reader.readLine();
             if (line != null) {
@@ -253,6 +287,7 @@ public class FileManager {
         if (friendContent.length() > 0) {
             int index = friendContent.indexOf(" ");
             String username = friendContent.substring(0, index);
+            // A friend's filename will be their username. Another reason why we must ensure uniqueness
             File friendFile = new File(m_friendsDir + "/" + username);
             if (!friendFile.exists()) {
                 return 1;
@@ -275,6 +310,12 @@ public class FileManager {
         return -1;
     }
 
+    /**
+     * Saves data we retrieved from SegmentFetcher to file.
+     * @param content The blob of content we received upon Interest.
+     * @param path The path of the file we will save it to.
+     * @return whether the file operation was successful or not.
+     */
     public boolean saveContentToFile(Blob content, String path) {
         String filename = path.substring(path.lastIndexOf("/")+1);
         File dir = new File(m_appRootPath + "/received_files");
@@ -283,10 +324,11 @@ public class FileManager {
         if(file.exists()) {
             boolean exists = true;
             int copyNum = 1;
+            int fileTypeIndex = filename.lastIndexOf(".");
             while(exists) {
-                // this makes it e.g. psync.pdf(1) which will not open properly.
-                // filename.substring(filename.lastIndexOf("."); // this way we can add the (1)
-                file = new File(m_appRootPath + "/received_files/" + filename + "(" + copyNum + ")");
+                file = new File(m_appRootPath + "/received_files/" +
+                        filename.substring(0, fileTypeIndex) + "(" + copyNum + ")" +
+                        filename.substring(fileTypeIndex));
                 copyNum++;
                 if(!file.exists()) {
                     exists = false;
@@ -309,8 +351,11 @@ public class FileManager {
         return false;
     }
 
-    public boolean saveFileQR(Bitmap bitmap, String filename) {
-        File fileQR = new File(m_appRootPath + "/files/" + filename);
+    public boolean saveFileQR(Bitmap bitmap, String path) {
+        // do file operations here to remove .txt or .pdf or whatever and append .png
+        int dotIndex = path.lastIndexOf(".");
+        String filename = path.substring(path.lastIndexOf("/")+1, dotIndex) + ".png";
+        File fileQR = new File(m_filesDir + "/" + filename);
         if (!fileQR.exists()) {
             try {
                 fileQR.createNewFile();
@@ -363,18 +408,15 @@ public class FileManager {
     }
 
     /**
-     * prepends /ndn-snapchat/<username> to file path; temporarily static for testing purposes
+     * prepends "/ndn-snapchat/<username>" to file path; temporarily static for testing purposes
      * @param path the provided absolute path of the file
      * @return string of the form /ndn-snapchat/<username>/<path-to-file>
      */
-    public static String addAppPrefix(String path) {
+    public String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
         // /ndn-snapchat/<username>/
-        // int index = path.lastIndexOf('/');
-        // name = "/ndn-snapchat/<username>" + path.substring(index);
-        // FileManager manager = new FileManager(getApplicationContext());
-        // String username = manager.getUsername();
-        /*if (username != null) {
+        String username = this.getUsername();
+        if (username != null) {
             // check that path already comes with "/" prepended
             if(path.charAt(0) == '/') {
                 return "/ndn-snapchat/" + username + path;
@@ -385,15 +427,14 @@ public class FileManager {
         }
         else {
             return null;
-        }*/
-        if(path.charAt(0) == '/') {
-            return "/ndn-snapchat/test-user" + path;
-        }
-        else {
-            return "/ndn-snapchat/test-user/" + path;
         }
     }
 
+    /**
+     * removes the prefix "/ndn-snapchat/<username>" so we can find the file
+     * @param fullname : "ndn-snapchat/<username>/path/to/file"
+     * @return String of file path
+     */
     public static String removeAppPrefix(String fullname) {
         int fileIndex = 0;
         String temp = fullname.substring(fileIndex);

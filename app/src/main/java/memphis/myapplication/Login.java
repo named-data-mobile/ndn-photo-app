@@ -1,5 +1,6 @@
 package memphis.myapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -37,10 +38,18 @@ public class Login extends AppCompatActivity {
     ////// if true: redirect to mainpage
     ////// if false: print message stating username and/or password is incorrect
 
-    protected void login(View view, EditText username, EditText password) {
-        int attempt = loginAttempt(view, username, password);
+    public void login(View view) {
+        EditText name = (EditText) findViewById(R.id.username_text);
+        EditText pass = (EditText) findViewById(R.id.password_text);
+        String username = name.getText().toString();
+        String password = pass.getText().toString();
+        int attempt = loginAttempt(username, password);
         if(attempt == 0) {
-            // go to mainpage
+            // save username and go to mainpage
+            FileManager manager = new FileManager(getApplicationContext());
+            manager.saveUsername(username);
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
         }
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
@@ -53,9 +62,9 @@ public class Login extends AppCompatActivity {
         }
     }
 
-    private int loginAttempt(View view, EditText username, EditText password) {
-        String[] array = {username.toString(), password.toString()};
-        if(!isFormFilled(array)) {
+    private int loginAttempt(String username, String password) {
+        String[] array = {username, password};
+        if(username.isEmpty() || password.isEmpty()) {
             return MISSING_ELEMENT;
         }
         // if not in database return NOT_IN_DATABASE

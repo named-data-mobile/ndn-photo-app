@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/editText3"
+        android:id="@+id/username_text"
         android:layout_width="243dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="22dp"
@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editText4"
+        android:id="@+id/password_text"
         android:layout_width="243dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="22dp"
@@ -26,10 +26,10 @@
         android:ems="10"
         android:inputType="text"
         app:layout_constraintStart_toEndOf="@+id/textView3"
-        app:layout_constraintTop_toBottomOf="@+id/editText3" />
+        app:layout_constraintTop_toBottomOf="@+id/username_text" />
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="114dp"
@@ -95,7 +95,7 @@
         android:ems="10"
         android:inputType="textPassword"
         app:layout_constraintStart_toEndOf="@+id/textView4"
-        app:layout_constraintTop_toBottomOf="@+id/editText4" />
+        app:layout_constraintTop_toBottomOf="@+id/password_text" />
 
     <EditText
         android:id="@+id/editText9"

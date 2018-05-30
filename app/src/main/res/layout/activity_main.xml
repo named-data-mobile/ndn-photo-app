@@ -25,12 +25,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:onClick="fetch_data"
-        android:text="Fetch data"
-        app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toTopOf="@+id/editText"
         android:background="@color/colorAccent"
-        android:textColor="#FFFFFF" />
+        android:onClick="fetch_data_button"
+        android:text="Fetch data"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toEndOf="@+id/editText"
+        app:layout_constraintTop_toTopOf="@+id/editText" />
 
     <Button
         android:id="@+id/fileSelectButton"
@@ -38,12 +38,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
+        android:background="@color/colorAccent"
         android:onClick="select_files"
         android:text="Files"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@+id/fetchButton"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/fetchButton" />
 
     <Button
         android:id="@+id/registerButton"
@@ -51,23 +51,20 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="12dp"
+        android:background="@color/colorAccent"
         android:onClick="register_with_NFD"
         android:text="Register with NFD"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/editText" />
 
     <ListView
         android:id="@+id/listview"
         android:layout_width="352dp"
         android:layout_height="337dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="236dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -76,12 +73,12 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="228dp"
         android:layout_marginTop="32dp"
+        android:background="@color/colorAccent"
         android:onClick="lookup_file_QR"
         android:text="Display QR"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerButton"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/registerButton" />
 
     <Button
         android:id="@+id/scanFileQR"
@@ -89,11 +86,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="44dp"
         android:layout_marginTop="32dp"
+        android:background="@color/colorAccent"
         android:onClick="scanFileQR"
         android:text="Scan File QR"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerButton"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF" />
+        app:layout_constraintTop_toBottomOf="@+id/registerButton" />
 
 </android.support.constraint.ConstraintLayout>

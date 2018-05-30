@@ -120,7 +120,7 @@ public class QRExchange extends AppCompatActivity {
 
     // currently a duplicate of content in makeQRFriendCode, but we may need multiple QR generation
     // processes (file names), so I'm just leaving this here.
-    private static Bitmap makeQRCode(String qrContents){
+    public static Bitmap makeQRCode(String qrContents){
         QRCodeWriter qrWriter = new QRCodeWriter();
         try {
             BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
@@ -173,7 +173,7 @@ public class QRExchange extends AppCompatActivity {
 
     // This might not be necessary. It depends on implementation. We may be passing completely
     // different parameters depending on the file activity we do.
-    public static void makeQRFileCode(Context context, String path) {
+    /*public static void makeQRFileCode(Context context, String path) {
         FileManager manager = new FileManager(context);
         int index = path.lastIndexOf("/");
         String filePath = manager.getAppRootPath() + "/files" + path.substring(index);
@@ -194,7 +194,7 @@ public class QRExchange extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
+    }*/
 
     // setup function should take a string (username && pubKey, filename) and create its QR code
     public void setupQR(View view) {

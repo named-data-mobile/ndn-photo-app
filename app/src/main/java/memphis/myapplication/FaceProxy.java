@@ -96,9 +96,9 @@ public class FaceProxy {
                 }
 
                 Blob blob = new Blob(bytes, true);
-                // FileManager manager = new FileManager(mainActivity.getApplicationContext());
+                FileManager manager = new FileManager(mainActivity.getApplicationContext());
                 // String s = "/ndn-snapchat/test-user/" + temp;
-                String s = FileManager.addAppPrefix(temp);
+                String s = manager.addAppPrefix(temp);
                 // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
                 Name prefix = new Name(s);
                 mainActivity.publishData(blob, prefix);
@@ -148,9 +148,6 @@ public class FaceProxy {
                 Name cachedDataName = mCache[mCurrentIndex].getName();
                 Log.d("findDataSegmentIndex", "Interest name: " + requestedName.toString() +
                         " , cache data name: " + cachedDataName.toString());
-                /* if name prefix is same and segment number is same, we found what we were looking for
-                if(cachedDataName.get(0).equals(requestedName.get(0)) &&
-                    cachedDataName.get(2).equals(requestedName.get(2))) {*/
                 if (cachedDataName.equals(requestedName)) {
                     // return index of content and then increment the variable one more time so if we
                     // require more sequential segment numbers, we will have the right index when we return
@@ -165,7 +162,6 @@ public class FaceProxy {
     }
 
     // need to put the newly published data segment in the cache
-    //public void putInCache(Data data) {
     public void putInCache(ArrayList<Data> fileData) {
         // take data array and cycle through its content; put each segment into an index in cache
         // or it might just be a single segment sent each time
@@ -175,7 +171,7 @@ public class FaceProxy {
         for(Data data : fileData) {
             mCache[mCurrentIndex++] = data;
             Log.d("putInCache", "Put " + data.getName().toUri() + " in the cache.");
-            // Log.d("putInCache", "Content: " + new String(data.getContent().getImmutableArray()));
+            //Log.d("putInCache", "Content: " + new String(data.getContent().getImmutableArray()));
             //Log.d("putInCache", "Fresh?: " + data.getMetaInfo().getFreshnessPeriod());
         }
     }

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.app.TaskStackBuilder;
 import android.content.ContentUris;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -32,6 +34,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -77,18 +80,17 @@ import java.util.List;
 
 import static android.os.Environment.getExternalStorageDirectory;
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
+import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
     MainActivity mainActivity = this;
-    public static Context mContext;
     String retrieved_data = "";
     MemoryIdentityStorage identityStorage;
     MemoryPrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
     KeyChain keyChain;
     public Face face;
-    // public Face face2;
     public FaceProxy faceProxy;
     // think about adding a memoryContentCache instead of faceProxy
     List<String> filesStrings = new ArrayList<String>();
@@ -98,109 +100,13 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
 
-    // maybe add a thread that runs and constantly calls face.processEvents; Ashlesh said that if
-    // we have 2 faces, they could be blocking one another if they are on the same thread. So, if
-    // we keep the two faces, they'll need their own threads.
-
     private boolean appThreadShouldStop = true;
     private boolean has_setup_security = false;
-
-    public void setup_security() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                face = new Face();
-                faceProxy = new FaceProxy();
-                // look at File equivalents to Memory in jndn; That should accomplish your basic
-                // idea while using Nick's use of jndn
-                // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
-                identityStorage = new MemoryIdentityStorage();
-                privateKeyStorage = new MemoryPrivateKeyStorage();
-                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-                keyChain = new KeyChain(identityManager);
-                //keyChain.setFace(faces[i]);
-                keyChain.setFace(face);
-
-                // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
-                Name testIdName = new Name("/test/identity");
-                Name defaultCertificateName;
-                try {
-                    defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
-                    keyChain.getIdentityManager().setDefaultIdentity(testIdName);
-                    Log.d("setup_security", "Certificate was generated.");
-
-                } catch (SecurityException e2) {
-                    defaultCertificateName = new Name("/bogus/certificate/name");
-                }
-                // faces[i].setCommandSigningInfo(keyChain, defaultCertificateName);
-                face.setCommandSigningInfo(keyChain, defaultCertificateName);
-                has_setup_security = true;
-                Log.d("setup_security", "Security was setup successfully");
-                    /*try {
-                        // faces[i].processEvents();
-                        face.processEvents();
-                    } catch (IOException | EncodingException e) {
-                        e.printStackTrace();
-                    }*/
-            }
-            //}
-        });
-        thread.run();
-    }
-
-    private final Thread appThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            if (!has_setup_security) {
-                setup_security();
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            while (!appThreadShouldStop) {
-                try {
-                    face.processEvents();
-                    Thread.sleep(100);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    });
-
-    private void startAppThread() {
-        if (!appThread.isAlive()) {
-            appThreadShouldStop = false;
-            appThread.start();
-        }
-    }
-
-    private void stopNetworkThread() {
-        appThreadShouldStop = true;
-    }
-
-    protected boolean networkThreadIsRunning() {
-        return appThread.isAlive();
-    }
-
-    public Runnable makeToast(final String s) {
-        Runnable show_toast = new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
-            }
-        };
-        return show_toast;
-    }
-
-    public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -219,27 +125,114 @@ public class MainActivity extends AppCompatActivity {
             );
         }
         startAppThread();
-        // this is not available when we are signing up, we need a universal main function to set this
-        // context so I can use it elsewhere
-        mContext = getApplicationContext();
-        // check if logged in; if not, go to Login Page. From there you can access the signup page.
-        // this is where we should check that we have all of our security setup maybe? If not, we
-        // need to generate things again.
+    }
+
+    public void setup_security() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                face = new Face();
+                faceProxy = new FaceProxy();
+                // look at File equivalents to Memory in jndn; That should accomplish your basic
+                // idea while using Nick's use of jndn
+                // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
+                identityStorage = new MemoryIdentityStorage();
+                privateKeyStorage = new MemoryPrivateKeyStorage();
+                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+                keyChain = new KeyChain(identityManager);
+                keyChain.setFace(face);
+
+                // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
+                Name testIdName = new Name("/test/identity");
+                Name defaultCertificateName;
+                try {
+                    defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
+                    keyChain.getIdentityManager().setDefaultIdentity(testIdName);
+                    Log.d("setup_security", "Certificate was generated.");
+
+                } catch (SecurityException e2) {
+                    defaultCertificateName = new Name("/bogus/certificate/name");
+                }
+                face.setCommandSigningInfo(keyChain, defaultCertificateName);
+                has_setup_security = true;
+                Log.d("setup_security", "Security was setup successfully");
+                FileManager manager = new FileManager(getApplicationContext());
+                Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+                try {
+                    register_with_NFD(username);
+                }
+                catch(IOException | PibImpl.Error e) {
+                    e.printStackTrace();
+                }
+            }
+            //}
+        });
+        thread.run();
+    }
+
+    private final Thread networkThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            if (!has_setup_security) {
+                setup_security();
+            }
+            try {
+                sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            while (!appThreadShouldStop) {
+                try {
+                    face.processEvents();
+                    sleep(100);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    });
+
+    private void startAppThread() {
+        if (!networkThread.isAlive()) {
+            appThreadShouldStop = false;
+            networkThread.start();
+        }
+    }
+
+    private void stopAppThread() {
+        appThreadShouldStop = true;
+    }
+
+    protected boolean appThreadIsRunning() {
+        return networkThread.isAlive();
+    }
+
+    public Runnable makeToast(final String s) {
+        Runnable show_toast = new Runnable() {
+            public void run() {
+                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            }
+        };
+        return show_toast;
     }
 
     /**
      * Called when the user taps the fetch data button
      */
-    public void fetch_data(View view) {
+    public void fetch_data_button(View view) {
         Log.d("fetch_data", "Called fetch_data");
         EditText editText = (EditText) findViewById(R.id.editText);
         String message = editText.getText().toString();
         Log.d("fetch_data", "Message from editText: " + message);
         final Interest interest = new Interest(new Name(message));
         Log.d("fetch_data", "Interest: " + interest.getName().toString());
-        // interest.setInterestLifetimeMilliseconds(20000);
+        fetch_data(interest);
+    }
 
-        final boolean[] enabled = new boolean[]{true};
+    public void fetch_data(final Interest interest) {
+        // interest.setInterestLifetimeMilliseconds(20000);
         SegmentFetcher.fetch(
                 face,
                 interest,
@@ -253,12 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        // Log.d("fetch_data onComplete", "we got content");
-                        // retrieved_data = new String(content.getImmutableArray());
-                        // Log.d("fetch_data onComplete", "ShortContent: " + retrieved_data);
                         FileManager manager = new FileManager(getApplicationContext());
-                        // String interestName = manager.removeAppPrefix(interest.getName().toString());
-                        // boolean wasSaved = manager.saveContentToFile(content, interestName);
                         boolean wasSaved = manager.saveContentToFile(content, interest.getName().toUri());
                         if(wasSaved) {
                             String msg = "We got content.";
@@ -301,7 +289,6 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
         }
-        final boolean[] enabled = new boolean[]{true};
         try {
             Log.d("register_with_nfd", "Starting registration process.");
             //long prefixId = face2.registerPrefix(name,
@@ -310,21 +297,17 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
-                            // enabled[0] = false;
                             Log.d("OnRegisterFailed", "Registration Failure");
                             String msg = "Registration failed for prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
-                            // show_dialog(prefix, true);
                         }
                     },
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            // enabled[0] = false;
                             Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
-                            // final CharSequence text = "Successfully registered prefix: " + prefix.toString();
                         }
                     });
         }
@@ -342,6 +325,10 @@ public class MainActivity extends AppCompatActivity {
                 fileData.add(data);
             }
             faceProxy.putInCache(fileData);
+            FileManager manager = new FileManager(getApplicationContext());
+            String filename = prefix.toUri();
+            Bitmap bitmap = QRExchange.makeQRCode(filename);
+            manager.saveFileQR(bitmap, filename);
         }
           catch (PibImpl.Error | SecurityException | TpmBackEnd.Error | KeyChain.Error e) {
               e.printStackTrace();
@@ -399,13 +386,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Log.d("file selection result", "file path: " + path);
                     final Blob blob = new Blob(bytes, true);
-                    String prefix = FileManager.addAppPrefix(path);
+                    FileManager manager = new FileManager(getApplicationContext());
+                    String prefix = manager.addAppPrefix(path);
                     Log.d("added file prefix", "prefix: " + prefix);
                     publishData(blob, new Name(prefix));
-                    // QRExchange.makeQRFileCode(getApplicationContext(), path);
                 }
                 else {
-                    Toast.makeText(this, "File path could not be resolved.", Toast.LENGTH_LONG).show();
+                    String msg = "File path could not be resolved";
+                    runOnUiThread(makeToast(msg));
                 }
             }
             // We received a request to display a QR image
@@ -422,18 +410,19 @@ public class MainActivity extends AppCompatActivity {
             } else if (requestCode == SCAN_QR_REQUEST_CODE) {
                 IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, resultData);
                 if (result == null) {
-                    Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
+                    runOnUiThread(makeToast("Null"));
                 }
                 if (result != null) {
                     // check resultCode to determine what type of code we're scanning, file or friend
 
                     if (result.getContents() == null) {
-                        Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
+                        runOnUiThread(makeToast("Nothing is here"));
                     } else {
                         String content = result.getContents();
                         // need to check this content to determine if we are scanning file or friend code
-                        Toast.makeText(this, content, Toast.LENGTH_LONG).show();
-                        FileManager manager = new FileManager(getApplicationContext());
+                        runOnUiThread(makeToast(content));
+                        final Interest interest = new Interest(new Name(content));
+                        fetch_data(interest);
                     }
                 } else {
                     super.onActivityResult(requestCode, resultCode, resultData);
