@@ -103,7 +103,7 @@ public class QRExchange extends AppCompatActivity {
 
     ////////This is not working as it should. The problem is the context is null, so it is dying
     ////////somewhere.
-    public void displayMyQR(View view) {
+    /*public void displayMyQR(View view) {
         FileManager manager = new FileManager(view.getContext());
         String imgPath = manager.getYourself();
         try {
@@ -116,7 +116,7 @@ public class QRExchange extends AppCompatActivity {
             Log.d("displayMyQR", e.toString());
             Toast.makeText(this, "displayMyQR " + e.toString(), Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
 
     // currently a duplicate of content in makeQRFriendCode, but we may need multiple QR generation
     // processes (file names), so I'm just leaving this here.
@@ -144,28 +144,30 @@ public class QRExchange extends AppCompatActivity {
     /**
      *
      */
-    public Bitmap makeQRFriendCode(Context context) {
+    public static Bitmap makeQRFriendCode(Context context) {
         FileManager manager = new FileManager(context);
         String name = manager.getUsername();
-        String pubKey = manager.getPubKey();
-        // make sure we check later during registration that a username has no spaces
-        String qrContents = name + " " + pubKey;
-        QRCodeWriter qrWriter = new QRCodeWriter();
-        try {
-            BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
-            Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
-            for (int i = 0; i < BIT_HEIGHT; i++) {
-                for (int j = 0; j < BIT_WIDTH; j++) {
-                    bitmap.setPixel(i, j, qrMatrix.get(i, j) ? Color.BLACK : Color.WHITE);
+        // this will likely change in the future
+        net.named_data.jndn.security.certificate.PublicKey publicKey = manager.getPubKey();
+        if(publicKey != null) {
+            String pubKey = publicKey.toString();
+            // make sure we check later during registration that a username has no spaces
+            String qrContents = name + " " + pubKey;
+            QRCodeWriter qrWriter = new QRCodeWriter();
+            try {
+                BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
+                Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
+                for (int i = 0; i < BIT_HEIGHT; i++) {
+                    for (int j = 0; j < BIT_WIDTH; j++) {
+                        bitmap.setPixel(i, j, qrMatrix.get(i, j) ? Color.BLACK : Color.WHITE);
+                    }
                 }
+                return bitmap;
+            } catch (WriterException we) {
+                Log.d("makeQrFriendCode", "qrWriter failed");
+            } catch (Exception e) {
+                Log.d("makeQrFriendCode", "bitmap was not created");
             }
-            return bitmap;
-        }
-        catch(WriterException we) {
-            Log.d("makeQrFriendCode", "qrWriter failed");
-        }
-        catch(Exception e) {
-            Log.d("makeQrFriendCode", "bitmap was not created");
         }
         // if it failed to make the bitmap
         return null;

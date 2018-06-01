@@ -3,6 +3,7 @@ package memphis.myapplication;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.app.TaskStackBuilder;
@@ -55,7 +56,10 @@ import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.encoding.ElementListener;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
+import net.named_data.jndn.security.RsaKeyParams;
 import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
+import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
 import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.identity.MemoryIdentityStorage;
 import net.named_data.jndn.security.identity.MemoryPrivateKeyStorage;
@@ -84,10 +88,14 @@ import static java.lang.Thread.sleep;
 
 public class MainActivity extends AppCompatActivity {
 
+    // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
+    Globals globals = (Globals) getApplication();
     MainActivity mainActivity = this;
     String retrieved_data = "";
-    MemoryIdentityStorage identityStorage;
-    MemoryPrivateKeyStorage privateKeyStorage;
+    // MemoryIdentityStorage identityStorage;
+    AndroidSqlite3IdentityStorage identityStorage;
+    // MemoryPrivateKeyStorage privateKeyStorage;
+    FilePrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
     KeyChain keyChain;
     public Face face;
@@ -105,8 +113,8 @@ public class MainActivity extends AppCompatActivity {
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
 
-    private boolean appThreadShouldStop = true;
-    private boolean has_setup_security = false;
+    private boolean netThreadShouldStop = true;
+    // private boolean has_setup_security = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,18 +132,105 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
-        startAppThread();
+        // new addition; we need to check if these are even set though
+        // Application app = (Globals) getApplicationContext();
+        boolean faceExists = Globals.face == null;
+        Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
+        if(Globals.face == null || !Globals.has_setup_security)  {
+            setup_security();
+        }
+        /* sleeping does not fix the problem
+        try {
+            Thread.sleep(5000);
+        }
+        catch(InterruptedException e) {
+            e.printStackTrace();
+        }*/
+        face = Globals.face;
+        faceProxy = Globals.faceProxy;
+        keyChain = Globals.keyChain;
+        // problem here. Security is being setup twice which means something wrong is going on with
+        // the Globals class. The static variables aren't being set or we're losing them.
+        // since setup_security is its own thread, we are moving forward and hit startNetworkThread before setup_security finishes.
+        startNetworkThread();
     }
+    // Still think of MainActivity as our true MainActivity, but things will change towards background
+    // automation and a better UI. A user is likely not going to know the actual filenames to ask for.
+    // The app will take care of this process behind the scenes thanks to our synchronization protocol
+    // (and other things) letting the app know what to request. We are in a purely functional stage
+    // at the moment.
 
     public void setup_security() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+                FileManager manager = new FileManager(getApplicationContext());
+                // /ndn-snapchat/<username>/KEY
+                Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername() + "/KEY");
+
+                face = new Face();
+                //faceProxy = new FaceProxy();
+                // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
+                if (identityStorage == null) {
+                    identityStorage = new AndroidSqlite3IdentityStorage(
+                            AndroidSqlite3IdentityStorage.getDefaultFilePath(getApplicationContext().getFilesDir())
+                    );
+                    Globals.setIdentityStorage(identityStorage);
+                }
+                if (privateKeyStorage == null) {
+                    privateKeyStorage = new FilePrivateKeyStorage(
+                            FilePrivateKeyStorage.getDefaultDirecoryPath(getApplicationContext().getFilesDir())
+                    );
+                    Globals.setFilePrivateKeyStorage(privateKeyStorage);
+                }
+                try {
+                    // check if key storage exists
+                    Name keyName = new Name(appAndUsername + "/KEY");
+                    privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
+                }
+                catch (SecurityException e) {
+                    // keys already exist; no need to generate them again.
+                    e.printStackTrace();
+                }
+                // this is fine if we haven't changed anything with storage
+                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+                Globals.setIdentityManager(identityManager);
+                keyChain = new KeyChain(identityManager);
+                keyChain.setFace(face);
+
+                Name defaultCertificateName;
+                try {
+                    defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername);
+                    keyChain.getIdentityManager().setDefaultIdentity(appAndUsername);
+                    Log.d("setup_security", "Certificate was generated.");
+
+                } catch (SecurityException e2) {
+                    defaultCertificateName = new Name("/bogus/certificate/name");
+                }
+                Globals.setKeyChain(keyChain);
+                face.setCommandSigningInfo(keyChain, defaultCertificateName);
+                Globals.setFace(face);
+                Globals.setFaceProxy(new FaceProxy());
+                Globals.setHasSecurity(true);
+                Log.d("setup_security", "Security was setup successfully");
+                Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        /*try {
+            register_with_NFD(username);
+        } catch (IOException | PibImpl.Error e) {
+            e.printStackTrace();
+        } // for now, let's just deal with security related stuff; we'll figure out how to handle registration afterwards.*/
+            }
+        });
+        thread.start();
+    }
+    /*public void setup_security() {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 face = new Face();
                 faceProxy = new FaceProxy();
-                // look at File equivalents to Memory in jndn; That should accomplish your basic
+                // look at File equivalents to Memory in jndn; that should accomplish your basic
                 // idea while using Nick's use of jndn
-                // come back to this when we want a perm solution; will need to integrate SQLite3, but will solve storage questions
                 identityStorage = new MemoryIdentityStorage();
                 privateKeyStorage = new MemoryPrivateKeyStorage();
                 identityManager = new IdentityManager(identityStorage, privateKeyStorage);
@@ -156,24 +251,26 @@ public class MainActivity extends AppCompatActivity {
                 face.setCommandSigningInfo(keyChain, defaultCertificateName);
                 has_setup_security = true;
                 Log.d("setup_security", "Security was setup successfully");
-                FileManager manager = new FileManager(getApplicationContext());
+                /*FileManager manager = new FileManager(getApplicationContext());
                 Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
                 try {
                     register_with_NFD(username);
                 }
                 catch(IOException | PibImpl.Error e) {
                     e.printStackTrace();
-                }
-            }
+                }*/
             //}
-        });
-        thread.run();
-    }
+            //}
+        //});
+       // thread.run();
+    //}
 
     private final Thread networkThread = new Thread(new Runnable() {
         @Override
         public void run() {
-            if (!has_setup_security) {
+            boolean faceExists = Globals.face == null;
+            Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
+            if (!Globals.has_setup_security) {
                 setup_security();
             }
             try {
@@ -181,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            while (!appThreadShouldStop) {
+            while (!netThreadShouldStop) {
                 try {
                     face.processEvents();
                     sleep(100);
@@ -194,15 +291,15 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
-    private void startAppThread() {
+    private void startNetworkThread() {
         if (!networkThread.isAlive()) {
-            appThreadShouldStop = false;
+            netThreadShouldStop = false;
             networkThread.start();
         }
     }
 
-    private void stopAppThread() {
-        appThreadShouldStop = true;
+    private void stopNetworkThread() {
+        netThreadShouldStop = true;
     }
 
     protected boolean appThreadIsRunning() {
@@ -210,12 +307,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public Runnable makeToast(final String s) {
-        Runnable show_toast = new Runnable() {
+        return new Runnable() {
             public void run() {
                 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
             }
         };
-        return show_toast;
     }
 
     /**
@@ -280,9 +376,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void register_with_NFD(Name name) throws IOException, PibImpl.Error {
 
-        if (!has_setup_security) {
+        if (!Globals.has_setup_security) {
             setup_security();
-            while (!has_setup_security)
+            while (!Globals.has_setup_security)
                 try {
                     wait(1);
                 } catch (InterruptedException e) {
@@ -291,7 +387,6 @@ public class MainActivity extends AppCompatActivity {
         }
         try {
             Log.d("register_with_nfd", "Starting registration process.");
-            //long prefixId = face2.registerPrefix(name,
             long prefixId = face.registerPrefix(name,
                     onDataInterest,
                     new OnRegisterFailed() {

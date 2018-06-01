@@ -51,20 +51,6 @@ public class FaceProxy {
         int index = findDataSegmentIndex(interest);
         // we don't have the data stored in the cache. Let's retrieve the requested segment and go
         // ahead and push future segments to the cache for faster retrieval
-        /*if(index == 777) {
-            Name requestedName = interest.getName();
-            requestedName.appendVersion(0);
-            requestedName.appendSegment(0);
-            Data data = new Data();
-            data.setName(requestedName);
-            try {
-                mainActivity.face.putData(data);
-            }
-            catch(IOException e) {
-                e.printStackTrace();
-            }
-            return;
-        }*/
         if(index == -404) {
             Log.d("process", "-404 with interest: " + interest.getName().toString());
             Name interestName = interest.getName();

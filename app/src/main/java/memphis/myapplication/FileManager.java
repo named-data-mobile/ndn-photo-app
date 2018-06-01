@@ -7,6 +7,8 @@ import android.util.Log;
 import android.util.Base64;
 import android.widget.Toast;
 
+import net.named_data.jndn.Name;
+import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.util.Blob;
 
 //import org.apache.commons.io.FileUtils;
@@ -23,6 +25,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 public class FileManager {
 
@@ -97,7 +100,7 @@ public class FileManager {
      * Creates a new RSA key pair. This is needed for encrypting/decrypting advertised names.
      * @return returns RSA key pair if successful; returns false if an error occurs
      */
-    private KeyPair generateKeys() {
+    /*private KeyPair generateKeys() {
         try {
             KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(2048);
@@ -107,7 +110,7 @@ public class FileManager {
             Log.d("QR", "RSA algorithm not found. Keys were not generated.");
             return null;
         }
-    }
+    }*/
 
     /**
      * Saves the generated RSA key pair to file. This is intended to only be called once upon
@@ -117,7 +120,7 @@ public class FileManager {
     // you might need to provide an easy way for someone to create new key pairs say in the case that
     // they deleted or lost their previous pair, or they uninstall/reinstall the app. Their friends
     // will need to know.
-    protected boolean saveKeys() {
+    /*protected boolean saveKeys() {
         boolean wasCreated = createDirs();
         if (!wasCreated) {
             return false;
@@ -151,7 +154,7 @@ public class FileManager {
             }
         }
         return false;
-    }
+    }*/
 
     /**
      * Saves your username to file so we can retrieve it later.
@@ -202,14 +205,13 @@ public class FileManager {
      * Saves your personal QR code to a png file.
      * @param myInfo is the bitmap of our QR code we are saving.
      */
-    protected void saveYourself(Bitmap myInfo) {
-        File myQRFile = new File(m_selfDir + "/myQR");
+    public void saveMyQRCode(Bitmap myInfo) {
+        File myQRFile = new File(getMyQRPath());
         try {
             FileOutputStream fostream = new FileOutputStream(myQRFile);
             myInfo.compress(Bitmap.CompressFormat.PNG, 90, fostream);
             fostream.close();
-        }
-        catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             Log.d("saveYourself", "File not found: " + e.getMessage());
         } catch (IOException e) {
             Log.d("saveYourself", "Error accessing file: " + e.getMessage());
@@ -220,7 +222,7 @@ public class FileManager {
      * Gives the path to your personal QR code.
      * @return String path to QR code
      */
-    protected String getYourself() {
+    protected String getMyQRPath() {
         return (m_selfDir + "/myQR");
     }
 
@@ -228,9 +230,21 @@ public class FileManager {
      * Reads the public rsa key file and extracts the public key.
      * @return user's public key in string format
      */
-    public String getPubKey() {
+    // public String getPubKey() {
+    public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
+        //try {
+            // may change implementation to work with file stored jndn security stuff
+            // Globals.privateKeyStorage.getPublicKey
+        // note to self!!!!!!!!!!!!!!!!!finish QR stuff now for add friend
+        Name keyName = new Name("/ndn-snapchat/" + getUsername() + "/KEY");
         try {
-            StringBuilder key = new StringBuilder();
+            return Globals.privateKeyStorage.getPublicKey(new Name(keyName));
+        }
+        catch (SecurityException e) {
+            e.printStackTrace();
+            return null;
+        }
+            /* StringBuilder key = new StringBuilder();
             BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa.pub"));
             // first line of the public key file is ----BEGIN PUBLIC KEY---- so we need to skip it
             String line = reader.readLine();
@@ -252,7 +266,7 @@ public class FileManager {
         catch(IOException e) {
             Log.d("getPubKey", "IOException: " + e.toString());
             return null;
-        }
+        }*/
     }
 
     public String getPrivateKey() {
@@ -410,7 +424,7 @@ public class FileManager {
     /**
      * prepends "/ndn-snapchat/<username>" to file path; temporarily static for testing purposes
      * @param path the provided absolute path of the file
-     * @return string of the form /ndn-snapchat/<username>/<path-to-file>
+     * @return string of the form /ndn-snapchat/<username>/path/to/file
      */
     public String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of

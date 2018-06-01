@@ -23,7 +23,7 @@ import memphis.myapplication.QRExchange;
 
 public class SignUp extends AppCompatActivity {
 
-    // Error return values to indicate what the user needs to correct in their signup form
+/*    // Error return values to indicate what the user needs to correct in their signup form
     // some form elements are missing content (e.g., no email address provided)
     final private int MISSING_ELEMENT = 1;
     // the password and the confirm password content are not equal
@@ -60,7 +60,7 @@ public class SignUp extends AppCompatActivity {
         // Requires the DB functions I mentioned in the above comment
         // if email is already registered return EMAIL_TAKEN
         // if username is already taken return USERNAME_TAKEN
-
+*/
         /*if(!isFormFilled(args)) {
             return MISSING_ELEMENT;
         }
@@ -70,7 +70,7 @@ public class SignUp extends AppCompatActivity {
 
         // add user to DB
         // now generate and save key pairs
-        Context currContext = view.getContext();
+        /*Context currContext = view.getContext();
         int permissionsCheck = ContextCompat.checkSelfPermission(currContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permissionsCheck != PackageManager.PERMISSION_GRANTED) {
@@ -91,7 +91,7 @@ public class SignUp extends AppCompatActivity {
             if (areKeysSaved) {
                 Bitmap myQRCode = generator.makeQRFriendCode(appContext);
                 // save QR code of your information
-                manager.saveYourself(myQRCode);
+                manager.saveMyQRCode(myQRCode);
                 generator.displayMyQR(view);
             } else {
                 Log.d("setUpAccount", "Keys not saved");
@@ -108,7 +108,7 @@ public class SignUp extends AppCompatActivity {
         if (attempt == 0) {
             Toast.makeText(this, "signup complete", Toast.LENGTH_LONG).show();
         }
-    }
+    }*/
 
     /*@Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
