@@ -303,7 +303,7 @@ public class FileManager {
             String username = friendContent.substring(0, index);
             // A friend's filename will be their username. Another reason why we must ensure uniqueness
             File friendFile = new File(m_friendsDir + "/" + username);
-            if (!friendFile.exists()) {
+            if (friendFile.exists()) {
                 return 1;
             }
             String pubKey = friendContent.substring(index + 1);

@@ -142,7 +142,7 @@ public class QRExchange extends AppCompatActivity {
     }
 
     /**
-     *
+     * come back to this. I save a string of the DER public key. Not sure if desired end result.
      */
     public static Bitmap makeQRFriendCode(Context context) {
         FileManager manager = new FileManager(context);
@@ -150,7 +150,8 @@ public class QRExchange extends AppCompatActivity {
         // this will likely change in the future
         net.named_data.jndn.security.certificate.PublicKey publicKey = manager.getPubKey();
         if(publicKey != null) {
-            String pubKey = publicKey.toString();
+            // String pubKey = publicKey.toString();
+            String pubKey = new String(publicKey.getKeyDer().getImmutableArray());
             // make sure we check later during registration that a username has no spaces
             String qrContents = name + " " + pubKey;
             QRCodeWriter qrWriter = new QRCodeWriter();

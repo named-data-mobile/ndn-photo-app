@@ -129,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {*/
         FileManager manager = new FileManager(getApplicationContext());
         // /ndn-snapchat/<username>/KEY
-        Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername() + "/KEY");
+        Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername());
 
         face = new Face();
         //faceProxy = new FaceProxy();
@@ -572,6 +572,12 @@ public class MainActivity extends AppCompatActivity {
             segment_number++;
         } while (byteBuffer.hasRemaining());
         return datas;
+    }
+
+    // start activity for add friends
+    public void startMakingFriends(View view) {
+        Intent intent = new Intent(this, AddFriend.class);
+        startActivity(intent);
     }
 
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
