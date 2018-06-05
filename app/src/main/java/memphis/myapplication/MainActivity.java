@@ -1,42 +1,25 @@
 package memphis.myapplication;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.app.TaskStackBuilder;
 import android.content.ContentUris;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.support.annotation.VisibleForTesting;
-import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -49,11 +32,9 @@ import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
-import net.named_data.jndn.OnData;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
-import net.named_data.jndn.encoding.ElementListener;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.RsaKeyParams;
@@ -61,28 +42,19 @@ import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
 import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
 import net.named_data.jndn.security.identity.IdentityManager;
-import net.named_data.jndn.security.identity.MemoryIdentityStorage;
-import net.named_data.jndn.security.identity.MemoryPrivateKeyStorage;
 import net.named_data.jndn.security.pib.PibImpl;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
-import net.named_data.jndn.transport.TcpTransport;
-import net.named_data.jndn.transport.Transport;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static android.os.Environment.getExternalStorageDirectory;
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 import static java.lang.Thread.sleep;
 
@@ -92,9 +64,7 @@ public class MainActivity extends AppCompatActivity {
     Globals globals = (Globals) getApplication();
     MainActivity mainActivity = this;
     String retrieved_data = "";
-    // MemoryIdentityStorage identityStorage;
     AndroidSqlite3IdentityStorage identityStorage;
-    // MemoryPrivateKeyStorage privateKeyStorage;
     FilePrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
     KeyChain keyChain;
@@ -136,16 +106,9 @@ public class MainActivity extends AppCompatActivity {
         // Application app = (Globals) getApplicationContext();
         boolean faceExists = Globals.face == null;
         Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
-        if(Globals.face == null || !Globals.has_setup_security)  {
+        if (faceExists || !Globals.has_setup_security) {
             setup_security();
         }
-        /* sleeping does not fix the problem
-        try {
-            Thread.sleep(5000);
-        }
-        catch(InterruptedException e) {
-            e.printStackTrace();
-        }*/
         face = Globals.face;
         faceProxy = Globals.faceProxy;
         keyChain = Globals.keyChain;
@@ -161,109 +124,64 @@ public class MainActivity extends AppCompatActivity {
     // at the moment.
 
     public void setup_security() {
-        Thread thread = new Thread(new Runnable() {
+        /*Thread thread = new Thread(new Runnable() {
             @Override
-            public void run() {
-                FileManager manager = new FileManager(getApplicationContext());
-                // /ndn-snapchat/<username>/KEY
-                Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername() + "/KEY");
+            public void run() {*/
+        FileManager manager = new FileManager(getApplicationContext());
+        // /ndn-snapchat/<username>/KEY
+        Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername() + "/KEY");
 
-                face = new Face();
-                //faceProxy = new FaceProxy();
-                // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
-                if (identityStorage == null) {
-                    identityStorage = new AndroidSqlite3IdentityStorage(
-                            AndroidSqlite3IdentityStorage.getDefaultFilePath(getApplicationContext().getFilesDir())
-                    );
-                    Globals.setIdentityStorage(identityStorage);
-                }
-                if (privateKeyStorage == null) {
-                    privateKeyStorage = new FilePrivateKeyStorage(
-                            FilePrivateKeyStorage.getDefaultDirecoryPath(getApplicationContext().getFilesDir())
-                    );
-                    Globals.setFilePrivateKeyStorage(privateKeyStorage);
-                }
-                try {
-                    // check if key storage exists
-                    Name keyName = new Name(appAndUsername + "/KEY");
-                    privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
-                }
-                catch (SecurityException e) {
-                    // keys already exist; no need to generate them again.
-                    e.printStackTrace();
-                }
-                // this is fine if we haven't changed anything with storage
-                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-                Globals.setIdentityManager(identityManager);
-                keyChain = new KeyChain(identityManager);
-                keyChain.setFace(face);
+        face = new Face();
+        //faceProxy = new FaceProxy();
+        // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
+        if (identityStorage == null) {
+            identityStorage = new AndroidSqlite3IdentityStorage(
+                    AndroidSqlite3IdentityStorage.getDefaultFilePath(getApplicationContext().getFilesDir())
+            );
+            Globals.setIdentityStorage(identityStorage);
+        }
+        if (privateKeyStorage == null) {
+            privateKeyStorage = new FilePrivateKeyStorage(
+                    FilePrivateKeyStorage.getDefaultDirecoryPath(getApplicationContext().getFilesDir())
+            );
+            Globals.setFilePrivateKeyStorage(privateKeyStorage);
+        }
+        try {
+            // check if key storage exists
+            Name keyName = new Name(appAndUsername + "/KEY");
+            privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
+        } catch (SecurityException e) {
+            // keys already exist; no need to generate them again.
+            e.printStackTrace();
+        }
+        // this is fine if we haven't changed anything with storage
+        identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+        Globals.setIdentityManager(identityManager);
+        keyChain = new KeyChain(identityManager);
+        keyChain.setFace(face);
 
-                Name defaultCertificateName;
-                try {
-                    defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername);
-                    keyChain.getIdentityManager().setDefaultIdentity(appAndUsername);
-                    Log.d("setup_security", "Certificate was generated.");
+        Name defaultCertificateName;
+        try {
+            defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername);
+            keyChain.getIdentityManager().setDefaultIdentity(appAndUsername);
+            Log.d("setup_security", "Certificate was generated.");
 
-                } catch (SecurityException e2) {
-                    defaultCertificateName = new Name("/bogus/certificate/name");
-                }
-                Globals.setKeyChain(keyChain);
-                face.setCommandSigningInfo(keyChain, defaultCertificateName);
-                Globals.setFace(face);
-                Globals.setFaceProxy(new FaceProxy());
-                Globals.setHasSecurity(true);
-                Log.d("setup_security", "Security was setup successfully");
-                Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
-        /*try {
+        } catch (SecurityException e2) {
+            defaultCertificateName = new Name("/bogus/certificate/name");
+        }
+        Globals.setKeyChain(keyChain);
+        face.setCommandSigningInfo(keyChain, defaultCertificateName);
+        Globals.setFace(face);
+        Globals.setFaceProxy(new FaceProxy());
+        Globals.setHasSecurity(true);
+        Log.d("setup_security", "Security was setup successfully");
+        Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        try {
             register_with_NFD(username);
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
-        } // for now, let's just deal with security related stuff; we'll figure out how to handle registration afterwards.*/
-            }
-        });
-        thread.start();
+        }
     }
-    /*public void setup_security() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                face = new Face();
-                faceProxy = new FaceProxy();
-                // look at File equivalents to Memory in jndn; that should accomplish your basic
-                // idea while using Nick's use of jndn
-                identityStorage = new MemoryIdentityStorage();
-                privateKeyStorage = new MemoryPrivateKeyStorage();
-                identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-                keyChain = new KeyChain(identityManager);
-                keyChain.setFace(face);
-
-                // NOTE: This is based on apps-NDN-Whiteboard/helpers/Utils.buildTestKeyChain()...
-                Name testIdName = new Name("/test/identity");
-                Name defaultCertificateName;
-                try {
-                    defaultCertificateName = keyChain.createIdentityAndCertificate(testIdName);
-                    keyChain.getIdentityManager().setDefaultIdentity(testIdName);
-                    Log.d("setup_security", "Certificate was generated.");
-
-                } catch (SecurityException e2) {
-                    defaultCertificateName = new Name("/bogus/certificate/name");
-                }
-                face.setCommandSigningInfo(keyChain, defaultCertificateName);
-                has_setup_security = true;
-                Log.d("setup_security", "Security was setup successfully");
-                /*FileManager manager = new FileManager(getApplicationContext());
-                Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
-                try {
-                    register_with_NFD(username);
-                }
-                catch(IOException | PibImpl.Error e) {
-                    e.printStackTrace();
-                }*/
-            //}
-            //}
-        //});
-       // thread.run();
-    //}
 
     private final Thread networkThread = new Thread(new Runnable() {
         @Override

@@ -4,8 +4,6 @@ import android.app.Application;
 import android.util.Log;
 
 import net.named_data.jndn.Face;
-import net.named_data.jndn.Interest;
-import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.security.KeyChain;
@@ -114,8 +112,8 @@ public class Globals extends Application {
     }
 
     // setters
-    public static void setFace(Face face) {
-        face = face;
+    public static void setFace(Face f) {
+        face = f;
     }
 
     public static void setFaceProxy(FaceProxy fp) {

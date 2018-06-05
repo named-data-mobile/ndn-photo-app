@@ -31,7 +31,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation 'com.android.support:design:26.1.0'
     //compile 'com.google.android.gms:play-services-vision:11.8.0'
-    implementation 'com.journeyapps:zxing-android-embedded:3.4.0'
+    implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation group: 'net.named-data', name: 'jndn-android', version: '0.17'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
 }

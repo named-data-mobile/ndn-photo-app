@@ -68,14 +68,14 @@ public class AddFriend extends AppCompatActivity {
                     FileManager manager = new FileManager(getApplicationContext());
                     int saveResult = manager.saveFriend(content);
                     if (saveResult == 0) {
-                        Toast.makeText(this, "Friend was saved successfully.", Toast.LENGTH_LONG);
+                        Toast.makeText(this, "Friend was saved successfully.", Toast.LENGTH_LONG).show();
                     }
                     else if (saveResult == 1) {
-                        Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG);
+                        Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG).show();
 
                     }
                     else {
-                        Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG);
+                        Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
                     }
                     /*if (requestCode == FRIEND_QR_REQUEST_CODE) {
                         // manager.saveFriend(content);
