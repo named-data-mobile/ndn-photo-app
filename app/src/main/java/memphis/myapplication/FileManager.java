@@ -244,29 +244,6 @@ public class FileManager {
             e.printStackTrace();
             return null;
         }
-            /* StringBuilder key = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa.pub"));
-            // first line of the public key file is ----BEGIN PUBLIC KEY---- so we need to skip it
-            String line = reader.readLine();
-            if (line != null) {
-                line = reader.readLine();
-            }
-
-            while(line != null) {
-
-                // and read the rest (assuming the keys are stored in separate files and the
-                // first line is just ----Begin Public Key----
-                key.append(line);
-                line = reader.readLine();
-            }
-            reader.close();
-            // need to check this is not empty elsewhere
-            return key.toString();
-        }
-        catch(IOException e) {
-            Log.d("getPubKey", "IOException: " + e.toString());
-            return null;
-        }*/
     }
 
     public String getPrivateKey() {

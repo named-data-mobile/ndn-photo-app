@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
 import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
@@ -49,25 +50,28 @@ import net.named_data.jndn.util.SegmentFetcher;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 import static java.lang.Thread.sleep;
+
+import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
 
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
-    MainActivity mainActivity = this;
+    final MainActivity m_mainActivity = this;
     String retrieved_data = "";
     AndroidSqlite3IdentityStorage identityStorage;
     FilePrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
-    KeyChain keyChain;
+    public KeyChain keyChain;
     public Face face;
     public FaceProxy faceProxy;
     // think about adding a memoryContentCache instead of faceProxy
@@ -82,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
+    private final int CAMERA_REQUEST_CODE = 3;
 
     private boolean netThreadShouldStop = true;
     // private boolean has_setup_security = false;
@@ -206,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
+            // face.shutdown();
         }
     });
 
@@ -247,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void fetch_data(final Interest interest) {
         // interest.setInterestLifetimeMilliseconds(20000);
-        SegmentFetcher.fetch(
+        /*SegmentFetcher.fetch(
                 face,
                 interest,
                 new SegmentFetcher.VerifySegment() {
@@ -278,7 +284,15 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("fetch_data onError", message);
                         runOnUiThread(makeToast(message));
                     }
-                });
+                });*/
+        new FetchingTask(m_mainActivity).execute(interest);
+        /*Thread fetchingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                new FetchingTask(m_mainActivity).execute(interest);
+            }
+        });
+        fetchingThread.start();*/
     }
 
     public void register_with_NFD(View view) {
@@ -329,23 +343,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void publishData(Blob blob, Name prefix) {
-        try {
-            ArrayList<Data> fileData = new ArrayList<>();
-            Log.d("publishData", "Publishing with prefix: " + prefix);
-            for (Data data : packetize(blob, prefix)) {
-                keyChain.sign(data);
-                fileData.add(data);
+    public void publishData(final Blob blob, final Name prefix) {
+        Thread publishingThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    ArrayList<Data> fileData = new ArrayList<>();
+                    Log.d("publishData", "Publishing with prefix: " + prefix);
+                    for (Data data : packetize(blob, prefix)) {
+                        keyChain.sign(data);
+                        fileData.add(data);
+                    }
+                    faceProxy.putInCache(fileData);
+                    FileManager manager = new FileManager(getApplicationContext());
+                    String filename = prefix.toUri();
+                    Bitmap bitmap = QRExchange.makeQRCode(filename);
+                    manager.saveFileQR(bitmap, filename);
+                } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
+                        KeyChain.Error e)
+
+                {
+                    e.printStackTrace();
+                }
             }
-            faceProxy.putInCache(fileData);
-            FileManager manager = new FileManager(getApplicationContext());
-            String filename = prefix.toUri();
-            Bitmap bitmap = QRExchange.makeQRCode(filename);
-            manager.saveFileQR(bitmap, filename);
-        }
-          catch (PibImpl.Error | SecurityException | TpmBackEnd.Error | KeyChain.Error e) {
-              e.printStackTrace();
-          }
+        });
+        publishingThread.start();
     }
 
     public void select_files(View view) {
@@ -440,7 +461,18 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     super.onActivityResult(requestCode, resultCode, resultData);
                 }
-            } else {
+            }
+            else if (requestCode == CAMERA_REQUEST_CODE) {
+                try {
+                    Bitmap pic = (Bitmap) resultData.getExtras().get("data");
+                    runOnUiThread(makeToast(pic.toString()));
+                }
+                catch (NullPointerException e) {
+                    e.printStackTrace();
+                    runOnUiThread(makeToast("Something went wrong. Null image."));
+                }
+            }
+            else {
                 Log.d("onActivityResult", "Unexpected activity requestcode caught");
             }
         }
@@ -580,12 +612,56 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * Triggered by button press. This acts as a helper function to first ask for permission to
+     * access the camera if we do not have it. If we are granted permission or have permission, we
+     * will call startCamera()
+     */
+    public void startCamera(View view) {
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if(permission != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
+        }
+        else {
+            startCamera();
+        }
+    }
+
+    /**
+     * Opens the camera so we can capture an image or video. See onActivityResult for how media
+     * is handled.
+     */
+    public void startCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // String tsPhoto = new Timestamp(System.currentTimeMillis()).toString() + ".jpg";
+        String tsPhoto = (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())) + ".jpg";
+        // String tsPhoto = getDateTimeInstance().toString() + ".jpg";
+        FileManager manager = new FileManager(getApplicationContext());
+        File pic = new File(manager.getPhotosDir(), tsPhoto);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
+        startActivityForResult(intent, CAMERA_REQUEST_CODE);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            }
+            else {
+                runOnUiThread(makeToast("Can't access camera without your permission."));
+            }
+        }
+    }
+
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            faceProxy.process(interest, mainActivity);
+            faceProxy.process(interest, m_mainActivity);
         }
     };
 
