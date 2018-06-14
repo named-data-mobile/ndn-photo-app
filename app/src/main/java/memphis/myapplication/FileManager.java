@@ -34,19 +34,16 @@ public class FileManager {
     private File m_selfDir;
     private File m_photosDir;
     private File m_filesDir;
+    private File m_rcvdFilesDir;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
         m_appRootPath = context.getExternalFilesDir(null).toString();
-        Log.d("m_appRootPath", m_appRootPath);
         m_friendsDir = new File(m_appRootPath, "/friends");
-        Log.d("m_friendsDir", m_friendsDir.toString());
         m_selfDir = new File(m_appRootPath, "/self");
-        Log.d("m_selfDir", m_selfDir.toString());
         m_photosDir = new File(m_appRootPath, "/photos");
-        Log.d("m_photosDir", m_photosDir.toString());
         m_filesDir = new File(m_appRootPath, "/files");
-        Log.d("m_filesDir", m_filesDir.toString());
+        m_rcvdFilesDir = new File(m_appRootPath, "/received_files");
 
         if(!dirsCreated) {
             createDirs();
@@ -73,6 +70,8 @@ public class FileManager {
         return m_filesDir.toString();
     }
 
+    public String getRcvdFilesDir() {return m_rcvdFilesDir.toString(); }
+
     /**
      * Creates the necessary directories for app usage. This includes a friends directory where
      * each of the user's friends' public key and photos will be stored. It also includes a keys
@@ -82,18 +81,17 @@ public class FileManager {
      *
      * @return Returns a boolean value indicating whether all directories were created or not.
      */
-    private boolean createDirs() {
+    private void createDirs() {
 
         Log.d("createDirs", m_friendsDir.toString());
         boolean madeFriends = (m_friendsDir).mkdir();
         boolean madeSelf = (m_selfDir).mkdir();
         boolean madePhotos = (m_photosDir).mkdir();
         boolean madeFiles = (m_filesDir).mkdir();
-        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles);
+        boolean madeRcvdFiles = (m_rcvdFilesDir).mkdir();
+        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles);
         Log.d("createDirs", s);
         dirsCreated = true;
-
-        return (madeFriends && madeSelf && madePhotos && madeFiles);
     }
 
     /**
@@ -223,7 +221,7 @@ public class FileManager {
      * @return String path to QR code
      */
     protected String getMyQRPath() {
-        return (m_selfDir + "/myQR");
+        return (m_selfDir + "/myQR.png");
     }
 
     /**

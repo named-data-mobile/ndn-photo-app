@@ -46,6 +46,7 @@ public class Login extends AppCompatActivity {
         int attempt = loginAttempt(username, password);
         if(attempt == 0) {
             // save username and go to mainpage
+            Globals.setIsLoggedIn(true);
             FileManager manager = new FileManager(getApplicationContext());
             manager.saveUsername(username);
             Intent intent = new Intent(this, MainActivity.class);

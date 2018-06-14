@@ -61,9 +61,9 @@
     <ListView
         android:id="@+id/listview"
         android:layout_width="352dp"
-        android:layout_height="337dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginTop="236dp"
+        android:layout_height="257dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="292dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -118,5 +118,18 @@
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toEndOf="@+id/QRButton"
         app:layout_constraintTop_toBottomOf="@+id/fileSelectButton" />
+
+    <Button
+        android:id="@+id/viewRcvdButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:onClick="browseRcvdFiles"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF"
+        android:text="Browse Rcvd"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scanFileQR" />
 
 </android.support.constraint.ConstraintLayout>

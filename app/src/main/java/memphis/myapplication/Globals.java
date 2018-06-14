@@ -16,6 +16,7 @@ public class Globals extends Application {
     public static IdentityManager identityManager;
     public static KeyChain keyChain;
     public static boolean has_setup_security;
+    public static boolean isLoggedIn;
 
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
     // if they are present. Face and FaceProxy can be new, but face will need to set things with keychain again.
@@ -47,7 +48,9 @@ public class Globals extends Application {
         keyChain = kc;
     }
 
-    public static void setHasSecurity(Boolean yesNo) {
+    public static void setHasSecurity(boolean yesNo) {
         has_setup_security = yesNo;
     }
+
+    public static void setIsLoggedIn(boolean yesNo) {isLoggedIn = yesNo; }
 }

@@ -11,11 +11,10 @@
   <component name="ChangeListManager">
     <list default="true" id="a93d8d5b-b873-4612-8540-cdb5659234a9" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
     </list>
     <ignored path="$PROJECT_DIR$/.gradle/" />
@@ -67,29 +66,25 @@
       <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-680">
-              <caret line="26" column="82" lean-forward="false" selection-start-line="26" selection-start-column="82" selection-end-line="26" selection-end-column="82" />
+            <state relative-caret-position="-634">
+              <caret line="69" column="4" lean-forward="false" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="4" />
               <folding>
-                <element signature="e#2906#2914#0" expanded="true" />
-                <element signature="e#8060#8088#0" expanded="true" />
-                <element signature="e#8328#9201#0" expanded="true" />
-                <element signature="e#9200#9201#0" expanded="true" />
-                <element signature="e#9615#9773#0" expanded="true" />
-                <element signature="e#9772#9773#0" expanded="true" />
-                <element signature="e#13125#13531#0" expanded="true" />
-                <element signature="e#13530#13531#0" expanded="true" />
-                <element signature="e#13553#14049#0" expanded="true" />
-                <element signature="e#14048#14049#0" expanded="true" />
-                <element signature="e#14275#15206#0" expanded="true" />
-                <element signature="e#15205#15206#0" expanded="true" />
-                <element signature="e#16775#16783#0" expanded="true" />
-                <element signature="e#28650#29039#0" expanded="true" />
-                <element signature="e#29038#29039#0" expanded="true" />
-                <marker date="1528484519360" expanded="false" signature="10529:10657" ph="(VerifySegment) (data) → {" />
-                <marker date="1528484519360" expanded="false" signature="10783:10806" ph="}" />
-                <marker date="1528484519360" expanded="false" signature="10824:10946" ph="(content) → {" />
-                <marker date="1528484519360" expanded="false" signature="11535:11558" ph="}" />
+                <element signature="imports" expanded="true" />
+                <marker date="1529010206179" expanded="false" signature="10640:10768" ph="(VerifySegment) (data) → {" />
+                <marker date="1529010206179" expanded="false" signature="10894:10917" ph="}" />
+                <marker date="1529010206179" expanded="false" signature="10935:11057" ph="(content) → {" />
+                <marker date="1529010206179" expanded="false" signature="11646:11669" ph="}" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Login.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="204">
+              <caret line="18" column="48" lean-forward="false" selection-start-line="18" selection-start-column="48" selection-end-line="18" selection-end-column="48" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -97,8 +92,8 @@
       <file leaf-file-name="FileManager.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="459">
-              <caret line="245" column="9" lean-forward="false" selection-start-line="245" selection-start-column="9" selection-end-line="245" selection-end-column="9" />
+            <state relative-caret-position="170">
+              <caret line="72" column="72" lean-forward="false" selection-start-line="72" selection-start-column="72" selection-end-line="72" selection-end-column="72" />
               <folding />
             </state>
           </provider>
@@ -107,8 +102,8 @@
       <file leaf-file-name="activity_main.xml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
           <provider editor-type-id="text-editor">
-            <state relative-caret-position="-968">
-              <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
+            <state relative-caret-position="249">
+              <caret line="129" column="35" lean-forward="false" selection-start-line="129" selection-start-column="35" selection-end-line="129" selection-end-column="35" />
               <folding />
             </state>
           </provider>
@@ -122,7 +117,9 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="238">
               <caret line="18" column="32" lean-forward="false" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
-              <folding />
+              <folding>
+                <element signature="imports" expanded="false" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -130,9 +127,11 @@
       <file leaf-file-name="Globals.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="102">
-              <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="295">
+              <caret line="52" column="5" lean-forward="true" selection-start-line="52" selection-start-column="5" selection-end-line="52" selection-end-column="5" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -152,7 +151,7 @@
       <file leaf-file-name="FetchingTask.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="119">
+            <state relative-caret-position="-538">
               <caret line="7" column="36" lean-forward="false" selection-start-line="7" selection-start-column="36" selection-end-line="7" selection-end-column="36" />
               <folding />
             </state>
@@ -171,17 +170,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>saveyourself</find>
-      <find>makeQRFriendCode</find>
-      <find>getusername</find>
-      <find>displayfile</find>
-      <find>security was setup</find>
-      <find>Globals.faceProxy</find>
-      <find>Globals</find>
-      <find>mainactivity</find>
-      <find>Thread.sleep</find>
-      <find>scan</find>
-      <find>intentin</find>
       <find>intent</find>
       <find>Globals.face</find>
       <find>onactivity</find>
@@ -201,6 +189,17 @@
       <find>sign</find>
       <find>new File</find>
       <find>saveFileQR</find>
+      <find>savefile</find>
+      <find>Intent.AC</find>
+      <find>documentsc</find>
+      <find>FILE_QR_REQUEST</find>
+      <find>getMYQRPath</find>
+      <find>ACTION</find>
+      <find>rcv</find>
+      <find>received</find>
+      <find>saveContent</find>
+      <find>onactivityResult</find>
+      <find>display</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -1950,7 +1949,6 @@
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRScanner.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_app_navigator.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SignUp.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" />
@@ -1961,11 +1959,12 @@
         <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/PublishingTask.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/NetworkService.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java" />
       </list>
     </option>
   </component>
@@ -1990,6 +1989,21 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scratches" />
+      <pane id="AndroidView">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ndn-snapchat" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ndn-snapchat" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -2227,21 +2241,6 @@
         </subPane>
       </pane>
       <pane id="Scope" />
-      <pane id="AndroidView">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ndn-snapchat" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="ndn-snapchat" />
-              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.other.NonAndroidModuleNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
     </panes>
   </component>
@@ -2316,7 +2315,7 @@
       </Profilers>
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522168" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495012" />
       </method>
     </configuration>
     <configuration default="false" name="QRScanner" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false" temporary="true">
@@ -2365,7 +2364,7 @@
       <option name="ACTIVITY_CLASS" value="memphis.myapplication.QRScanner" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522168" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495012" />
       </method>
     </configuration>
     <configuration default="false" name="AppNavigator" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false" temporary="true">
@@ -2414,7 +2413,7 @@
       <option name="ACTIVITY_CLASS" value="memphis.myapplication.AppNavigator" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522169" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495012" />
       </method>
     </configuration>
     <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
@@ -2487,7 +2486,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522169" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495014" />
       </method>
     </configuration>
     <configuration default="true" type="AndroidTestRunConfigurationType" factoryName="Android Instrumented Tests">
@@ -2535,7 +2534,7 @@
       </Profilers>
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522170" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495014" />
       </method>
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -2567,27 +2566,6 @@
         </option>
         <option name="vmOptions" />
       </ExternalSystemSettings>
-      <method />
-    </configuration>
-    <configuration default="true" type="JUnit" factoryName="JUnit">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <module name="" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
-      <option name="PACKAGE_NAME" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="METHOD_NAME" />
-      <option name="TEST_OBJECT" value="class" />
-      <option name="VM_PARAMETERS" />
-      <option name="PARAMETERS" />
-      <option name="WORKING_DIRECTORY" />
-      <option name="ENV_VARIABLES" />
-      <option name="PASS_PARENT_ENVS" value="true" />
-      <option name="TEST_SEARCH_SCOPE">
-        <value defaultName="singleModule" />
-      </option>
-      <envs />
-      <patterns />
       <method />
     </configuration>
     <configuration default="true" type="JarApplication" factoryName="JAR Application">
@@ -2718,7 +2696,7 @@
       <option name="ACTIVITY_CLASS" value="" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522175" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495022" />
       </method>
     </configuration>
     <configuration default="false" name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
@@ -2767,7 +2745,7 @@
       <option name="ACTIVITY_CLASS" value="memphis.myapplication.MainActivity" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522175" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495023" />
       </method>
     </configuration>
     <configuration default="false" name="Login" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
@@ -2816,7 +2794,7 @@
       <option name="ACTIVITY_CLASS" value="memphis.myapplication.Login" />
       <method>
         <option name="Android.Gradle.BeforeRunTask" enabled="true" />
-        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1528484522176" />
+        <option name="com.android.instantApps.provision.BeforeRunTask" enabled="true" clearCache="false" clearProvisionedDevices="false" myTimestamp="1529012495023" />
       </method>
     </configuration>
     <list size="6">
@@ -3255,16 +3233,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="50" column="65" lean-forward="false" selection-start-line="50" selection-start-column="65" selection-end-line="50" selection-end-column="65" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriend.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1088">
@@ -3293,14 +3261,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/PublishingTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="117" column="3" lean-forward="false" selection-start-line="117" selection-start-column="3" selection-end-line="117" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/PublishingTask.java" />
     <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
@@ -3312,30 +3273,13 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="7" column="36" lean-forward="false" selection-start-line="7" selection-start-column="36" selection-end-line="7" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="-968">
-          <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer2">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AppNavigator.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="238">
           <caret line="18" column="32" lean-forward="false" selection-start-line="18" selection-start-column="32" selection-end-line="18" selection-end-column="32" />
-          <folding />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -3349,46 +3293,61 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
+        <state relative-caret-position="170">
+          <caret line="72" column="72" lean-forward="false" selection-start-line="72" selection-start-column="72" selection-end-line="72" selection-end-column="72" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="129" column="35" lean-forward="false" selection-start-line="129" selection-start-column="35" selection-end-line="129" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+      <provider selected="true" editor-type-id="android-designer2">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="459">
-          <caret line="245" column="9" lean-forward="false" selection-start-line="245" selection-start-column="9" selection-end-line="245" selection-end-column="9" />
+        <state relative-caret-position="-538">
+          <caret line="7" column="36" lean-forward="false" selection-start-line="7" selection-start-column="36" selection-end-line="7" selection-end-column="36" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="295">
+          <caret line="52" column="5" lean-forward="true" selection-start-line="52" selection-start-column="5" selection-end-line="52" selection-end-column="5" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Login.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="18" column="48" lean-forward="false" selection-start-line="18" selection-start-column="48" selection-end-line="18" selection-end-column="48" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-680">
-          <caret line="26" column="82" lean-forward="false" selection-start-line="26" selection-start-column="82" selection-end-line="26" selection-end-column="82" />
+        <state relative-caret-position="-634">
+          <caret line="69" column="4" lean-forward="false" selection-start-line="69" selection-start-column="4" selection-end-line="69" selection-end-column="4" />
           <folding>
-            <element signature="e#2906#2914#0" expanded="true" />
-            <element signature="e#8060#8088#0" expanded="true" />
-            <element signature="e#8328#9201#0" expanded="true" />
-            <element signature="e#9200#9201#0" expanded="true" />
-            <element signature="e#9615#9773#0" expanded="true" />
-            <element signature="e#9772#9773#0" expanded="true" />
-            <element signature="e#13125#13531#0" expanded="true" />
-            <element signature="e#13530#13531#0" expanded="true" />
-            <element signature="e#13553#14049#0" expanded="true" />
-            <element signature="e#14048#14049#0" expanded="true" />
-            <element signature="e#14275#15206#0" expanded="true" />
-            <element signature="e#15205#15206#0" expanded="true" />
-            <element signature="e#16775#16783#0" expanded="true" />
-            <element signature="e#28650#29039#0" expanded="true" />
-            <element signature="e#29038#29039#0" expanded="true" />
-            <marker date="1528484519360" expanded="false" signature="10529:10657" ph="(VerifySegment) (data) → {" />
-            <marker date="1528484519360" expanded="false" signature="10783:10806" ph="}" />
-            <marker date="1528484519360" expanded="false" signature="10824:10946" ph="(content) → {" />
-            <marker date="1528484519360" expanded="false" signature="11535:11558" ph="}" />
+            <element signature="imports" expanded="true" />
+            <marker date="1529010206179" expanded="false" signature="10640:10768" ph="(VerifySegment) (data) → {" />
+            <marker date="1529010206179" expanded="false" signature="10894:10917" ph="}" />
+            <marker date="1529010206179" expanded="false" signature="10935:11057" ph="(content) → {" />
+            <marker date="1529010206179" expanded="false" signature="11646:11669" ph="}" />
           </folding>
         </state>
       </provider>

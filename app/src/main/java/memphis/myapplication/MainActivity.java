@@ -2,6 +2,7 @@ package memphis.myapplication;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -51,6 +52,7 @@ import net.named_data.jndn.util.SegmentFetcher;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
     private final int CAMERA_REQUEST_CODE = 3;
+    private final int VIEW_FILE = 4;
 
     private boolean netThreadShouldStop = true;
     // private boolean has_setup_security = false;
@@ -252,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void fetch_data(final Interest interest) {
-        // interest.setInterestLifetimeMilliseconds(20000);
+        interest.setInterestLifetimeMilliseconds(6000);
         /*SegmentFetcher.fetch(
                 face,
                 interest,
@@ -465,11 +468,25 @@ public class MainActivity extends AppCompatActivity {
             else if (requestCode == CAMERA_REQUEST_CODE) {
                 try {
                     Bitmap pic = (Bitmap) resultData.getExtras().get("data");
-                    runOnUiThread(makeToast(pic.toString()));
+                    // runOnUiThread(makeToast(pic.toString()));
                 }
                 catch (NullPointerException e) {
                     e.printStackTrace();
-                    runOnUiThread(makeToast("Something went wrong. Null image."));
+                    // runOnUiThread(makeToast("Something went wrong. Null image."));
+                }
+            }
+            else if (requestCode == VIEW_FILE){
+                ContentResolver cr = getContentResolver();
+                try {
+                    uri = resultData.getData();
+                    // cr.openInputStream(uri);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(uri);
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(intent);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    runOnUiThread(makeToast("Unable to open file."));
                 }
             }
             else {
@@ -538,9 +555,11 @@ public class MainActivity extends AppCompatActivity {
         // We're going to find a png file of our choosing (should be used for displaying QR codes,
         // but it can display any image)
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        // fix this: this displays every file. We should limit the scope to a specific directory and
-        // image files, if possible.
-        intent.setType("*/*");
+        FileManager manager = new FileManager(getApplicationContext());
+        File appDir = new File(manager.getFilesDir());
+        Uri uri = Uri.fromFile(appDir);
+        // start in app's file directory and limit allowable selections to .png files
+        intent.setDataAndType(uri, "image/png");
         startActivityForResult(intent, FILE_QR_REQUEST_CODE);
     }
 
@@ -610,6 +629,19 @@ public class MainActivity extends AppCompatActivity {
     public void startMakingFriends(View view) {
         Intent intent = new Intent(this, AddFriend.class);
         startActivity(intent);
+    }
+
+    // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
+    // file expolorer and opener.
+    public void browseRcvdFiles(View view) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        FileManager manager = new FileManager(getApplicationContext());
+        File rcvFilesDir = new File(manager.getRcvdFilesDir());
+        Uri uri = Uri.fromFile(rcvFilesDir);
+        Log.d("browse", uri.toString());
+        // start in app's file directory and limit allowable selections to .png files
+        intent.setDataAndType(uri, "*/*");
+        startActivityForResult(intent, VIEW_FILE);
     }
 
     /**
