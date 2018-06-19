@@ -19,10 +19,19 @@
         <service android:name=".NetworkService">
         </service>
 
-        <activity android:name=".Login">
+        <activity android:name=".IntroActivity"
+                  android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Login"
+                  android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
             </intent-filter>
         </activity>
 
@@ -36,13 +45,14 @@
         <activity android:name=".AppNavigator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
             </intent-filter>
         </activity>
 
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <!--<category android:name="android.intent.category.LAUNCHER" />-->
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -50,32 +60,6 @@
         <activity
             android:name=".DisplayFileQRCode"
             android:parentActivityName=".MainActivity" >
-        </activity>
-
-        <activity
-            android:name=".FileSelectActivity"
-            android:parentActivityName=".MainActivity"
-            android:label="File Selector" >
-            <intent-filter>
-                <action
-                    android:name="android.intent.action.PICK"/>
-                <category
-                    android:name="android.intent.category.DEFAULT"/>
-                <category
-                    android:name="android.intent.category.OPENABLE"/>
-                <data android:mimeType="text/plain"/>
-                <data android:mimeType="image/*"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".QRExchange"
-            android:label="Exchange"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.PICK" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
 
         <activity android:name=".SignUp"

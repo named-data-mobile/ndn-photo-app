@@ -83,7 +83,6 @@ public class FileManager {
      */
     private void createDirs() {
 
-        Log.d("createDirs", m_friendsDir.toString());
         boolean madeFriends = (m_friendsDir).mkdir();
         boolean madeSelf = (m_selfDir).mkdir();
         boolean madePhotos = (m_photosDir).mkdir();

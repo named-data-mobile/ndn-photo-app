@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
+    private Session session;
     final MainActivity m_mainActivity = this;
     String retrieved_data = "";
     AndroidSqlite3IdentityStorage identityStorage;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        session = new Session(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.filesList = new ArrayList<Uri>();

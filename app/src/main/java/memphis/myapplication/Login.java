@@ -1,7 +1,9 @@
 package memphis.myapplication;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -46,11 +48,14 @@ public class Login extends AppCompatActivity {
         int attempt = loginAttempt(username, password);
         if(attempt == 0) {
             // save username and go to mainpage
-            Globals.setIsLoggedIn(true);
             FileManager manager = new FileManager(getApplicationContext());
             manager.saveUsername(username);
+            Session session = new Session(getApplicationContext());
+            session.setLoginStatus();
+            // uncomment this later; in manifest, add no history option for Login
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
+            // finish();
         }
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
