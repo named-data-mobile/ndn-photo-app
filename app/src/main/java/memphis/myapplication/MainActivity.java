@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+    Name registered_prefix;
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
@@ -286,6 +287,11 @@ public class MainActivity extends AppCompatActivity {
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
+                    }
+                },
+                new SegmentFetcher.OnError() {
+                    @Override
+                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
                         Log.d("fetch_data onError", message);
                         runOnUiThread(makeToast(message));
                     }
@@ -380,14 +386,9 @@ public class MainActivity extends AppCompatActivity {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
-        // Filter to only show results that can be "opened", such as a
-        // file (as opposed to a list of contacts or timezones)
-
         // To search for all documents available via installed storage providers,
         // it would be "*/*".
         intent.setType("*/*");
-
         startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
     }
 
