@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -44,7 +43,7 @@ public class AddFriendActivity extends AppCompatActivity {
         if(!file.exists()) {
             manager.saveMyQRCode(QRExchange.makeQRFriendCode(getApplicationContext()));
         }
-        Intent display = new Intent(this, DisplayFileQRCode.class);
+        Intent display = new Intent(this, DisplayQRActivity.class);
         display.setData(Uri.fromFile(file));
         startActivity(display);
     }

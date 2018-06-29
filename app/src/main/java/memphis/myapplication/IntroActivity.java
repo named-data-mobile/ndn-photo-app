@@ -11,10 +11,10 @@ public class IntroActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         Session session = new Session(getApplicationContext());
         if (!session.getLoginStatus()) {
-            Intent intent = new Intent(this, Login.class);
+            Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
-        // not working as expected. Login finishes but IntroActivity does not call onCreate again
+        // not working as expected. LoginActivity finishes but IntroActivity does not call onCreate again
         else {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);

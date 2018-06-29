@@ -439,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     // set up a new Activity for displaying. This way the back button brings us back
                     // to main activity.
-                    Intent display = new Intent(this, DisplayFileQRCode.class);
+                    Intent display = new Intent(this, DisplayQRActivity.class);
                     display.setData(resultData.getData());
                     startActivity(display);
                 } catch (NullPointerException e) {

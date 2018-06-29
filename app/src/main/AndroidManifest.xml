@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Login"
+        <activity android:name=".LoginActivity"
                   android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -58,11 +58,11 @@
         </activity>
 
         <activity
-            android:name=".DisplayFileQRCode"
+            android:name=".DisplayQRActivity"
             android:parentActivityName=".MainActivity" >
         </activity>
 
-        <activity android:name=".SignUp"
+        <activity android:name=".SignUpActivity"
             android:label="ndn-snapchat"
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">

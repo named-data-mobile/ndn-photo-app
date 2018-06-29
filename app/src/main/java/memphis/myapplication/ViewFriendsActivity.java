@@ -1,14 +1,23 @@
 package memphis.myapplication;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 public class ViewFriendsActivity extends AppCompatActivity {
 
+    // add border around each friend; increase font size; change colors
     @Override
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
@@ -16,19 +25,44 @@ public class ViewFriendsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         int count = 0;
         LinearLayout linearLayout = findViewById(R.id.friendLinearLayout);
-        for(String friend : intent.getStringArrayListExtra("friendsList")) {
-            TextView friendName = new TextView(this);
-            friendName.setText(friend);
-            linearLayout.addView(friendName);
-            count++;
-        }
-        if(count == 0) {
+        ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
+
+        // if we don't have any saved friends, we have nothing to display; tell user
+        if(friendsList.isEmpty()) {
             TextView message = new TextView(this);
-            message.setText("You currently haven't added any friends.");
+            String s = "You currently haven't added any friends.";
+            message.setText(s);
+            message.setTextColor(0xFFFFFF);
+            message.setTextSize(24);
             linearLayout.addView(message);
+        }
+        else {
+            // programmatically create TextViews to place in the LinearLayout since we don't know how
+            // many friends a person will have
+            int accent = ContextCompat.getColor(this, R.color.colorAccent);
+            int black = ContextCompat.getColor(this, R.color.jetBlack);
+            int white = ContextCompat.getColor(this, R.color.white);
+            for (String friend : friendsList) {
+                Log.d("ViewFriends", "Friend" + count + " " + friend);
+                TextView friendName = new TextView(this);
+                friendName.setText(friend);
+                friendName.setTextColor(white);
+                friendName.setTextSize(34);
+                // create a border for each TextView (friend slot)
+                GradientDrawable drawable = new GradientDrawable();
+                drawable.setColor(accent);
+                drawable.setStroke(2, black);
+                // place border around TextView
+                friendName.setBackground(drawable);
+                // Add TextView to LinearLayout
+                linearLayout.addView(friendName);
+                count++;
+            }
         }
     }
 
+    // definitely need some functionality for the friends in the list; should we make them removable
+    // here or link off to a different page where you can view their profile and remove them, if you want?
     public void removeFriend(View view) {
         FileManager manager = new FileManager(getApplicationContext());
 
