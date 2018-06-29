@@ -12,13 +12,13 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
-public class AddFriend extends AppCompatActivity {
+public class AddFriendActivity extends AppCompatActivity {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
-    private final int DISPLAY_QR_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +47,14 @@ public class AddFriend extends AppCompatActivity {
         Intent display = new Intent(this, DisplayFileQRCode.class);
         display.setData(Uri.fromFile(file));
         startActivity(display);
+    }
+
+    public void viewFriendsList(View view) {
+        FileManager manager = new FileManager(getApplicationContext());
+        ArrayList<String> friendsList = manager.getFriendsList();
+        Intent intent = new Intent(this, ViewFriendsActivity.class);
+        intent.putStringArrayListExtra("friendsList", friendsList);
+        startActivity(intent);
     }
 
     @Override

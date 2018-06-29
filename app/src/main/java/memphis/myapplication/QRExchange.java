@@ -44,6 +44,8 @@ public class QRExchange {
     /**
      * come back to this. I save a string of the DER public key. Not sure if desired end result.
      */
+    // consider changing this to send an interest for the key since it's in DER format. It does not
+    // seem to play nice with strings.
     public static Bitmap makeQRFriendCode(Context context) {
         FileManager manager = new FileManager(context);
         String name = manager.getUsername();

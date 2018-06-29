@@ -47,12 +47,10 @@ import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.pib.PibImpl;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
-import net.named_data.jndn.util.SegmentFetcher;
 
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -140,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {*/
         FileManager manager = new FileManager(getApplicationContext());
         // /ndn-snapchat/<username>/KEY
-        Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
         face = new Face();
         //faceProxy = new FaceProxy();
@@ -186,9 +184,9 @@ public class MainActivity extends AppCompatActivity {
         Globals.setFaceProxy(new FaceProxy());
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
-        Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        //Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
         try {
-            register_with_NFD(username);
+            register_with_NFD(appAndUsername);
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
@@ -397,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
                                  Intent resultData) {
 
         Log.d("onActivityResult", "requestCode: " + requestCode);
-        Uri uri = null;
+        Uri uri;
         if (resultData != null) {
             if (requestCode == FILE_SELECT_REQUEST_CODE) {
                 final ListView lv = (ListView) findViewById(R.id.listview);
@@ -630,7 +628,7 @@ public class MainActivity extends AppCompatActivity {
 
     // start activity for add friends
     public void startMakingFriends(View view) {
-        Intent intent = new Intent(this, AddFriend.class);
+        Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
     }
 

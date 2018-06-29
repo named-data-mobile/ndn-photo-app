@@ -35,7 +35,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AddFriend" >
+        <activity android:name=".AddFriendActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -69,6 +69,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ViewFriendsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.DEFAULT"/>
             </intent-filter>
         </activity>
 

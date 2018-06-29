@@ -26,7 +26,7 @@ public class AppNavigator extends AppCompatActivity {
 
     // start activity for add friends
     public void startMakingFriends(View view) {
-        Intent intent = new Intent(this, AddFriend.class);
+        Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
     }
 }

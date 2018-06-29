@@ -6,6 +6,8 @@ import android.util.Log;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
+import net.named_data.jndn.KeyLocator;
+import net.named_data.jndn.Name;
 import net.named_data.jndn.Signature;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.util.Blob;
@@ -47,6 +49,8 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         m_baseInterest = interests[0];
         m_shouldReturn = false;
         m_received = false;
+        final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
+        Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
 
             SegmentFetcher.fetch(
                     m_face,
@@ -57,7 +61,9 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                             /*Log.d("VerifySegment", "We just return true.");
                             return true;*/
                             Signature signature = data.getSignature();
-                            Log.d("VerifySegment", signature.toString());
+                            KeyLocator keyLocator = KeyLocator.getFromSignature(signature);
+                            Name keyName = keyLocator.getKeyName();
+                            Log.d("VerifySegment", signature.toString() + " keyLocator:" + keyLocator + " " + keyName.toUri());
                             return true;
                         }
                     },

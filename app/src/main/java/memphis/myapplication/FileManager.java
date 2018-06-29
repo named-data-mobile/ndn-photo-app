@@ -1,12 +1,10 @@
 package memphis.myapplication;
 
-import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.util.Base64;
-import android.widget.Toast;
 
+import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.util.Blob;
@@ -18,14 +16,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.util.ArrayList;
 
 public class FileManager {
 
@@ -92,66 +85,6 @@ public class FileManager {
         Log.d("createDirs", s);
         dirsCreated = true;
     }
-
-    /**
-     * Creates a new RSA key pair. This is needed for encrypting/decrypting advertised names.
-     * @return returns RSA key pair if successful; returns false if an error occurs
-     */
-    /*private KeyPair generateKeys() {
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            return keyGen.generateKeyPair();
-        }
-        catch (NoSuchAlgorithmException e) {
-            Log.d("QR", "RSA algorithm not found. Keys were not generated.");
-            return null;
-        }
-    }*/
-
-    /**
-     * Saves the generated RSA key pair to file. This is intended to only be called once upon
-     * a successful sign up, so our keys are not overwritten.
-     * @return returns true if the keys were successfully written to file; false if anything else
-     */
-    // you might need to provide an easy way for someone to create new key pairs say in the case that
-    // they deleted or lost their previous pair, or they uninstall/reinstall the app. Their friends
-    // will need to know.
-    /*protected boolean saveKeys() {
-        boolean wasCreated = createDirs();
-        if (!wasCreated) {
-            return false;
-        }
-        KeyPair keypair = generateKeys();
-        if (keypair != null) {
-            byte[] encodedPrivateKey = keypair.getPrivate().getEncoded();
-            byte[] encodedPubKey = keypair.getPublic().getEncoded();
-
-            // want to use string format of keys when I save to file
-            String privateKey = Base64.encodeToString(encodedPrivateKey, 0);
-            String pubKey = Base64.encodeToString(encodedPubKey, 0);
-
-            File privateKeyFile = new File(m_selfDir, "/id_rsa");
-            File pubKeyFile = new File(m_selfDir, "/id_rsa.pub");
-
-            try {
-                FileWriter writer = new FileWriter(privateKeyFile);
-                writer.write("----BEGIN PRIVATE KEY----\n");
-                writer.write(privateKey);
-                writer.close();
-
-                writer = new FileWriter(pubKeyFile);
-                writer.write("----BEGIN PUBLIC KEY----\n");
-                writer.write(pubKey);
-                writer.close();
-                return true;
-            }
-            catch (IOException e) {
-                Log.d("saveKeys", "IOException: " + e.toString());
-            }
-        }
-        return false;
-    }*/
 
     /**
      * Saves your username to file so we can retrieve it later.
@@ -229,43 +162,12 @@ public class FileManager {
      */
     // public String getPubKey() {
     public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
-        //try {
-            // may change implementation to work with file stored jndn security stuff
-            // Globals.privateKeyStorage.getPublicKey
-        // note to self!!!!!!!!!!!!!!!!!finish QR stuff now for add friend
         Name keyName = new Name("/ndn-snapchat/" + getUsername() + "/KEY");
         try {
             return Globals.privateKeyStorage.getPublicKey(new Name(keyName));
         }
         catch (SecurityException e) {
             e.printStackTrace();
-            return null;
-        }
-    }
-
-    public String getPrivateKey() {
-        try {
-            StringBuilder key = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa"));
-            // first line of the public key file is ----BEGIN PRIVATE KEY---- so we need to skip it
-            String line = reader.readLine();
-            if (line != null) {
-                line = reader.readLine();
-            }
-
-            while(line != null) {
-
-                // and read the rest (assuming the keys are stored in separate files and the
-                // first line is just ----BEGIN PRIVATE KEY----
-                key.append(line);
-                line = reader.readLine();
-            }
-            reader.close();
-            // need to check this is not empty elsewhere
-            return key.toString();
-        }
-        catch(IOException e) {
-            Log.d("getPubKey", "IOException: " + e.toString());
             return null;
         }
     }
@@ -284,6 +186,7 @@ public class FileManager {
             try {
                 boolean wasCreated = friendFile.createNewFile();
                 if(wasCreated) {
+                    // consider changing to byte content
                     FileWriter writer = new FileWriter(friendFile);
                     writer.write(username);
                     writer.write(pubKey);
@@ -297,6 +200,38 @@ public class FileManager {
         }
         return -1;
     }
+
+    public ArrayList<String> getFriendsList() {
+        ArrayList<String> friendsList = new ArrayList<>();
+        File[] files = m_friendsDir.listFiles();
+        for(File file : files) {
+            friendsList.add(file.getName());
+        }
+        return friendsList;
+    }
+
+    /*public Blob getFriendKey(Interest interest) {
+        String s = interest.getName().toUri();
+        // want the second '/' from /ndn-snapchat/username/... so we can extract username
+        int index = s.substring(1).indexOf('/');
+        String beginning = s.substring(index+1);
+        String username = beginning.substring(0, beginning.indexOf('/'));
+        try {
+            File friendFile = new File(m_friendsDir + "/" + username);
+            if(friendFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(friendFile));
+                StringBuffer strBuff = new StringBuffer();
+                String line;
+                while((line = br.readLine()) != null) {
+                    strBuff.append(line);
+                }
+                Blob blob = new Blob((strBuff.substring(strBuff.indexOf(' '))).getBytes());
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+    }*/
 
     /**
      * Saves data we retrieved from SegmentFetcher to file.
@@ -339,6 +274,13 @@ public class FileManager {
         return false;
     }
 
+    /**
+     * Saves the Name of your file in a QR code. You can present this code to a friend to scan for
+     * easy retrieval.
+     * @param bitmap provided bitmap to form png of QR code
+     * @param path provided filepath; we will use this to name the file after changing its type to png
+     * @return true or false depending on success
+     */
     public boolean saveFileQR(Bitmap bitmap, String path) {
         // do file operations here to remove .txt or .pdf or whatever and append .png
         int dotIndex = path.lastIndexOf(".");

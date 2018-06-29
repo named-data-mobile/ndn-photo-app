@@ -10,11 +10,11 @@
         android:id="@+id/showYourCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="68dp"
-        android:layout_marginTop="244dp"
-        android:background="@color/colorAccent"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="168dp"
         android:onClick="displayMyQR"
         android:text="Display QR"
+        android:background="@color/colorAccent"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,12 +23,25 @@
         android:id="@+id/scanFriendButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="244dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="40dp"
         android:onClick="scanFriendQR"
         android:text="Scan QR"
-        app:layout_constraintStart_toEndOf="@+id/showYourCode"
-        app:layout_constraintTop_toTopOf="parent"
         android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showYourCode" />
+
+    <Button
+        android:id="@+id/viewFriendsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="146dp"
+        android:layout_marginTop="40dp"
+        android:background="@color/colorAccent"
+        android:onClick="viewFriendsList"
+        android:text="View Friends"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scanFriendButton" />
 </android.support.constraint.ConstraintLayout>
