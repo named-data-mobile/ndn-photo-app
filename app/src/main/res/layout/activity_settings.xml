@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/profilePhoto"
+        android:layout_width="210dp"
+        android:layout_height="224dp"
+        android:scaleType="fitCenter" />
+
+    <Button
+        android:id="@+id/changePhotoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="39dp"
+        android:layout_marginTop="31dp"
+        android:background="@color/colorAccent"
+        android:onClick="changePhoto"
+        android:text="Change Photo"
+        android:textColor="@color/white"
+        app:layout_constraintStart_toEndOf="@+id/profilePhoto"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

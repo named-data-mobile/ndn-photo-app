@@ -1,7 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="memphis.myapplication.QRExchange">
+    tools:context="memphis.myapplication.MainActivity">
+
+    <!-- insert a drawable here so we can have white dots -->
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

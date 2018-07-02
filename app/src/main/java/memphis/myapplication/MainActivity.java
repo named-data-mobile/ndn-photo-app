@@ -14,12 +14,18 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -66,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
 
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
-    private Session session;
     final MainActivity m_mainActivity = this;
     String retrieved_data = "";
     AndroidSqlite3IdentityStorage identityStorage;
@@ -83,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    Name registered_prefix;
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
@@ -92,16 +96,18 @@ public class MainActivity extends AppCompatActivity {
     private final int VIEW_FILE = 4;
 
     private boolean netThreadShouldStop = true;
-    // private boolean has_setup_security = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        session = new Session(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupToolbar();
+
         this.filesList = new ArrayList<Uri>();
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        // check if user has given us permissions for storage manipulation (one time alert box)
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -114,18 +120,53 @@ public class MainActivity extends AppCompatActivity {
         // new addition; we need to check if these are even set though
         // Application app = (Globals) getApplicationContext();
         boolean faceExists = Globals.face == null;
-        Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
+        Log.d("onCreate", "Globals face is null?: " + faceExists +
+                "; Globals security is setup: " + Globals.has_setup_security);
         if (faceExists || !Globals.has_setup_security) {
             setup_security();
         }
         face = Globals.face;
         faceProxy = Globals.faceProxy;
         keyChain = Globals.keyChain;
-        // problem here. Security is being setup twice which means something wrong is going on with
-        // the Globals class. The static variables aren't being set or we're losing them.
-        // since setup_security is its own thread, we are moving forward and hit startNetworkThread before setup_security finishes.
         startNetworkThread();
     }
+
+    private void setupToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        FileManager manager = new FileManager(getApplicationContext());
+        ImageView imageView = (ImageView) findViewById(R.id.toolbar_photo);
+        File file = manager.getProfilePhoto();
+        if(file.length() == 0) {
+            imageView.setImageResource(R.drawable.bandit);
+        }
+        else {
+            imageView.setImageURI(Uri.fromFile(file));
+        }
+        // toolbar.inflateMenu(R.menu.menu_main);
+        setSupportActionBar(toolbar);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        Log.d("menuInflation", "Inflated");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        Log.d("item", item.toString());
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     // Still think of MainActivity as our true MainActivity, but things will change towards background
     // automation and a better UI. A user is likely not going to know the actual filenames to ask for.
     // The app will take care of this process behind the scenes thanks to our synchronization protocol
@@ -133,15 +174,11 @@ public class MainActivity extends AppCompatActivity {
     // at the moment.
 
     public void setup_security() {
-        /*Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {*/
         FileManager manager = new FileManager(getApplicationContext());
         // /ndn-snapchat/<username>/KEY
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
         face = new Face();
-        //faceProxy = new FaceProxy();
         // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
         if (identityStorage == null) {
             identityStorage = new AndroidSqlite3IdentityStorage(
@@ -257,51 +294,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void fetch_data(final Interest interest) {
         interest.setInterestLifetimeMilliseconds(6000);
-        /*SegmentFetcher.fetch(
-                face,
-                interest,
-                new SegmentFetcher.VerifySegment() {
-                    @Override
-                    public boolean verifySegment(Data data) {
-                        Log.d("VerifySegment", "We just return true.");
-                        return true;
-                    }
-                },
-                new SegmentFetcher.OnComplete() {
-                    @Override
-                    public void onComplete(Blob content) {
-                        FileManager manager = new FileManager(getApplicationContext());
-                        boolean wasSaved = manager.saveContentToFile(content, interest.getName().toUri());
-                        if(wasSaved) {
-                            String msg = "We got content.";
-                            runOnUiThread(makeToast(msg));
-                        }
-                        else {
-                            String msg = "Failed to save retrieved content";
-                            runOnUiThread(makeToast(msg));
-                        }
-                    }
-                },
-                new SegmentFetcher.OnError() {
-                    @Override
-                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                    }
-                },
-                new SegmentFetcher.OnError() {
-                    @Override
-                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        Log.d("fetch_data onError", message);
-                        runOnUiThread(makeToast(message));
-                    }
-                });*/
+        // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
-        /*Thread fetchingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                new FetchingTask(m_mainActivity).execute(interest);
-            }
-        });
-        fetchingThread.start();*/
     }
 
     public void register_with_NFD(View view) {
@@ -379,8 +373,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void select_files(View view) {
-        /* final ListView lv = (ListView) findViewById(R.id.listview);
-        List<String> filesStrings = new ArrayList<String>();*/
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);

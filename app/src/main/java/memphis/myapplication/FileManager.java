@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class FileManager {
@@ -26,12 +27,13 @@ public class FileManager {
     private File m_friendsDir;
     private File m_selfDir;
     private File m_photosDir;
+    private File m_profilePhoto;
     private File m_filesDir;
     private File m_rcvdFilesDir;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
-        m_appRootPath = context.getExternalFilesDir(null).toString();
+        m_appRootPath = context.getFilesDir().toString();
         m_friendsDir = new File(m_appRootPath, "/friends");
         m_selfDir = new File(m_appRootPath, "/self");
         m_photosDir = new File(m_appRootPath, "/photos");
@@ -41,6 +43,8 @@ public class FileManager {
         if(!dirsCreated) {
             createDirs();
         }
+
+        m_profilePhoto = new File(m_photosDir, "profilePhoto.jpg");
     }
 
     public String getAppRootPath() {
@@ -59,11 +63,25 @@ public class FileManager {
         return m_photosDir.toString();
     }
 
+    public File getProfilePhoto() {return m_profilePhoto; }
+
     public String getFilesDir() {
         return m_filesDir.toString();
     }
 
     public String getRcvdFilesDir() {return m_rcvdFilesDir.toString(); }
+
+    public void setProfilePhoto(Bitmap bitmap) {
+        try{
+            FileOutputStream stream = new FileOutputStream(m_profilePhoto);
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+            stream.flush();
+            stream.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Creates the necessary directories for app usage. This includes a friends directory where
