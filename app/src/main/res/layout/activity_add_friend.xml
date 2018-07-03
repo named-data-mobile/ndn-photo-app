@@ -11,13 +11,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="148dp"
-        android:layout_marginTop="168dp"
+        android:layout_marginTop="37dp"
+        android:background="@color/colorAccent"
         android:onClick="displayMyQR"
         android:text="Display QR"
-        android:background="@color/colorAccent"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/add_remote_button" />
 
     <Button
         android:id="@+id/scanFriendButton"
@@ -44,4 +44,16 @@
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scanFriendButton" />
+
+    <Button
+        android:id="@+id/add_remote_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="122dp"
+        android:layout_marginTop="120dp"
+        android:background="@color/colorAccent"
+        android:text="Search For Friend"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

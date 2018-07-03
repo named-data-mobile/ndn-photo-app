@@ -25,6 +25,9 @@ public class AddFriendActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_friend);
     }
 
+    // To do: add new Intent for the remote friend button; this new activity should allow the user
+    // to search for usernames and befriend them (send friendship interest)
+
     public void scanFriendQR(View view) {
         IntentIntegrator scanner = new IntentIntegrator(this);
         // only want QR code scanner

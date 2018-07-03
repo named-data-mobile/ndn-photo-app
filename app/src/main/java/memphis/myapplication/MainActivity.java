@@ -14,7 +14,6 @@ import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
     final MainActivity m_mainActivity = this;
-    String retrieved_data = "";
     AndroidSqlite3IdentityStorage identityStorage;
     FilePrivateKeyStorage privateKeyStorage;
     IdentityManager identityManager;
@@ -107,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        // check if user has given us permissions for storage manipulation (one time alert box)
+        // check if user has given us permissions for storage manipulation (one time dialog box)
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -117,14 +115,15 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
-        // new addition; we need to check if these are even set though
-        // Application app = (Globals) getApplicationContext();
-        boolean faceExists = Globals.face == null;
+        boolean faceExists = (Globals.face == null);
         Log.d("onCreate", "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
+        // need to check if we have an existing face or if security is not setup; either way, we
+        // need to make changes; see setup_security()
         if (faceExists || !Globals.has_setup_security) {
             setup_security();
         }
+
         face = Globals.face;
         faceProxy = Globals.faceProxy;
         keyChain = Globals.keyChain;
@@ -142,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         else {
             imageView.setImageURI(Uri.fromFile(file));
         }
-        // toolbar.inflateMenu(R.menu.menu_main);
         setSupportActionBar(toolbar);
     }
 
@@ -173,6 +171,9 @@ public class MainActivity extends AppCompatActivity {
     // (and other things) letting the app know what to request. We are in a purely functional stage
     // at the moment.
 
+    /**
+     * This function sets up identity storage, keys, and the face our app will use.
+     */
     public void setup_security() {
         FileManager manager = new FileManager(getApplicationContext());
         // /ndn-snapchat/<username>/KEY
@@ -215,20 +216,24 @@ public class MainActivity extends AppCompatActivity {
         } catch (SecurityException e2) {
             defaultCertificateName = new Name("/bogus/certificate/name");
         }
+
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
         Globals.setFaceProxy(new FaceProxy());
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
-        //Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+
         try {
+            // since everyone is a potential producer, register your prefix
             register_with_NFD(appAndUsername);
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
     }
 
+    // Eventually, we should move this to a Service, but for now, this thread consistently calls
+    // face.processEvents() to check for any changes, such as publishing or fetching.
     private final Thread networkThread = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -271,6 +276,10 @@ public class MainActivity extends AppCompatActivity {
         return networkThread.isAlive();
     }
 
+    /**
+     * Android is very particular about UI processes running on a separate thread. This function
+     * creates and returns a Runnable thread object that will display a Toast message.
+     */
     public Runnable makeToast(final String s) {
         return new Runnable() {
             public void run() {
@@ -292,6 +301,10 @@ public class MainActivity extends AppCompatActivity {
         fetch_data(interest);
     }
 
+    /**
+     * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
+     * @param interest the interest for the data we want
+     */
     public void fetch_data(final Interest interest) {
         interest.setInterestLifetimeMilliseconds(6000);
         // /tasks/FetchingTask
@@ -309,6 +322,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
+     * @param name The provided name should be /ndn-snapchat/<username>
+     * @throws IOException
+     * @throws PibImpl.Error
+     */
     public void register_with_NFD(Name name) throws IOException, PibImpl.Error {
 
         if (!Globals.has_setup_security) {
@@ -322,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
         }
         try {
             Log.d("register_with_nfd", "Starting registration process.");
-            long prefixId = face.registerPrefix(name,
+            face.registerPrefix(name,
                     onDataInterest,
                     new OnRegisterFailed() {
                         @Override
@@ -346,6 +365,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Starts a new thread to publish the file/photo data.
+     * @param blob Blob of content
+     * @param prefix Name of the file (currently absolute path)
+     */
     public void publishData(final Blob blob, final Name prefix) {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
@@ -488,6 +512,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // credit: https://stackoverflow.com/questions/13209494/how-to-get-the-full-file-path-from-uri/41520090
+
+    /**
+     * Converts a uri to its appropriate file pathname
+     * @param uri file uri
+     * @return
+     */
     public String getFilePath(Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
@@ -570,6 +601,12 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
     }
 
+    /**
+     * This takes a Blob and divides it into NDN data packets
+     * @param raw_blob The full content of data in Blob format
+     * @param prefix
+     * @return returns an ArrayList of all the data packets
+     */
     public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
         final int VERSION_NUMBER = 0;
         final int DEFAULT_PACKET_SIZE = 8000;
@@ -625,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
-    // file expolorer and opener.
+    // file explorer and opener. This is intended for testing.
     public void browseRcvdFiles(View view) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         FileManager manager = new FileManager(getApplicationContext());
@@ -658,15 +695,23 @@ public class MainActivity extends AppCompatActivity {
      */
     public void startCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // String tsPhoto = new Timestamp(System.currentTimeMillis()).toString() + ".jpg";
+        // name the photo by using current time
         String tsPhoto = (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())) + ".jpg";
-        // String tsPhoto = getDateTimeInstance().toString() + ".jpg";
+        /* The steps below are necessary for photo captures. We set up a temporary file for our
+           photo and pass the information to the Camera Activity. This is where it will store the
+           photo if we choose to save it. */
         FileManager manager = new FileManager(getApplicationContext());
         File pic = new File(manager.getPhotosDir(), tsPhoto);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
         startActivityForResult(intent, CAMERA_REQUEST_CODE);
     }
 
+    /**
+     * This checks if the user gave us permission for the camera or not when the dialog box popped up.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -681,6 +726,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This is registered with our prefix. Any interest sent with prefix /ndn-snapchat/<username>
+     * will be caught by this callback. We send it to the faceProxy to deal with it.
+     */
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
