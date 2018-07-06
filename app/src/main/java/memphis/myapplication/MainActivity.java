@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     public Face face;
     public FaceProxy faceProxy;
     // think about adding a memoryContentCache instead of faceProxy
+    // eventually remove these lists; they are used to display the file path of one we selected to publish
     List<String> filesStrings = new ArrayList<String>();
     List<Uri> filesList = new ArrayList<Uri>();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -193,9 +194,12 @@ public class MainActivity extends AppCompatActivity {
             );
             Globals.setFilePrivateKeyStorage(privateKeyStorage);
         }
+
+        Name keyName = new Name(appAndUsername + "/KEY");
+        Globals.setPubKeyName(keyName);
+
         try {
             // check if key storage exists
-            Name keyName = new Name(appAndUsername + "/KEY");
             privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
         } catch (SecurityException e) {
             // keys already exist; no need to generate them again.
@@ -306,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
      * @param interest the interest for the data we want
      */
     public void fetch_data(final Interest interest) {
-        interest.setInterestLifetimeMilliseconds(6000);
+        interest.setInterestLifetimeMilliseconds(10000);
         // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
     }

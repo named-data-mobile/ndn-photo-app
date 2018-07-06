@@ -44,7 +44,7 @@ public class AddFriendActivity extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         File file = new File(manager.getMyQRPath());
         if(!file.exists()) {
-            manager.saveMyQRCode(QRExchange.makeQRFriendCode(getApplicationContext()));
+            manager.saveMyQRCode(QRExchange.makeQRFriendCode(manager));
         }
         Intent display = new Intent(this, DisplayQRActivity.class);
         display.setData(Uri.fromFile(file));
@@ -87,13 +87,6 @@ public class AddFriendActivity extends AppCompatActivity {
                     else {
                         Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
                     }
-                    /*if (requestCode == FRIEND_QR_REQUEST_CODE) {
-                        // manager.saveFriend(content);
-                        //Intent intent = new Intent();
-                        //Save friend's information
-                    } else {
-                        Log.d("onScanResult", "Unexpected requestCode: " + requestCode);
-                    }*/
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);

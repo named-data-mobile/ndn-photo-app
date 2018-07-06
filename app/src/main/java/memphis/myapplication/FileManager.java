@@ -2,6 +2,7 @@ package memphis.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Base64;
 import android.util.Log;
 
 import net.named_data.jndn.Interest;
@@ -33,7 +34,15 @@ public class FileManager {
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
-        m_appRootPath = context.getFilesDir().toString();
+        /* Eventually, we will set m_appRootPath to getFilesDir(). This is the internal storage of
+           the phone. It is inaccessible by other applications. getExternalFilesDir() is on the
+           SD card, which allows us to browse these directories with a File Explorer. This is better
+           for testing, since you can verify file activity results have occurred. In the Release,
+           though, we will not want people to view files outside our app given the Snapchat philosophy
+           of destroying content after viewing.
+         */
+        // m_appRootPath = context.getFilesDir().toString();
+        m_appRootPath = context.getExternalFilesDir(null).toString();
         m_friendsDir = new File(m_appRootPath, "/friends");
         m_selfDir = new File(m_appRootPath, "/self");
         m_photosDir = new File(m_appRootPath, "/photos");
@@ -178,11 +187,9 @@ public class FileManager {
      * Reads the public rsa key file and extracts the public key.
      * @return user's public key in string format
      */
-    // public String getPubKey() {
     public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
-        Name keyName = new Name("/ndn-snapchat/" + getUsername() + "/KEY");
         try {
-            return Globals.privateKeyStorage.getPublicKey(new Name(keyName));
+            return Globals.privateKeyStorage.getPublicKey(Globals.pubKeyName);
         }
         catch (SecurityException e) {
             e.printStackTrace();
@@ -201,14 +208,15 @@ public class FileManager {
                 return 1;
             }
             String pubKey = friendContent.substring(index + 1);
+            Log.d("pubKey", "This is what we're writing: ");
             try {
                 boolean wasCreated = friendFile.createNewFile();
                 if(wasCreated) {
                     // consider changing to byte content
-                    FileWriter writer = new FileWriter(friendFile);
-                    writer.write(username);
-                    writer.write(pubKey);
-                    writer.close();
+                    FileOutputStream fostream = new FileOutputStream(friendFile);
+                    // writer.write(username);
+                    fostream.write(pubKey.getBytes());
+                    fostream.close();
                     return 0;
                 }
             }
@@ -250,6 +258,30 @@ public class FileManager {
             e.printStackTrace();
         }
     }*/
+
+    public Blob getFriendKey(String friend) {
+        try {
+            File friendFile = new File(m_friendsDir + "/" + friend);
+            if(friendFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(friendFile));
+                StringBuffer strBuff = new StringBuffer();
+                String line;
+                while((line = br.readLine()) != null) {
+                    strBuff.append(line);
+                }
+                // The string we have saved to format is the DER bytes in Base64. We need to revert
+                // back to the original format
+                byte[] keyBytes = Base64.decode(strBuff.toString(), Base64.DEFAULT);
+                Blob key = new Blob(keyBytes);
+                Log.d("getFriendKey", key.toString());
+                return key;
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     /**
      * Saves data we retrieved from SegmentFetcher to file.

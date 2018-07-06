@@ -3,12 +3,20 @@ package memphis.myapplication;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
+
+import net.named_data.jndn.encoding.der.DerNode;
+import net.named_data.jndn.util.Blob;
+
+import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 
 public class QRExchange {
 
@@ -46,16 +54,17 @@ public class QRExchange {
      */
     // consider changing this to send an interest for the key since it's in DER format. It does not
     // seem to play nice with strings.
-    public static Bitmap makeQRFriendCode(Context context) {
-        FileManager manager = new FileManager(context);
+    public static Bitmap makeQRFriendCode(FileManager manager) {
         String name = manager.getUsername();
-        // this will likely change in the future
+        // maybe we should get the publickey from the MainActivity's defaultCertificate; I think the
+        // problem is that this public key is not signed. We need the certificate; switch to v2
         net.named_data.jndn.security.certificate.PublicKey publicKey = manager.getPubKey();
+        Log.d("makeFriendCode", "Pubkey: " + publicKey.toString());
         if(publicKey != null) {
-            // String pubKey = publicKey.toString();
-            String pubKey = new String(publicKey.getKeyDer().getImmutableArray());
+            String pubKey = Base64.encodeToString(publicKey.getKeyDer().getImmutableArray(), 0);
             // make sure we check later during registration that a username has no spaces
             String qrContents = name + " " + pubKey;
+            // replace below section with makeQRCode method
             QRCodeWriter qrWriter = new QRCodeWriter();
             try {
                 BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);

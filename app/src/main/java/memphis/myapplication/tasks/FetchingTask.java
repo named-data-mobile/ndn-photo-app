@@ -1,5 +1,6 @@
 package memphis.myapplication.tasks;
 
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -10,14 +11,20 @@ import net.named_data.jndn.KeyLocator;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.Signature;
 import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.security.DigestAlgorithm;
+import net.named_data.jndn.security.UnrecognizedKeyFormatException;
+import net.named_data.jndn.security.VerificationHelpers;
+import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.MainActivity;
+import memphis.myapplication.R;
 
 import static java.lang.Thread.sleep;
 
@@ -31,19 +38,25 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private boolean m_received;
     private String m_resultMsg;
     private Interest m_baseInterest;
+    private String m_user;
+    private PublicKey m_pubKey;
+    private FileManager m_manager;
+    private Data m_data;
 
     public FetchingTask(MainActivity activity) {
         m_mainActivity = activity;
         // m_face = activity.face;
         m_face = new Face();
         Log.d("Face Check", "m_face: " + m_face.toString() + " globals: " + Globals.face);
+        m_manager = new FileManager(activity.getApplicationContext());
     }
 
-    @Override
+    /*@Override
     protected void onPreExecute() {
 
-    }
+    }*/
 
+    // actual process; we are using the SegmentFetcher to retrieve data
     @Override
     protected Boolean doInBackground(Interest... interests) {
         m_baseInterest = interests[0];
@@ -51,6 +64,8 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         m_received = false;
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
+        getUserInfo(m_baseInterest);
+        Log.d("KeyType", m_pubKey.getKeyType().toString());
 
             SegmentFetcher.fetch(
                     m_face,
@@ -58,13 +73,9 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     new SegmentFetcher.VerifySegment() {
                         @Override
                         public boolean verifySegment(Data data) {
-                            /*Log.d("VerifySegment", "We just return true.");
-                            return true;*/
-                            Signature signature = data.getSignature();
-                            KeyLocator keyLocator = KeyLocator.getFromSignature(signature);
-                            Name keyName = keyLocator.getKeyName();
-                            Log.d("VerifySegment", signature.toString() + " keyLocator:" + keyLocator + " " + keyName.toUri());
-                            return true;
+                            m_data = data;
+                            return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
+                            // return true;
                         }
                     },
                     new SegmentFetcher.OnComplete() {
@@ -78,7 +89,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     new SegmentFetcher.OnError() {
                         @Override
                         public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                            m_resultMsg = message;
+                            m_resultMsg = message + " " + m_data.getName().toUri();
                             m_shouldReturn = true;
                         }
                     });
@@ -92,11 +103,39 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                 e.printStackTrace();
             }
         }
-        // added this in since we are using a different face
+        // added this in since we are using a new face for fetching
         m_face.shutdown();
         return m_received;
     }
 
+    /**
+     * Extracts the username from the Data and sets m_user. It then checks if the username matches any
+     * friend in the friends directory.
+     * @param interest
+     */
+    private void getUserInfo(Interest interest) {
+        String s = interest.getName().getPrefix(2).toUri();
+        s = s.substring(1);
+        int index = s.indexOf("/");
+        Log.d("appName", "From Substring: " + s.substring(0, index));
+        Log.d("appName", "From Resource: " + m_mainActivity.getString(R.string.app_name));
+        if(s.substring(0, index).equals(m_mainActivity.getString(R.string.app_name))) {
+            m_user = s.substring(index+1, s.length());
+            // we have the user, check if we're friends. If so, retrieve their key from file.
+            ArrayList<String> friendsList = m_manager.getFriendsList();
+            Log.d("username&PubKey", "user: " + m_user);
+            if(friendsList.contains(m_user)) {
+                try {
+                    m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
+                }
+                catch(UnrecognizedKeyFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    // What we do when doInBackground finishes; show result in Toast message
     @Override
     protected void onPostExecute(Boolean wasReceived) {
         if (m_received) {
