@@ -9,10 +9,19 @@ import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
 import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
 import net.named_data.jndn.security.identity.IdentityManager;
+import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
+import net.named_data.jndn.security.pib.PibIdentity;
+import net.named_data.jndn.security.tpm.TpmBackEndFile;
 
 public class Globals extends Application {
     public static Face face;
     public static FaceProxy faceProxy;
+    //v2 changes
+    public static AndroidSqlite3Pib pib;
+    public static TpmBackEndFile tpm;
+    public static PibIdentity pibIdentity;
+
+    //
     public static AndroidSqlite3IdentityStorage identityStorage;
     public static FilePrivateKeyStorage privateKeyStorage;
     public static IdentityManager identityManager;
@@ -24,6 +33,21 @@ public class Globals extends Application {
     // if they are present. Face and FaceProxy can be new, but face will need to set things with keychain again.
     public Globals() {
     }
+
+    //v2 changes
+    public static void setPib(AndroidSqlite3Pib p) {
+        pib = p;
+    }
+
+    public static void setTpmBackEndFile(TpmBackEndFile t) {
+        tpm = t;
+    }
+
+    public static void setPibIdentity(PibIdentity pid) {
+        pibIdentity = pid;
+    }
+
+    //
 
     // setters
     public static void setFace(Face f) {

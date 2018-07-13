@@ -10,10 +10,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6a2493af-be40-4aff-b12d-bbdb8657b727" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/DisplayQRActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/DisplayQRActivity.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
@@ -44,10 +42,29 @@
       <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-2214">
-              <caret line="81" column="106" lean-forward="false" selection-start-line="81" selection-start-column="106" selection-end-line="81" selection-end-column="106" />
+            <state relative-caret-position="-3257">
+              <caret line="301" column="67" lean-forward="false" selection-start-line="301" selection-start-column="67" selection-end-line="301" selection-end-column="67" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#3928#3936#0" expanded="true" />
+                <element signature="e#8132#8160#0" expanded="true" />
+                <element signature="e#13898#14771#0" expanded="true" />
+                <element signature="e#14770#14771#0" expanded="true" />
+                <element signature="e#14985#14986#0" expanded="true" />
+                <element signature="e#15027#15028#0" expanded="true" />
+                <element signature="e#15073#15074#0" expanded="true" />
+                <element signature="e#15119#15120#0" expanded="true" />
+                <element signature="e#15385#15543#0" expanded="true" />
+                <element signature="e#15542#15543#0" expanded="true" />
+                <element signature="e#17621#18027#0" expanded="true" />
+                <element signature="e#18026#18027#0" expanded="true" />
+                <element signature="e#18049#18545#0" expanded="true" />
+                <element signature="e#18544#18545#0" expanded="true" />
+                <element signature="e#18945#20438#0" expanded="true" />
+                <element signature="e#20437#20438#0" expanded="true" />
+                <element signature="e#21728#21736#0" expanded="true" />
+                <element signature="e#36041#36430#0" expanded="true" />
+                <element signature="e#36429#36430#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -56,9 +73,16 @@
       <file leaf-file-name="Globals.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="429">
-              <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-              <folding />
+            <state relative-caret-position="540">
+              <caret line="46" column="26" lean-forward="false" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
+              <folding>
+                <element signature="e#1476#1477#0" expanded="true" />
+                <element signature="e#1499#1500#0" expanded="true" />
+                <element signature="e#1561#1562#0" expanded="true" />
+                <element signature="e#1584#1585#0" expanded="true" />
+                <element signature="e#1642#1643#0" expanded="true" />
+                <element signature="e#1675#1676#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -66,8 +90,8 @@
       <file leaf-file-name="AddFriendActivity.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="594">
-              <caret line="46" column="70" lean-forward="false" selection-start-line="46" selection-start-column="70" selection-end-line="46" selection-end-column="70" />
+            <state relative-caret-position="429">
+              <caret line="76" column="52" lean-forward="false" selection-start-line="76" selection-start-column="52" selection-end-line="76" selection-end-column="52" />
               <folding />
             </state>
           </provider>
@@ -76,8 +100,8 @@
       <file leaf-file-name="QRExchange.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+            <state relative-caret-position="270">
+              <caret line="71" column="63" lean-forward="false" selection-start-line="71" selection-start-column="63" selection-end-line="71" selection-end-column="63" />
               <folding />
             </state>
           </provider>
@@ -86,18 +110,9 @@
       <file leaf-file-name="FetchingTask.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-759">
-              <caret line="67" column="59" lean-forward="false" selection-start-line="67" selection-start-column="59" selection-end-line="67" selection-end-column="59" />
-              <folding>
-                <element signature="e#2408#2795#0" expanded="true" />
-                <element signature="e#2794#2795#0" expanded="true" />
-                <element signature="e#2817#3142#0" expanded="true" />
-                <element signature="e#3141#3142#0" expanded="true" />
-                <element signature="e#3164#3509#0" expanded="true" />
-                <element signature="e#3508#3509#0" expanded="true" />
-                <element signature="e#4384#4427#0" expanded="true" />
-                <element signature="e#4470#4513#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-684">
+              <caret line="83" column="101" lean-forward="false" selection-start-line="83" selection-start-column="101" selection-end-line="83" selection-end-column="101" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -105,8 +120,8 @@
       <file leaf-file-name="FileManager.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="192" column="9" lean-forward="false" selection-start-line="192" selection-start-column="9" selection-end-line="192" selection-end-column="9" />
+            <state relative-caret-position="198">
+              <caret line="192" column="42" lean-forward="false" selection-start-line="192" selection-start-column="42" selection-end-line="192" selection-end-column="42" />
               <folding />
             </state>
           </provider>
@@ -125,14 +140,10 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>session</find>
-      <find>action</find>
-      <find>onactivityResult</find>
       <find>setup</find>
       <find>settings</find>
       <find>View view</find>
       <find>onopt</find>
-      <find>sign(</find>
       <find>save</find>
       <find>app_name</find>
       <find>saveFriend</find>
@@ -142,11 +153,23 @@
       <find>savemy</find>
       <find>startmaking</find>
       <find>getmyqrpath</find>
-      <find>getpub</find>
       <find>process</find>
       <find>fetch_data</find>
       <find>savemyQRCode</find>
       <find>getpublic</find>
+      <find>privatekeystorage</find>
+      <find>getpubkey</find>
+      <find>pub</find>
+      <find>m_pubkey</find>
+      <find>getfriendkey</find>
+      <find>sign(</find>
+      <find>m_data</find>
+      <find>Globals.pubkeyName</find>
+      <find>defaultkeyname</find>
+      <find>publickey</find>
+      <find>setkey</find>
+      <find>getpub</find>
+      <find>publishdata</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -2194,12 +2217,13 @@
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" />
         <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/DisplayQRActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java" />
+        <option value="$PROJECT_DIR$/app/src/androidTest/java/memphis/myapplication/PublisherAndFetcherTest.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java" />
       </list>
     </option>
@@ -2232,37 +2256,21 @@
           <expand>
             <path>
               <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
-              <item name="app" type="feadf853:AndroidModuleNode" />
-            </path>
-            <path>
-              <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
-              <item name="app" type="feadf853:AndroidModuleNode" />
-              <item name="manifests" type="f94875db:AndroidManifestsGroupNode" />
-            </path>
-            <path>
-              <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
-              <item name="app" type="feadf853:AndroidModuleNode" />
-              <item name="java" type="edd41e36:AndroidSourceTypeNode" />
-            </path>
-            <path>
-              <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
-              <item name="app" type="feadf853:AndroidModuleNode" />
-              <item name="java" type="edd41e36:AndroidSourceTypeNode" />
-              <item name="myapplication" type="cbb59c9e:AndroidPsiDirectoryNode" />
+              <item name="Gradle Scripts" type="ae0cef3a:AndroidBuildScriptsGroupNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="android.sdk.path" value="$USER_HOME$/Android/Sdk" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="device.picker.selection" value="T0620055XW" />
+    <property name="device.picker.selection" value="T062005CYI" />
     <property name="SearchEverywhereHistoryKey" value="!!!!&#9;null&#9;null&#10;saveMy&#9;PSI&#9;JAVA://memphis.myapplication.FileManager#saveMyQRCode&#10;session&#9;FILE&#9;file:///home/dmcoomes/Desktop/github-projects/ndn-snapchat/app/src/main/java/memphis/myapplication/Session.java" />
   </component>
   <component name="RunDashboard">
@@ -2431,7 +2439,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="1533" height="875" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Android Profiler" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2443,7 +2450,7 @@
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32795697" sideWeight="0.4973585" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Logcat" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30510753" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Logcat" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30510753" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -2473,38 +2480,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="648">
-          <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="46" column="70" lean-forward="false" selection-start-line="46" selection-start-column="70" selection-end-line="46" selection-end-column="70" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="828">
-          <caret line="61" column="96" lean-forward="false" selection-start-line="61" selection-start-column="96" selection-end-line="61" selection-end-column="96" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="32" column="13" lean-forward="false" selection-start-line="32" selection-start-column="13" selection-end-line="32" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4320">
@@ -2517,16 +2492,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1152">
           <caret line="90" column="82" lean-forward="false" selection-start-line="90" selection-start-column="82" selection-end-line="90" selection-end-column="82" />
-          <folding>
-            <element signature="e#2408#2795#0" expanded="true" />
-            <element signature="e#2794#2795#0" expanded="true" />
-            <element signature="e#2817#3142#0" expanded="true" />
-            <element signature="e#3141#3142#0" expanded="true" />
-            <element signature="e#3164#3509#0" expanded="true" />
-            <element signature="e#3508#3509#0" expanded="true" />
-            <element signature="e#4384#4427#0" expanded="true" />
-            <element signature="e#4470#4513#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2536,6 +2502,25 @@
           <caret line="740" column="56" lean-forward="false" selection-start-line="740" selection-start-column="56" selection-end-line="740" selection-end-column="56" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3928#3936#0" expanded="true" />
+            <element signature="e#8132#8160#0" expanded="true" />
+            <element signature="e#13898#14771#0" expanded="true" />
+            <element signature="e#14770#14771#0" expanded="true" />
+            <element signature="e#14985#14986#0" expanded="true" />
+            <element signature="e#15027#15028#0" expanded="true" />
+            <element signature="e#15073#15074#0" expanded="true" />
+            <element signature="e#15119#15120#0" expanded="true" />
+            <element signature="e#15385#15543#0" expanded="true" />
+            <element signature="e#15542#15543#0" expanded="true" />
+            <element signature="e#17621#18027#0" expanded="true" />
+            <element signature="e#18026#18027#0" expanded="true" />
+            <element signature="e#18049#18545#0" expanded="true" />
+            <element signature="e#18544#18545#0" expanded="true" />
+            <element signature="e#18945#20438#0" expanded="true" />
+            <element signature="e#20437#20438#0" expanded="true" />
+            <element signature="e#21728#21736#0" expanded="true" />
+            <element signature="e#36041#36430#0" expanded="true" />
+            <element signature="e#36429#36430#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2544,7 +2529,14 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="936">
           <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-          <folding />
+          <folding>
+            <element signature="e#1476#1477#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#1561#1562#0" expanded="true" />
+            <element signature="e#1584#1585#0" expanded="true" />
+            <element signature="e#1642#1643#0" expanded="true" />
+            <element signature="e#1675#1676#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -2584,16 +2576,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1152">
           <caret line="90" column="82" lean-forward="false" selection-start-line="90" selection-start-column="82" selection-end-line="90" selection-end-column="82" />
-          <folding>
-            <element signature="e#2408#2795#0" expanded="true" />
-            <element signature="e#2794#2795#0" expanded="true" />
-            <element signature="e#2817#3142#0" expanded="true" />
-            <element signature="e#3141#3142#0" expanded="true" />
-            <element signature="e#3164#3509#0" expanded="true" />
-            <element signature="e#3508#3509#0" expanded="true" />
-            <element signature="e#4384#4427#0" expanded="true" />
-            <element signature="e#4470#4513#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -2603,6 +2586,25 @@
           <caret line="142" column="37" lean-forward="false" selection-start-line="142" selection-start-column="29" selection-end-line="142" selection-end-column="37" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3928#3936#0" expanded="true" />
+            <element signature="e#8132#8160#0" expanded="true" />
+            <element signature="e#13898#14771#0" expanded="true" />
+            <element signature="e#14770#14771#0" expanded="true" />
+            <element signature="e#14985#14986#0" expanded="true" />
+            <element signature="e#15027#15028#0" expanded="true" />
+            <element signature="e#15073#15074#0" expanded="true" />
+            <element signature="e#15119#15120#0" expanded="true" />
+            <element signature="e#15385#15543#0" expanded="true" />
+            <element signature="e#15542#15543#0" expanded="true" />
+            <element signature="e#17621#18027#0" expanded="true" />
+            <element signature="e#18026#18027#0" expanded="true" />
+            <element signature="e#18049#18545#0" expanded="true" />
+            <element signature="e#18544#18545#0" expanded="true" />
+            <element signature="e#18945#20438#0" expanded="true" />
+            <element signature="e#20437#20438#0" expanded="true" />
+            <element signature="e#21728#21736#0" expanded="true" />
+            <element signature="e#36041#36430#0" expanded="true" />
+            <element signature="e#36429#36430#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2666,6 +2668,25 @@
           <caret line="144" column="38" lean-forward="false" selection-start-line="144" selection-start-column="38" selection-end-line="144" selection-end-column="38" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3928#3936#0" expanded="true" />
+            <element signature="e#8132#8160#0" expanded="true" />
+            <element signature="e#13898#14771#0" expanded="true" />
+            <element signature="e#14770#14771#0" expanded="true" />
+            <element signature="e#14985#14986#0" expanded="true" />
+            <element signature="e#15027#15028#0" expanded="true" />
+            <element signature="e#15073#15074#0" expanded="true" />
+            <element signature="e#15119#15120#0" expanded="true" />
+            <element signature="e#15385#15543#0" expanded="true" />
+            <element signature="e#15542#15543#0" expanded="true" />
+            <element signature="e#17621#18027#0" expanded="true" />
+            <element signature="e#18026#18027#0" expanded="true" />
+            <element signature="e#18049#18545#0" expanded="true" />
+            <element signature="e#18544#18545#0" expanded="true" />
+            <element signature="e#18945#20438#0" expanded="true" />
+            <element signature="e#20437#20438#0" expanded="true" />
+            <element signature="e#21728#21736#0" expanded="true" />
+            <element signature="e#36041#36430#0" expanded="true" />
+            <element signature="e#36429#36430#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2713,6 +2734,25 @@
           <caret line="101" column="12" lean-forward="false" selection-start-line="101" selection-start-column="12" selection-end-line="101" selection-end-column="12" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3928#3936#0" expanded="true" />
+            <element signature="e#8132#8160#0" expanded="true" />
+            <element signature="e#13898#14771#0" expanded="true" />
+            <element signature="e#14770#14771#0" expanded="true" />
+            <element signature="e#14985#14986#0" expanded="true" />
+            <element signature="e#15027#15028#0" expanded="true" />
+            <element signature="e#15073#15074#0" expanded="true" />
+            <element signature="e#15119#15120#0" expanded="true" />
+            <element signature="e#15385#15543#0" expanded="true" />
+            <element signature="e#15542#15543#0" expanded="true" />
+            <element signature="e#17621#18027#0" expanded="true" />
+            <element signature="e#18026#18027#0" expanded="true" />
+            <element signature="e#18049#18545#0" expanded="true" />
+            <element signature="e#18544#18545#0" expanded="true" />
+            <element signature="e#18945#20438#0" expanded="true" />
+            <element signature="e#20437#20438#0" expanded="true" />
+            <element signature="e#21728#21736#0" expanded="true" />
+            <element signature="e#36041#36430#0" expanded="true" />
+            <element signature="e#36429#36430#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -2848,47 +2888,20 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider editor-type-id="android-manifest">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
           <caret line="4" column="64" lean-forward="false" selection-start-line="4" selection-start-column="64" selection-end-line="4" selection-end-column="64" />
           <folding />
         </state>
       </provider>
-      <provider editor-type-id="android-manifest">
-        <state />
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/DisplayQRActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="108">
           <caret line="9" column="16" lean-forward="true" selection-start-line="9" selection-start-column="16" selection-end-line="9" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="429">
-          <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="46" column="70" lean-forward="false" selection-start-line="46" selection-start-column="70" selection-end-line="46" selection-end-column="70" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2214">
-          <caret line="81" column="106" lean-forward="false" selection-start-line="81" selection-start-column="106" selection-end-line="81" selection-end-column="106" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -2900,35 +2913,112 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/androidTest/java/memphis/myapplication/PublisherAndFetcherTest.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="76">
+          <caret line="75" column="32" lean-forward="false" selection-start-line="75" selection-start-column="32" selection-end-line="75" selection-end-column="32" />
+          <folding>
+            <element signature="imports" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-309">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Globals.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="46" column="26" lean-forward="false" selection-start-line="46" selection-start-column="26" selection-end-line="46" selection-end-column="26" />
+          <folding>
+            <element signature="e#1476#1477#0" expanded="true" />
+            <element signature="e#1499#1500#0" expanded="true" />
+            <element signature="e#1561#1562#0" expanded="true" />
+            <element signature="e#1584#1585#0" expanded="true" />
+            <element signature="e#1642#1643#0" expanded="true" />
+            <element signature="e#1675#1676#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.named-data/jndn-android/0.17/7badda4eed1dcf8062869a28f2ad6a55f62f4905/jndn-android-0.17-sources.jar!/net/named_data/jndn/security/identity/AndroidSqlite3IdentityStorage.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="163">
+          <caret line="456" column="0" lean-forward="false" selection-start-line="456" selection-start-column="0" selection-end-line="456" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-759">
-          <caret line="67" column="59" lean-forward="false" selection-start-line="67" selection-start-column="59" selection-end-line="67" selection-end-column="59" />
-          <folding>
-            <element signature="e#2408#2795#0" expanded="true" />
-            <element signature="e#2794#2795#0" expanded="true" />
-            <element signature="e#2817#3142#0" expanded="true" />
-            <element signature="e#3141#3142#0" expanded="true" />
-            <element signature="e#3164#3509#0" expanded="true" />
-            <element signature="e#3508#3509#0" expanded="true" />
-            <element signature="e#4384#4427#0" expanded="true" />
-            <element signature="e#4470#4513#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-684">
+          <caret line="83" column="101" lean-forward="false" selection-start-line="83" selection-start-column="101" selection-end-line="83" selection-end-column="101" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="64" column="0" lean-forward="false" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        <state relative-caret-position="270">
+          <caret line="71" column="63" lean-forward="false" selection-start-line="71" selection-start-column="63" selection-end-line="71" selection-end-column="63" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="429">
+          <caret line="76" column="52" lean-forward="false" selection-start-line="76" selection-start-column="52" selection-end-line="76" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3257">
+          <caret line="301" column="67" lean-forward="false" selection-start-line="301" selection-start-column="67" selection-end-line="301" selection-end-column="67" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#3928#3936#0" expanded="true" />
+            <element signature="e#8132#8160#0" expanded="true" />
+            <element signature="e#13898#14771#0" expanded="true" />
+            <element signature="e#14770#14771#0" expanded="true" />
+            <element signature="e#14985#14986#0" expanded="true" />
+            <element signature="e#15027#15028#0" expanded="true" />
+            <element signature="e#15073#15074#0" expanded="true" />
+            <element signature="e#15119#15120#0" expanded="true" />
+            <element signature="e#15385#15543#0" expanded="true" />
+            <element signature="e#15542#15543#0" expanded="true" />
+            <element signature="e#17621#18027#0" expanded="true" />
+            <element signature="e#18026#18027#0" expanded="true" />
+            <element signature="e#18049#18545#0" expanded="true" />
+            <element signature="e#18544#18545#0" expanded="true" />
+            <element signature="e#18945#20438#0" expanded="true" />
+            <element signature="e#20437#20438#0" expanded="true" />
+            <element signature="e#21728#21736#0" expanded="true" />
+            <element signature="e#36041#36430#0" expanded="true" />
+            <element signature="e#36429#36430#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="192" column="9" lean-forward="false" selection-start-line="192" selection-start-column="9" selection-end-line="192" selection-end-column="9" />
+        <state relative-caret-position="198">
+          <caret line="192" column="42" lean-forward="false" selection-start-line="192" selection-start-column="42" selection-end-line="192" selection-end-column="42" />
           <folding />
         </state>
       </provider>

@@ -3,6 +3,7 @@ package memphis.myapplication.tasks;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Xml;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -11,14 +12,20 @@ import net.named_data.jndn.KeyLocator;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.Signature;
 import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.WireFormat;
 import net.named_data.jndn.security.DigestAlgorithm;
+import net.named_data.jndn.security.KeyType;
 import net.named_data.jndn.security.UnrecognizedKeyFormatException;
 import net.named_data.jndn.security.VerificationHelpers;
 import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
+import net.named_data.jndn.util.SignedBlob;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.KeyFactory;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
 import memphis.myapplication.FileManager;
@@ -74,7 +81,11 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                         @Override
                         public boolean verifySegment(Data data) {
                             m_data = data;
-                            return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
+                            SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
+                            return verifySignature
+                                    (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
+                                            DigestAlgorithm.SHA256);
+                            // return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
                             // return true;
                         }
                     },
@@ -89,7 +100,13 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     new SegmentFetcher.OnError() {
                         @Override
                         public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                            m_resultMsg = message + " " + m_data.getName().toUri();
+                            try {
+                                m_resultMsg = message + " " + m_data.getFullName().toUri();
+                            }
+                            catch(EncodingException e) {
+                                e.printStackTrace();
+                                m_resultMsg = message;
+                            }
                             m_shouldReturn = true;
                         }
                     });
@@ -127,12 +144,39 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
             if(friendsList.contains(m_user)) {
                 try {
                     m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
+                    Log.d("fetchingTask", "m_pubkey der: " + m_pubKey.getKeyDer().toString());
                 }
                 catch(UnrecognizedKeyFormatException e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    public static boolean verifySignature(ByteBuffer buffer, byte[] signature, PublicKey publicKey,
+                                   DigestAlgorithm digestAlgorithm) {
+        if(digestAlgorithm == DigestAlgorithm.SHA256) {
+            if (publicKey.getKeyType() == KeyType.RSA) {
+                try {
+                    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                    java.security.PublicKey securityPublicKey = keyFactory.generatePublic
+                            (new X509EncodedKeySpec(publicKey.getKeyDer().getImmutableArray()));
+
+                    java.security.Signature rsaSignature =
+                            java.security.Signature.getInstance("SHA256withRSA");
+                    rsaSignature.initVerify(securityPublicKey);
+                    rsaSignature.update(buffer);
+                    Log.d("rsaSignature", rsaSignature.toString());
+                    Log.d("verifySignature", "We've made it to verify(signature)");
+                    Log.d("verifySignature", "Signature size: " + signature.length);
+                    return rsaSignature.verify(signature);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    return false;
+                }
+            }
+        }
+        return false;
     }
 
     // What we do when doInBackground finishes; show result in Toast message

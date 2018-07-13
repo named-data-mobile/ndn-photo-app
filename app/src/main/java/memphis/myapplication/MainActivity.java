@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -43,15 +44,25 @@ import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.WireFormat;
+import net.named_data.jndn.security.DigestAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.RsaKeyParams;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
 import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
 import net.named_data.jndn.security.identity.IdentityManager;
+import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
+import net.named_data.jndn.security.pib.Pib;
+import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.tpm.TpmKeyHandle;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
+import net.named_data.jndn.util.SignedBlob;
 
 import org.apache.commons.io.IOUtils;
 
@@ -69,6 +80,13 @@ import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    // security v2 experimental changes
+    // look at KeyChain.java; with V2, it works with CertificateV2, Pib, Tpm, and Validator
+    public AndroidSqlite3Pib m_pib;
+    public TpmBackEndFile m_tpm;
+    public PibIdentity m_pibIdentity;
+
+    //
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
     final MainActivity m_mainActivity = this;
@@ -128,6 +146,12 @@ public class MainActivity extends AppCompatActivity {
         face = Globals.face;
         faceProxy = Globals.faceProxy;
         keyChain = Globals.keyChain;
+        try {
+            Log.d("MainActivity", "pubKey der: " + Globals.identityManager.getPublicKey(Globals.pubKeyName).getKeyDer().toString());
+        }
+        catch(SecurityException e) {
+            e.printStackTrace();
+        }
         startNetworkThread();
     }
 
@@ -177,9 +201,57 @@ public class MainActivity extends AppCompatActivity {
      */
     public void setup_security() {
         FileManager manager = new FileManager(getApplicationContext());
-        // /ndn-snapchat/<username>/KEY
+        // /ndn-snapchat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
+        /*// v2 changes
+        Context context = getApplicationContext();
+        String rootPath = getApplicationContext().getFilesDir().toString();
+        String pibPath = rootPath + "/pib.db";
+
+        face = new Face();
+        try {
+            m_pib = new AndroidSqlite3Pib(rootPath, "pib.db");
+        }
+        catch(PibImpl.Error e) {
+            e.printStackTrace();
+        }
+
+        m_tpm = new TpmBackEndFile(TpmBackEndFile.getDefaultDirecoryPath(context.getFilesDir()));
+        try {
+            m_pib.setTpmLocator(TpmBackEndFile.getDefaultDirecoryPath(context.getFilesDir()));
+        }
+        catch(PibImpl.Error e) {
+            e.printStackTrace();
+        }
+
+        try {
+            keyChain = new KeyChain(pibPath, m_pib.getTpmLocator());
+        }
+        catch(SecurityException | IOException | PibImpl.Error | KeyChain.Error e) {
+            e.printStackTrace();
+        }
+
+        Name identity = new Name(appAndUsername);
+        Name defaultCertificateName;
+
+        try {
+            m_pibIdentity = keyChain.createIdentityV2(identity);
+            defaultCertificateName = keyChain.getDefaultCertificateName();
+        }
+        catch(PibImpl.Error | Pib.Error | Tpm.Error | TpmBackEnd.Error | KeyChain.Error | SecurityException e) {
+            e.printStackTrace();
+            defaultCertificateName = new Name("/bogus/certificate/name");
+        }
+
+        Globals.setKeyChain(keyChain);
+        face.setCommandSigningInfo(keyChain, defaultCertificateName);
+        Globals.setFace(face);
+        Globals.setFaceProxy(new FaceProxy());
+        Globals.setHasSecurity(true);
+        Log.d("setup_security", "Security was setup successfully");
+
+        //*/
         face = new Face();
         // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
         if (identityStorage == null) {
@@ -195,27 +267,57 @@ public class MainActivity extends AppCompatActivity {
             Globals.setFilePrivateKeyStorage(privateKeyStorage);
         }
 
-        Name keyName = new Name(appAndUsername + "/KEY");
-        Globals.setPubKeyName(keyName);
+        /* Name keyName = new Name(appAndUsername + "/KEY");
+        Log.d("setup_security", keyName.getPrefix(-1).toUri());
+        Globals.setPubKeyName(keyName);*/
 
-        try {
+        /*try {
             // check if key storage exists
             privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
         } catch (SecurityException e) {
             // keys already exist; no need to generate them again.
             e.printStackTrace();
-        }
+        }*/
         // this is fine if we haven't changed anything with storage
         identityManager = new IdentityManager(identityStorage, privateKeyStorage);
+
+        /*try {
+            identityManager.setDefaultIdentity(appAndUsername);
+            identityManager.setDefaultKeyForIdentity(keyName, appAndUsername);
+            Name key = identityManager.getDefaultKeyNameForIdentity(appAndUsername);
+            Log.d("setup_security", "DefaultKeyName: " + key.toUri());
+        }
+        catch(SecurityException e) {
+            e.printStackTrace();
+        }*/
+
         Globals.setIdentityManager(identityManager);
         keyChain = new KeyChain(identityManager);
         keyChain.setFace(face);
 
         Name defaultCertificateName;
         try {
-            defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername);
-            keyChain.getIdentityManager().setDefaultIdentity(appAndUsername);
-            Log.d("setup_security", "Certificate was generated.");
+            if (keyChain.getIdentityManager().getDefaultCertificate() == null) {
+                defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername, new RsaKeyParams(2048));
+                identityManager.setDefaultIdentity(appAndUsername);
+                ArrayList<Name> identities = new ArrayList<>();
+                identityManager.getAllIdentities(identities, false);
+                for(Name name : identities) {
+                    Log.d("Non-Default:", name.toUri());
+                }
+                identities = new ArrayList<>();
+                identityManager.getAllIdentities(identities, true);
+                for(Name name : identities) {
+                    Log.d("Default:", name.toUri());
+                }
+                Name key = identityManager.getDefaultKeyNameForIdentity(appAndUsername);
+                Globals.setPubKeyName(key);
+                Log.d("key", key.toUri());
+            }
+            else {
+                defaultCertificateName = keyChain.getIdentityManager().getDefaultCertificateName();
+            }
+            Log.d("setup_security", "Certificate was generated. " + defaultCertificateName.toUri());
 
         } catch (SecurityException e2) {
             defaultCertificateName = new Name("/bogus/certificate/name");
@@ -384,6 +486,14 @@ public class MainActivity extends AppCompatActivity {
                         keyChain.sign(data);
                         fileData.add(data);
                     }
+                    // new idea: verify your own data to cross off incompatible keys problem
+
+                    Data data = fileData.get(0);
+                    SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
+                    boolean wasVerified = FetchingTask.verifySignature(encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(),
+                            Globals.identityManager.getPublicKey(Globals.pubKeyName), DigestAlgorithm.SHA256);
+                    Log.d("wasVerifiedMain", "" + wasVerified);
+
                     faceProxy.putInCache(fileData);
                     FileManager manager = new FileManager(getApplicationContext());
                     String filename = prefix.toUri();

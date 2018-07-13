@@ -189,7 +189,8 @@ public class FileManager {
      */
     public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
         try {
-            return Globals.privateKeyStorage.getPublicKey(Globals.pubKeyName);
+            // Certificate
+            return Globals.identityManager.getPublicKey(Globals.pubKeyName);
         }
         catch (SecurityException e) {
             e.printStackTrace();
@@ -208,7 +209,7 @@ public class FileManager {
                 return 1;
             }
             String pubKey = friendContent.substring(index + 1);
-            Log.d("pubKey", "This is what we're writing: ");
+            Log.d("pubKey", "This is what we're writing: " + pubKey);
             try {
                 boolean wasCreated = friendFile.createNewFile();
                 if(wasCreated) {

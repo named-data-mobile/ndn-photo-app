@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -73,6 +74,7 @@ public class AddFriendActivity extends AppCompatActivity {
                     Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
                 } else {
                     String content = result.getContents();
+                    Log.d("ScannedFriend", content);
                     // need to check this content to determine if we are scanning file or friend code
                     Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                     FileManager manager = new FileManager(getApplicationContext());

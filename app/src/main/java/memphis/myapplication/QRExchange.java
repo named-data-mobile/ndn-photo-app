@@ -56,13 +56,15 @@ public class QRExchange {
     // seem to play nice with strings.
     public static Bitmap makeQRFriendCode(FileManager manager) {
         String name = manager.getUsername();
-        // maybe we should get the publickey from the MainActivity's defaultCertificate; I think the
         // problem is that this public key is not signed. We need the certificate; switch to v2
+        // We should instead encode the CertificateV2 name and request it. This would simplify
+        // verification; Dr. Wang would like to avoid this because it increases network traffic
         net.named_data.jndn.security.certificate.PublicKey publicKey = manager.getPubKey();
         Log.d("makeFriendCode", "Pubkey: " + publicKey.toString());
         if(publicKey != null) {
             String pubKey = Base64.encodeToString(publicKey.getKeyDer().getImmutableArray(), 0);
             // make sure we check later during registration that a username has no spaces
+            Log.d("makeFriendCode", "Pubkey: " + pubKey.toString());
             String qrContents = name + " " + pubKey;
             // replace below section with makeQRCode method
             QRCodeWriter qrWriter = new QRCodeWriter();
