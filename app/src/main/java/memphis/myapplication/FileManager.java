@@ -183,21 +183,6 @@ public class FileManager {
         return (m_selfDir + "/myQR.png");
     }
 
-    /**
-     * Reads the public rsa key file and extracts the public key.
-     * @return user's public key in string format
-     */
-    public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
-        try {
-            // Certificate
-            return Globals.identityManager.getPublicKey(Globals.pubKeyName);
-        }
-        catch (SecurityException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     // save friends
     public int saveFriend(String friendContent) {
         if (friendContent.length() > 0) {

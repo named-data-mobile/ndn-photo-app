@@ -12,6 +12,7 @@ import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.util.Blob;
 
 public class Globals extends Application {
     public static Face face;
@@ -20,12 +21,9 @@ public class Globals extends Application {
     public static AndroidSqlite3Pib pib;
     public static TpmBackEndFile tpm;
     public static PibIdentity pibIdentity;
-
-    //
-    public static AndroidSqlite3IdentityStorage identityStorage;
-    public static FilePrivateKeyStorage privateKeyStorage;
-    public static IdentityManager identityManager;
+    public static Name defaultIdName;
     public static KeyChain keyChain;
+    public static Blob pubKeyBlob;
     public static Name pubKeyName;
     public static boolean has_setup_security;
 
@@ -43,8 +41,18 @@ public class Globals extends Application {
         tpm = t;
     }
 
-    public static void setPibIdentity(PibIdentity pid) {
+    public static void setDefaultPibId(PibIdentity pid) {
         pibIdentity = pid;
+    }
+
+    public static void setDefaultIdName(Name pn) {
+        defaultIdName = pn;
+    }
+
+    // the chain of getters starting with the keychain is ridiculous; just do it once to set it so
+    // we don't have to keep calling for it in that manner.
+    public static void setPublicKey(Blob pk) {
+        pubKeyBlob = pk;
     }
 
     //
@@ -58,7 +66,7 @@ public class Globals extends Application {
         faceProxy = fp;
     }
 
-    public static void setIdentityStorage(AndroidSqlite3IdentityStorage is) {
+    /*public static void setIdentityStorage(AndroidSqlite3IdentityStorage is) {
         identityStorage = is;
     }
 
@@ -68,7 +76,7 @@ public class Globals extends Application {
 
     public static void setIdentityManager(IdentityManager im) {
         identityManager = im;
-    }
+    }*/
 
     public static void setKeyChain(KeyChain kc) {
         keyChain = kc;

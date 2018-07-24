@@ -120,7 +120,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                 e.printStackTrace();
             }
         }
-        // added this in since we are using a new face for fetching
+        // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
         return m_received;
     }

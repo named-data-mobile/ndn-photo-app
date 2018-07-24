@@ -56,15 +56,12 @@ public class QRExchange {
     // seem to play nice with strings.
     public static Bitmap makeQRFriendCode(FileManager manager) {
         String name = manager.getUsername();
-        // problem is that this public key is not signed. We need the certificate; switch to v2
-        // We should instead encode the CertificateV2 name and request it. This would simplify
-        // verification; Dr. Wang would like to avoid this because it increases network traffic
-        net.named_data.jndn.security.certificate.PublicKey publicKey = manager.getPubKey();
+        Blob publicKey = Globals.pubKeyBlob;
         Log.d("makeFriendCode", "Pubkey: " + publicKey.toString());
         if(publicKey != null) {
-            String pubKey = Base64.encodeToString(publicKey.getKeyDer().getImmutableArray(), 0);
+            String pubKey = Base64.encodeToString(publicKey.getImmutableArray(), 0);
             // make sure we check later during registration that a username has no spaces
-            Log.d("makeFriendCode", "Pubkey: " + pubKey.toString());
+            Log.d("makeFriendCode", "Pubkey: " + pubKey);
             String qrContents = name + " " + pubKey;
             // replace below section with makeQRCode method
             QRCodeWriter qrWriter = new QRCodeWriter();
