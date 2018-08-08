@@ -55,8 +55,6 @@ public class Globals extends Application {
         pubKeyBlob = pk;
     }
 
-    //
-
     // setters
     public static void setFace(Face f) {
         face = f;
@@ -65,18 +63,6 @@ public class Globals extends Application {
     public static void setFaceProxy(FaceProxy fp) {
         faceProxy = fp;
     }
-
-    /*public static void setIdentityStorage(AndroidSqlite3IdentityStorage is) {
-        identityStorage = is;
-    }
-
-    public static void setFilePrivateKeyStorage(FilePrivateKeyStorage fpks) {
-        privateKeyStorage = fpks;
-    }
-
-    public static void setIdentityManager(IdentityManager im) {
-        identityManager = im;
-    }*/
 
     public static void setKeyChain(KeyChain kc) {
         keyChain = kc;

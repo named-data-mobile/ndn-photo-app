@@ -23,10 +23,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -44,15 +42,8 @@ import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.encoding.WireFormat;
-import net.named_data.jndn.security.DigestAlgorithm;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.RsaKeyParams;
 import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.certificate.PublicKey;
-import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
-import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
-import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
@@ -61,10 +52,7 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
-import net.named_data.jndn.security.tpm.TpmKeyHandle;
-import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
-import net.named_data.jndn.util.SignedBlob;
 
 import org.apache.commons.io.IOUtils;
 
@@ -441,13 +429,6 @@ public class MainActivity extends AppCompatActivity {
                         keyChain.sign(data);
                         fileData.add(data);
                     }
-                    // new idea: verify your own data to cross off incompatible keys problem
-
-                    Data data = fileData.get(0);
-                    SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
-                    boolean wasVerified = FetchingTask.verifySignature(encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(),
-                                          new PublicKey(Globals.pubKeyBlob), DigestAlgorithm.SHA256);
-                    Log.d("wasVerifiedMain", "" + wasVerified);
 
                     faceProxy.putInCache(fileData);
                     FileManager manager = new FileManager(getApplicationContext());
@@ -483,7 +464,6 @@ public class MainActivity extends AppCompatActivity {
         Uri uri;
         if (resultData != null) {
             if (requestCode == FILE_SELECT_REQUEST_CODE) {
-                final ListView lv = (ListView) findViewById(R.id.listview);
 
                 uri = resultData.getData();
                 String path = getFilePath(uri);
@@ -493,8 +473,6 @@ public class MainActivity extends AppCompatActivity {
                     filesList.add(uri);
                     // filesStrings.add(uri.toString());
                     filesStrings.add(path);
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-                    lv.setAdapter(adapter);
                     AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle("You selected a file").setMessage(path).show();
                     byte[] bytes;
@@ -741,6 +719,11 @@ public class MainActivity extends AppCompatActivity {
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "*/*");
         startActivityForResult(intent, VIEW_FILE);
+    }
+
+    public void seeRcvdPhotos(View view) {
+        Intent intent = new Intent(this, NewContentActivity.class);
+        startActivity(intent);
     }
 
     /**

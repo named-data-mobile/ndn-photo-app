@@ -55,12 +55,13 @@ dependencies {
     // implementation fileTree(dir: 'libs', include: ['*.jar'])
     // hack; jndn uses 3.8.7 which does not have libsqlite.so for arm
     implementation group: 'org.xerial', name: 'sqlite-jdbc', version: '3.23.1'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:design:27.1.0'
     implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation group: 'net.named-data', name: 'jndn-android', version: '0.17'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'

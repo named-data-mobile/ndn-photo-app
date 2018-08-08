@@ -85,8 +85,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                             return verifySignature
                                     (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
                                             DigestAlgorithm.SHA256);
-                            // return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
-                            // return true;
+                            //return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
                         }
                     },
                     new SegmentFetcher.OnComplete() {
@@ -100,13 +99,13 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     new SegmentFetcher.OnError() {
                         @Override
                         public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                            try {
+                            /*try {
                                 m_resultMsg = message + " " + m_data.getFullName().toUri();
                             }
                             catch(EncodingException e) {
-                                e.printStackTrace();
+                                e.printStackTrace();*/
                                 m_resultMsg = message;
-                            }
+                            //}
                             m_shouldReturn = true;
                         }
                     });

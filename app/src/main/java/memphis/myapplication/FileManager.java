@@ -21,6 +21,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
 
@@ -31,6 +34,7 @@ public class FileManager {
     private File m_profilePhoto;
     private File m_filesDir;
     private File m_rcvdFilesDir;
+    private File m_rcvdPhotosDir;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
@@ -48,6 +52,7 @@ public class FileManager {
         m_photosDir = new File(m_appRootPath, "/photos");
         m_filesDir = new File(m_appRootPath, "/files");
         m_rcvdFilesDir = new File(m_appRootPath, "/received_files");
+        m_rcvdPhotosDir = new File(m_appRootPath, "/received_photos");
 
         if(!dirsCreated) {
             createDirs();
@@ -80,6 +85,8 @@ public class FileManager {
 
     public String getRcvdFilesDir() {return m_rcvdFilesDir.toString(); }
 
+    public String getRcvdPhotosDir() {return m_rcvdPhotosDir.toString(); }
+
     public void setProfilePhoto(Bitmap bitmap) {
         try{
             FileOutputStream stream = new FileOutputStream(m_profilePhoto);
@@ -108,7 +115,9 @@ public class FileManager {
         boolean madePhotos = (m_photosDir).mkdir();
         boolean madeFiles = (m_filesDir).mkdir();
         boolean madeRcvdFiles = (m_rcvdFilesDir).mkdir();
-        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles);
+        boolean madeRcvdPhotos = (m_rcvdPhotosDir).mkdir();
+        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles
+                    + " " + madeRcvdPhotos);
         Log.d("createDirs", s);
         dirsCreated = true;
     }
@@ -222,29 +231,6 @@ public class FileManager {
         return friendsList;
     }
 
-    /*public Blob getFriendKey(Interest interest) {
-        String s = interest.getName().toUri();
-        // want the second '/' from /ndn-snapchat/username/... so we can extract username
-        int index = s.substring(1).indexOf('/');
-        String beginning = s.substring(index+1);
-        String username = beginning.substring(0, beginning.indexOf('/'));
-        try {
-            File friendFile = new File(m_friendsDir + "/" + username);
-            if(friendFile.exists()) {
-                BufferedReader br = new BufferedReader(new FileReader(friendFile));
-                StringBuffer strBuff = new StringBuffer();
-                String line;
-                while((line = br.readLine()) != null) {
-                    strBuff.append(line);
-                }
-                Blob blob = new Blob((strBuff.substring(strBuff.indexOf(' '))).getBytes());
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-    }*/
-
     public Blob getFriendKey(String friend) {
         try {
             File friendFile = new File(m_friendsDir + "/" + friend);
@@ -270,26 +256,41 @@ public class FileManager {
     }
 
     /**
-     * Saves data we retrieved from SegmentFetcher to file.
+     * Saves data we retrieved from SegmentFetcher to file. This handles photos and other file types
+     * slightly differently. Photos are saved to their own special directory, so we can query them
+     * separately later for viewing and subsequent destruction.
      * @param content The blob of content we received upon Interest.
      * @param path The path of the file we will save it to.
      * @return whether the file operation was successful or not.
      */
     public boolean saveContentToFile(Blob content, String path) {
         String filename = path.substring(path.lastIndexOf("/")+1);
-        File dir = new File(m_appRootPath + "/received_files");
-        dir.mkdirs();
-        File file = new File(m_appRootPath + "/received_files/" + filename);
-        if(file.exists()) {
+        File dir;
+        File file;
+        int fileTypeIndex = filename.lastIndexOf(".");
+        // if the data name has the .png file extension, save it in the received photos directory
+        if(filename.substring(fileTypeIndex).equals(".jpg") || filename.substring(fileTypeIndex).equals(".png")) {
+            dir = m_rcvdPhotosDir;
+            String friend = parsePathForFriend(path);
+            file = new File(m_rcvdPhotosDir + "/" + friend + "_" + filename);
+        }
+        // else save to the received files directory
+        else {
+            dir = m_rcvdFilesDir;
+            file = new File(m_rcvdFilesDir + "/" + filename);
+        }
+
+        // check if the file exists. If so, save a copy and indicate it is a copy in the name by
+        // using a number. Example: filename(1).txt
+        if (file.exists()) {
             boolean exists = true;
             int copyNum = 1;
-            int fileTypeIndex = filename.lastIndexOf(".");
-            while(exists) {
-                file = new File(m_appRootPath + "/received_files/" +
+            while (exists) {
+                file = new File(dir + "/" +
                         filename.substring(0, fileTypeIndex) + "(" + copyNum + ")" +
                         filename.substring(fileTypeIndex));
                 copyNum++;
-                if(!file.exists()) {
+                if (!file.exists()) {
                     exists = false;
                 }
             }
@@ -301,13 +302,38 @@ public class FileManager {
             fostream.close();
             return true;
         }
-        catch(FileNotFoundException e) {
-            e.printStackTrace();
-        }
         catch(IOException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    /**
+     * Browses the received files directory and looks for photos and adds them to an ArrayList
+     * specific to each user who sent content. Each ArrayList is added to a ConcurrentHashMap with the
+     * username as the key.
+     * @return the ConcurrentHashMap of photos sent by friends
+     */
+    public synchronized ConcurrentHashMap<String, ArrayList<String>> getReceivedPhotos() {
+        File[] files = m_rcvdPhotosDir.listFiles();
+        // let me change how I save these files first and then we'll know how to parse to get friend
+        // wait a second. just use the file extension (.png)
+        ConcurrentHashMap<String, ArrayList<String>> map = new ConcurrentHashMap<>();
+        for(File file : files) {
+            String filename = file.getName();
+            String key = filename.substring(0, filename.indexOf('_'));
+            ArrayList<String> list = map.get(key);
+
+            if(list == null || list.isEmpty()) {
+                list = new ArrayList<>();
+                list.add(file.getAbsolutePath());
+                map.put(key, list);
+            }
+            else {
+                list.add(file.getAbsolutePath());
+            }
+        }
+        return map;
     }
 
     /**
@@ -410,6 +436,16 @@ public class FileManager {
             temp = temp.substring(fileIndex + 1);
         }
         return temp;
+    }
+
+    private String parsePathForFriend(String path) {
+        int fileIndex = 1;
+        String temp = path.substring(fileIndex);
+        // path is of the form /ndn-snapchat/username/full-file-path; extract username
+        int firstIndex = temp.indexOf("/") + 1;
+        temp = temp.substring(firstIndex);
+        int lastIndex = temp.indexOf("/");
+        return temp.substring(0, lastIndex);
     }
 
     // we need to hash to some common directory or we will need to have a table that contain links to the files

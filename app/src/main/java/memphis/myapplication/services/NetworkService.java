@@ -1,4 +1,4 @@
-package memphis.myapplication;
+package memphis.myapplication.services;
 
 import android.app.Activity;
 import android.app.Service;

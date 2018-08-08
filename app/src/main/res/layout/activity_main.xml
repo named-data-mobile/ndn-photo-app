@@ -7,15 +7,6 @@
     android:layout_height="match_parent"
     tools:context="memphis.myapplication.MainActivity">
 
-    <!-- works but I'm not exactly happy with it. The include
-         brings the entire page (the only notable item is the
-         app toolbar) and shrinks it to toolbar size; seems
-         hacky
-    <include
-        layout="@layout/activity_base"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:id = "@+id/app_bar"/>-->
     <android.support.v7.widget.Toolbar
         android:id="@+id/app_toolbar"
         android:layout_width="match_parent"
@@ -99,15 +90,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText" />
 
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="352dp"
-        android:layout_height="197dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/viewRcvdButton" />
-
     <Button
         android:id="@+id/QRButton"
         android:layout_width="wrap_content"
@@ -172,5 +154,18 @@
         android:text="Browse Rcvd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scanFileQR" />
+
+    <Button
+        android:id="@+id/viewRcvdPhotosButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="37dp"
+        android:layout_marginTop="24dp"
+        android:onClick="seeRcvdPhotos"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF"
+        android:text="See Photos"
+        app:layout_constraintStart_toEndOf="@+id/viewRcvdButton"
+        app:layout_constraintTop_toBottomOf="@+id/QRButton" />
 
 </android.support.constraint.ConstraintLayout>

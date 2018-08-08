@@ -1,14 +1,12 @@
 package memphis.myapplication;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,27 +19,28 @@ public class ViewFriendsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
-        setContentView(R.layout.activity_view_friends_list);
+        setContentView(R.layout.activity_with_list);
         Intent intent = getIntent();
         int count = 0;
-        LinearLayout linearLayout = findViewById(R.id.friendLinearLayout);
+        LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
 
+        int accent = ContextCompat.getColor(this, R.color.colorAccent);
+        int black = ContextCompat.getColor(this, R.color.jetBlack);
+        int white = ContextCompat.getColor(this, R.color.white);
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
             TextView message = new TextView(this);
             String s = "You currently haven't added any friends.";
             message.setText(s);
-            message.setTextColor(0xFFFFFF);
+            message.setTextColor(white);
             message.setTextSize(24);
+            message.setGravity(Gravity.LEFT);
             linearLayout.addView(message);
         }
         else {
             // programmatically create TextViews to place in the LinearLayout since we don't know how
             // many friends a person will have
-            int accent = ContextCompat.getColor(this, R.color.colorAccent);
-            int black = ContextCompat.getColor(this, R.color.jetBlack);
-            int white = ContextCompat.getColor(this, R.color.white);
             for (String friend : friendsList) {
                 Log.d("ViewFriends", "Friend" + count + " " + friend);
                 TextView friendName = new TextView(this);

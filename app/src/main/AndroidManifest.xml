@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
 
-        <service android:name=".NetworkService">
+        <service android:name=".services.NetworkService">
         </service>
 
         <activity android:name=".IntroActivity"
@@ -31,7 +31,6 @@
                   android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
             </intent-filter>
         </activity>
 
@@ -45,9 +44,11 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".NewContentActivity">
         </activity>
 
         <activity
@@ -72,6 +73,9 @@
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT"/>
             </intent-filter>
+        </activity>
+
+        <activity android:name=".ViewPhotosActivity">
         </activity>
 
     </application>
