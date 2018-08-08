@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
 
-        <service android:name=".NetworkService">
+        <service android:name=".services.NetworkService">
         </service>
 
         <activity android:name=".IntroActivity"
@@ -27,42 +27,36 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".Login"
+        <activity android:name=".LoginActivity"
                   android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-                <!--<category android:name="android.intent.category.LAUNCHER"/>-->
             </intent-filter>
         </activity>
 
-        <activity android:name=".AddFriend" >
+        <activity android:name=".AddFriendActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".AppNavigator">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
-            </intent-filter>
-        </activity>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <!--<category android:name="android.intent.category.LAUNCHER" />-->
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
 
+        <activity android:name=".NewContentActivity">
+        </activity>
+
         <activity
-            android:name=".DisplayFileQRCode"
+            android:name=".DisplayQRActivity"
             android:parentActivityName=".MainActivity" >
         </activity>
 
-        <activity android:name=".SignUp"
+        <activity android:name=".SignUpActivity"
             android:label="ndn-snapchat"
             android:exported="true"
             android:theme="@style/AppTheme.NoActionBar">
@@ -70,6 +64,18 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+        </activity>
+
+        <activity android:name=".SettingsActivity">
+        </activity>
+
+        <activity android:name=".ViewFriendsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ViewPhotosActivity">
         </activity>
 
     </application>

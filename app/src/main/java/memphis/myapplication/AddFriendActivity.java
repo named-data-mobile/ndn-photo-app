@@ -12,19 +12,22 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
-public class AddFriend extends AppCompatActivity {
+public class AddFriendActivity extends AppCompatActivity {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
-    private final int DISPLAY_QR_REQUEST_CODE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
     }
+
+    // To do: add new Intent for the remote friend button; this new activity should allow the user
+    // to search for usernames and befriend them (send friendship interest)
 
     public void scanFriendQR(View view) {
         IntentIntegrator scanner = new IntentIntegrator(this);
@@ -42,11 +45,19 @@ public class AddFriend extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         File file = new File(manager.getMyQRPath());
         if(!file.exists()) {
-            manager.saveMyQRCode(QRExchange.makeQRFriendCode(getApplicationContext()));
+            manager.saveMyQRCode(QRExchange.makeQRFriendCode(manager));
         }
-        Intent display = new Intent(this, DisplayFileQRCode.class);
+        Intent display = new Intent(this, DisplayQRActivity.class);
         display.setData(Uri.fromFile(file));
         startActivity(display);
+    }
+
+    public void viewFriendsList(View view) {
+        FileManager manager = new FileManager(getApplicationContext());
+        ArrayList<String> friendsList = manager.getFriendsList();
+        Intent intent = new Intent(this, ViewFriendsActivity.class);
+        intent.putStringArrayListExtra("friendsList", friendsList);
+        startActivity(intent);
     }
 
     @Override
@@ -63,6 +74,7 @@ public class AddFriend extends AppCompatActivity {
                     Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
                 } else {
                     String content = result.getContents();
+                    Log.d("ScannedFriend", content);
                     // need to check this content to determine if we are scanning file or friend code
                     Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                     FileManager manager = new FileManager(getApplicationContext());
@@ -77,13 +89,6 @@ public class AddFriend extends AppCompatActivity {
                     else {
                         Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
                     }
-                    /*if (requestCode == FRIEND_QR_REQUEST_CODE) {
-                        // manager.saveFriend(content);
-                        //Intent intent = new Intent();
-                        //Save friend's information
-                    } else {
-                        Log.d("onScanResult", "Unexpected requestCode: " + requestCode);
-                    }*/
                 }
             } else {
                 super.onActivityResult(requestCode, resultCode, data);

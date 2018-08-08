@@ -5,7 +5,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
 
-public class DisplayFileQRCode extends AppCompatActivity {
+/**
+ * This activity displays an image provided by the intent (intended for QR codes). This is its
+ * only purpose.
+ */
+
+public class DisplayQRActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

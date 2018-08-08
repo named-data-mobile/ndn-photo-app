@@ -1,12 +1,11 @@
 package memphis.myapplication;
 
-import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.util.Base64;
-import android.widget.Toast;
+import android.util.Log;
 
+import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.util.Blob;
@@ -18,14 +17,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
 
@@ -33,21 +31,34 @@ public class FileManager {
     private File m_friendsDir;
     private File m_selfDir;
     private File m_photosDir;
+    private File m_profilePhoto;
     private File m_filesDir;
     private File m_rcvdFilesDir;
+    private File m_rcvdPhotosDir;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
+        /* Eventually, we will set m_appRootPath to getFilesDir(). This is the internal storage of
+           the phone. It is inaccessible by other applications. getExternalFilesDir() is on the
+           SD card, which allows us to browse these directories with a File Explorer. This is better
+           for testing, since you can verify file activity results have occurred. In the Release,
+           though, we will not want people to view files outside our app given the Snapchat philosophy
+           of destroying content after viewing.
+         */
+        // m_appRootPath = context.getFilesDir().toString();
         m_appRootPath = context.getExternalFilesDir(null).toString();
         m_friendsDir = new File(m_appRootPath, "/friends");
         m_selfDir = new File(m_appRootPath, "/self");
         m_photosDir = new File(m_appRootPath, "/photos");
         m_filesDir = new File(m_appRootPath, "/files");
         m_rcvdFilesDir = new File(m_appRootPath, "/received_files");
+        m_rcvdPhotosDir = new File(m_appRootPath, "/received_photos");
 
         if(!dirsCreated) {
             createDirs();
         }
+
+        m_profilePhoto = new File(m_photosDir, "profilePhoto.jpg");
     }
 
     public String getAppRootPath() {
@@ -66,11 +77,27 @@ public class FileManager {
         return m_photosDir.toString();
     }
 
+    public File getProfilePhoto() {return m_profilePhoto; }
+
     public String getFilesDir() {
         return m_filesDir.toString();
     }
 
     public String getRcvdFilesDir() {return m_rcvdFilesDir.toString(); }
+
+    public String getRcvdPhotosDir() {return m_rcvdPhotosDir.toString(); }
+
+    public void setProfilePhoto(Bitmap bitmap) {
+        try{
+            FileOutputStream stream = new FileOutputStream(m_profilePhoto);
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+            stream.flush();
+            stream.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Creates the necessary directories for app usage. This includes a friends directory where
@@ -88,70 +115,12 @@ public class FileManager {
         boolean madePhotos = (m_photosDir).mkdir();
         boolean madeFiles = (m_filesDir).mkdir();
         boolean madeRcvdFiles = (m_rcvdFilesDir).mkdir();
-        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles);
+        boolean madeRcvdPhotos = (m_rcvdPhotosDir).mkdir();
+        String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles
+                    + " " + madeRcvdPhotos);
         Log.d("createDirs", s);
         dirsCreated = true;
     }
-
-    /**
-     * Creates a new RSA key pair. This is needed for encrypting/decrypting advertised names.
-     * @return returns RSA key pair if successful; returns false if an error occurs
-     */
-    /*private KeyPair generateKeys() {
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            return keyGen.generateKeyPair();
-        }
-        catch (NoSuchAlgorithmException e) {
-            Log.d("QR", "RSA algorithm not found. Keys were not generated.");
-            return null;
-        }
-    }*/
-
-    /**
-     * Saves the generated RSA key pair to file. This is intended to only be called once upon
-     * a successful sign up, so our keys are not overwritten.
-     * @return returns true if the keys were successfully written to file; false if anything else
-     */
-    // you might need to provide an easy way for someone to create new key pairs say in the case that
-    // they deleted or lost their previous pair, or they uninstall/reinstall the app. Their friends
-    // will need to know.
-    /*protected boolean saveKeys() {
-        boolean wasCreated = createDirs();
-        if (!wasCreated) {
-            return false;
-        }
-        KeyPair keypair = generateKeys();
-        if (keypair != null) {
-            byte[] encodedPrivateKey = keypair.getPrivate().getEncoded();
-            byte[] encodedPubKey = keypair.getPublic().getEncoded();
-
-            // want to use string format of keys when I save to file
-            String privateKey = Base64.encodeToString(encodedPrivateKey, 0);
-            String pubKey = Base64.encodeToString(encodedPubKey, 0);
-
-            File privateKeyFile = new File(m_selfDir, "/id_rsa");
-            File pubKeyFile = new File(m_selfDir, "/id_rsa.pub");
-
-            try {
-                FileWriter writer = new FileWriter(privateKeyFile);
-                writer.write("----BEGIN PRIVATE KEY----\n");
-                writer.write(privateKey);
-                writer.close();
-
-                writer = new FileWriter(pubKeyFile);
-                writer.write("----BEGIN PUBLIC KEY----\n");
-                writer.write(pubKey);
-                writer.close();
-                return true;
-            }
-            catch (IOException e) {
-                Log.d("saveKeys", "IOException: " + e.toString());
-            }
-        }
-        return false;
-    }*/
 
     /**
      * Saves your username to file so we can retrieve it later.
@@ -223,53 +192,6 @@ public class FileManager {
         return (m_selfDir + "/myQR.png");
     }
 
-    /**
-     * Reads the public rsa key file and extracts the public key.
-     * @return user's public key in string format
-     */
-    // public String getPubKey() {
-    public net.named_data.jndn.security.certificate.PublicKey getPubKey() {
-        //try {
-            // may change implementation to work with file stored jndn security stuff
-            // Globals.privateKeyStorage.getPublicKey
-        // note to self!!!!!!!!!!!!!!!!!finish QR stuff now for add friend
-        Name keyName = new Name("/ndn-snapchat/" + getUsername() + "/KEY");
-        try {
-            return Globals.privateKeyStorage.getPublicKey(new Name(keyName));
-        }
-        catch (SecurityException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public String getPrivateKey() {
-        try {
-            StringBuilder key = new StringBuilder();
-            BufferedReader reader = new BufferedReader(new FileReader(m_selfDir + "/id_rsa"));
-            // first line of the public key file is ----BEGIN PRIVATE KEY---- so we need to skip it
-            String line = reader.readLine();
-            if (line != null) {
-                line = reader.readLine();
-            }
-
-            while(line != null) {
-
-                // and read the rest (assuming the keys are stored in separate files and the
-                // first line is just ----BEGIN PRIVATE KEY----
-                key.append(line);
-                line = reader.readLine();
-            }
-            reader.close();
-            // need to check this is not empty elsewhere
-            return key.toString();
-        }
-        catch(IOException e) {
-            Log.d("getPubKey", "IOException: " + e.toString());
-            return null;
-        }
-    }
-
     // save friends
     public int saveFriend(String friendContent) {
         if (friendContent.length() > 0) {
@@ -281,13 +203,15 @@ public class FileManager {
                 return 1;
             }
             String pubKey = friendContent.substring(index + 1);
+            Log.d("pubKey", "This is what we're writing: " + pubKey);
             try {
                 boolean wasCreated = friendFile.createNewFile();
                 if(wasCreated) {
-                    FileWriter writer = new FileWriter(friendFile);
-                    writer.write(username);
-                    writer.write(pubKey);
-                    writer.close();
+                    // consider changing to byte content
+                    FileOutputStream fostream = new FileOutputStream(friendFile);
+                    // writer.write(username);
+                    fostream.write(pubKey.getBytes());
+                    fostream.close();
                     return 0;
                 }
             }
@@ -298,27 +222,75 @@ public class FileManager {
         return -1;
     }
 
+    public ArrayList<String> getFriendsList() {
+        ArrayList<String> friendsList = new ArrayList<>();
+        File[] files = m_friendsDir.listFiles();
+        for(File file : files) {
+            friendsList.add(file.getName());
+        }
+        return friendsList;
+    }
+
+    public Blob getFriendKey(String friend) {
+        try {
+            File friendFile = new File(m_friendsDir + "/" + friend);
+            if(friendFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(friendFile));
+                StringBuffer strBuff = new StringBuffer();
+                String line;
+                while((line = br.readLine()) != null) {
+                    strBuff.append(line);
+                }
+                // The string we have saved to format is the DER bytes in Base64. We need to revert
+                // back to the original format
+                byte[] keyBytes = Base64.decode(strBuff.toString(), Base64.DEFAULT);
+                Blob key = new Blob(keyBytes);
+                Log.d("getFriendKey", key.toString());
+                return key;
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
-     * Saves data we retrieved from SegmentFetcher to file.
+     * Saves data we retrieved from SegmentFetcher to file. This handles photos and other file types
+     * slightly differently. Photos are saved to their own special directory, so we can query them
+     * separately later for viewing and subsequent destruction.
      * @param content The blob of content we received upon Interest.
      * @param path The path of the file we will save it to.
      * @return whether the file operation was successful or not.
      */
     public boolean saveContentToFile(Blob content, String path) {
         String filename = path.substring(path.lastIndexOf("/")+1);
-        File dir = new File(m_appRootPath + "/received_files");
-        dir.mkdirs();
-        File file = new File(m_appRootPath + "/received_files/" + filename);
-        if(file.exists()) {
+        File dir;
+        File file;
+        int fileTypeIndex = filename.lastIndexOf(".");
+        // if the data name has the .png file extension, save it in the received photos directory
+        if(filename.substring(fileTypeIndex).equals(".jpg") || filename.substring(fileTypeIndex).equals(".png")) {
+            dir = m_rcvdPhotosDir;
+            String friend = parsePathForFriend(path);
+            file = new File(m_rcvdPhotosDir + "/" + friend + "_" + filename);
+        }
+        // else save to the received files directory
+        else {
+            dir = m_rcvdFilesDir;
+            file = new File(m_rcvdFilesDir + "/" + filename);
+        }
+
+        // check if the file exists. If so, save a copy and indicate it is a copy in the name by
+        // using a number. Example: filename(1).txt
+        if (file.exists()) {
             boolean exists = true;
             int copyNum = 1;
-            int fileTypeIndex = filename.lastIndexOf(".");
-            while(exists) {
-                file = new File(m_appRootPath + "/received_files/" +
+            while (exists) {
+                file = new File(dir + "/" +
                         filename.substring(0, fileTypeIndex) + "(" + copyNum + ")" +
                         filename.substring(fileTypeIndex));
                 copyNum++;
-                if(!file.exists()) {
+                if (!file.exists()) {
                     exists = false;
                 }
             }
@@ -330,15 +302,47 @@ public class FileManager {
             fostream.close();
             return true;
         }
-        catch(FileNotFoundException e) {
-            e.printStackTrace();
-        }
         catch(IOException e) {
             e.printStackTrace();
         }
         return false;
     }
 
+    /**
+     * Browses the received files directory and looks for photos and adds them to an ArrayList
+     * specific to each user who sent content. Each ArrayList is added to a ConcurrentHashMap with the
+     * username as the key.
+     * @return the ConcurrentHashMap of photos sent by friends
+     */
+    public synchronized ConcurrentHashMap<String, ArrayList<String>> getReceivedPhotos() {
+        File[] files = m_rcvdPhotosDir.listFiles();
+        // let me change how I save these files first and then we'll know how to parse to get friend
+        // wait a second. just use the file extension (.png)
+        ConcurrentHashMap<String, ArrayList<String>> map = new ConcurrentHashMap<>();
+        for(File file : files) {
+            String filename = file.getName();
+            String key = filename.substring(0, filename.indexOf('_'));
+            ArrayList<String> list = map.get(key);
+
+            if(list == null || list.isEmpty()) {
+                list = new ArrayList<>();
+                list.add(file.getAbsolutePath());
+                map.put(key, list);
+            }
+            else {
+                list.add(file.getAbsolutePath());
+            }
+        }
+        return map;
+    }
+
+    /**
+     * Saves the Name of your file in a QR code. You can present this code to a friend to scan for
+     * easy retrieval.
+     * @param bitmap provided bitmap to form png of QR code
+     * @param path provided filepath; we will use this to name the file after changing its type to png
+     * @return true or false depending on success
+     */
     public boolean saveFileQR(Bitmap bitmap, String path) {
         // do file operations here to remove .txt or .pdf or whatever and append .png
         int dotIndex = path.lastIndexOf(".");
@@ -432,6 +436,16 @@ public class FileManager {
             temp = temp.substring(fileIndex + 1);
         }
         return temp;
+    }
+
+    private String parsePathForFriend(String path) {
+        int fileIndex = 1;
+        String temp = path.substring(fileIndex);
+        // path is of the form /ndn-snapchat/username/full-file-path; extract username
+        int firstIndex = temp.indexOf("/") + 1;
+        temp = temp.substring(firstIndex);
+        int lastIndex = temp.indexOf("/");
+        return temp.substring(0, lastIndex);
     }
 
     // we need to hash to some common directory or we will need to have a table that contain links to the files

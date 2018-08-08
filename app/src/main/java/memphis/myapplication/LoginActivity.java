@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class Login extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     final private int MISSING_ELEMENT = 1;
     final private int NOT_IN_DATABASE = 2;
@@ -52,7 +52,7 @@ public class Login extends AppCompatActivity {
             manager.saveUsername(username);
             Session session = new Session(getApplicationContext());
             session.setLoginStatus();
-            // uncomment this later; in manifest, add no history option for Login
+            // uncomment this later; in manifest, add no history option for LoginActivity
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             // finish();

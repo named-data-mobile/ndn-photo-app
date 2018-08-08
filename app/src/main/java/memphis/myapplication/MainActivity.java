@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -16,11 +17,14 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -39,20 +43,20 @@ import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.RsaKeyParams;
 import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
-import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
-import net.named_data.jndn.security.identity.IdentityManager;
+import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
+import net.named_data.jndn.security.pib.Pib;
+import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.pib.PibKey;
+import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
-import net.named_data.jndn.util.SegmentFetcher;
 
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -66,18 +70,21 @@ import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    // security v2 experimental changes
+    // look at KeyChain.java; with V2, it works with CertificateV2, Pib, Tpm, and Validator
+    public AndroidSqlite3Pib m_pib;
+    public TpmBackEndFile m_tpm;
+    public PibIdentity m_pibIdentity;
+
+    //
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
-    private Session session;
     final MainActivity m_mainActivity = this;
-    String retrieved_data = "";
-    AndroidSqlite3IdentityStorage identityStorage;
-    FilePrivateKeyStorage privateKeyStorage;
-    IdentityManager identityManager;
     public KeyChain keyChain;
     public Face face;
     public FaceProxy faceProxy;
     // think about adding a memoryContentCache instead of faceProxy
+    // eventually remove these lists; they are used to display the file path of one we selected to publish
     List<String> filesStrings = new ArrayList<String>();
     List<Uri> filesList = new ArrayList<Uri>();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -85,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    Name registered_prefix;
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
@@ -94,16 +100,18 @@ public class MainActivity extends AppCompatActivity {
     private final int VIEW_FILE = 4;
 
     private boolean netThreadShouldStop = true;
-    // private boolean has_setup_security = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        session = new Session(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setupToolbar();
+
         this.filesList = new ArrayList<Uri>();
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+
+        // check if user has given us permissions for storage manipulation (one time dialog box)
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -113,87 +121,168 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
-        // new addition; we need to check if these are even set though
-        // Application app = (Globals) getApplicationContext();
-        boolean faceExists = Globals.face == null;
-        Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
+        boolean faceExists = (Globals.face == null);
+        Log.d("onCreate", "Globals face is null?: " + faceExists +
+                "; Globals security is setup: " + Globals.has_setup_security);
+        // need to check if we have an existing face or if security is not setup; either way, we
+        // need to make changes; see setup_security()
         if (faceExists || !Globals.has_setup_security) {
             setup_security();
         }
+
         face = Globals.face;
         faceProxy = Globals.faceProxy;
         keyChain = Globals.keyChain;
-        // problem here. Security is being setup twice which means something wrong is going on with
-        // the Globals class. The static variables aren't being set or we're losing them.
-        // since setup_security is its own thread, we are moving forward and hit startNetworkThread before setup_security finishes.
+        try {
+            Log.d("MainActivity", "pubKey der: " + Globals.pibIdentity.getKey(Globals.pubKeyName).getPublicKey().toString());
+        }
+        catch(PibImpl.Error | Pib.Error | java.lang.SecurityException e) {
+            e.printStackTrace();
+        }
         startNetworkThread();
     }
+
+    private void setupToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        FileManager manager = new FileManager(getApplicationContext());
+        ImageView imageView = (ImageView) findViewById(R.id.toolbar_photo);
+        File file = manager.getProfilePhoto();
+        if(file.length() == 0) {
+            imageView.setImageResource(R.drawable.bandit);
+        }
+        else {
+            imageView.setImageURI(Uri.fromFile(file));
+        }
+        setSupportActionBar(toolbar);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        Log.d("menuInflation", "Inflated");
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        Log.d("item", item.toString());
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     // Still think of MainActivity as our true MainActivity, but things will change towards background
     // automation and a better UI. A user is likely not going to know the actual filenames to ask for.
     // The app will take care of this process behind the scenes thanks to our synchronization protocol
     // (and other things) letting the app know what to request. We are in a purely functional stage
     // at the moment.
 
+    /**
+     * This function sets up identity storage, keys, and the face our app will use.
+     */
     public void setup_security() {
-        /*Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {*/
         FileManager manager = new FileManager(getApplicationContext());
-        // /ndn-snapchat/<username>/KEY
-        Name appAndUsername = new Name("/ndn-snapchat/" + manager.getUsername());
+        // /ndn-snapchat/<username>
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+
+        // v2 changes
+        // So when we make these changes, we need to make sure we set up our identities correctly;
+        // lessons learned from V1; also make sure you set your Globals variables and change your related conditionals
+        Context context = getApplicationContext();
+        String rootPath = getApplicationContext().getFilesDir().toString();
+        String pibPath = "pib-sqlite3:" + rootPath;
 
         face = new Face();
-        //faceProxy = new FaceProxy();
-        // check if identityStorage, privateKeyStorage, identityManager, and keyChain already exist in our phone.
-        if (identityStorage == null) {
-            identityStorage = new AndroidSqlite3IdentityStorage(
-                    AndroidSqlite3IdentityStorage.getDefaultFilePath(getApplicationContext().getFilesDir())
-            );
-            Globals.setIdentityStorage(identityStorage);
-        }
-        if (privateKeyStorage == null) {
-            privateKeyStorage = new FilePrivateKeyStorage(
-                    FilePrivateKeyStorage.getDefaultDirecoryPath(getApplicationContext().getFilesDir())
-            );
-            Globals.setFilePrivateKeyStorage(privateKeyStorage);
-        }
         try {
-            // check if key storage exists
-            Name keyName = new Name(appAndUsername + "/KEY");
-            privateKeyStorage.generateKeyPair(keyName, new RsaKeyParams(2048));
-        } catch (SecurityException e) {
-            // keys already exist; no need to generate them again.
+            m_pib = new AndroidSqlite3Pib(rootPath, "/pib.db");
+            Globals.setPib(m_pib);
+        }
+        catch(PibImpl.Error e) {
             e.printStackTrace();
         }
-        // this is fine if we haven't changed anything with storage
-        identityManager = new IdentityManager(identityStorage, privateKeyStorage);
-        Globals.setIdentityManager(identityManager);
-        keyChain = new KeyChain(identityManager);
-        keyChain.setFace(face);
 
-        Name defaultCertificateName;
+        // jndn has a typo in its getter
+        m_tpm = new TpmBackEndFile(TpmBackEndFile.getDefaultDirecoryPath(context.getFilesDir()));
+        Globals.setTpmBackEndFile(m_tpm);
         try {
-            defaultCertificateName = keyChain.createIdentityAndCertificate(appAndUsername);
-            keyChain.getIdentityManager().setDefaultIdentity(appAndUsername);
-            Log.d("setup_security", "Certificate was generated.");
+            m_pib.setTpmLocator("tpm-file:" + TpmBackEndFile.getDefaultDirecoryPath(context.getFilesDir()));
+        }
+        catch(PibImpl.Error e) {
+            e.printStackTrace();
+        }
 
-        } catch (SecurityException e2) {
+        try {
+            keyChain = new KeyChain(pibPath, m_pib.getTpmLocator());
+        }
+        catch(SecurityException | IOException | PibImpl.Error | KeyChain.Error e) {
+            e.printStackTrace();
+        }
+
+        Name identity = new Name(appAndUsername);
+        Name defaultCertificateName;
+        PibIdentity pibId;
+        PibKey key;
+
+        try {
+            // see if the identity exists; if it doesn't, this will throw an error
+            pibId = keyChain.getPib().getIdentity(identity);
+            key = pibId.getDefaultKey();
+            keyChain.setDefaultIdentity(pibId);
+            keyChain.setDefaultKey(pibId, key);
+            keyChain.getPib().setDefaultIdentity_(identity);
+            Globals.setPubKeyName(key.getName());
+            Globals.setPublicKey(key.getPublicKey());
+            Globals.setDefaultPibId(pibId);
+        }
+        catch(PibImpl.Error | Pib.Error e) {
+            try {
+                pibId = keyChain.createIdentityV2(identity);
+                key = pibId.getDefaultKey();
+                keyChain.setDefaultIdentity(pibId);
+                keyChain.setDefaultKey(pibId, key);
+                keyChain.getPib().setDefaultIdentity_(identity);
+                Globals.setPubKeyName(key.getName());
+                Globals.setPublicKey(key.getPublicKey());
+                Globals.setDefaultPibId(pibId);
+            }
+            catch(PibImpl.Error | Pib.Error | TpmBackEnd.Error | Tpm.Error | KeyChain.Error ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        Globals.setDefaultIdName(appAndUsername);
+
+        try {
+            defaultCertificateName = keyChain.getDefaultCertificateName();
+        }
+        catch(SecurityException e) {
+            e.printStackTrace();
             defaultCertificateName = new Name("/bogus/certificate/name");
         }
+
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
         Globals.setFaceProxy(new FaceProxy());
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
-        Name username = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+
         try {
-            register_with_NFD(username);
+            // since everyone is a potential producer, register your prefix
+            register_with_NFD(appAndUsername);
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
     }
 
+    // Eventually, we should move this to a Service, but for now, this thread consistently calls
+    // face.processEvents() to check for any changes, such as publishing or fetching.
     private final Thread networkThread = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -236,6 +325,10 @@ public class MainActivity extends AppCompatActivity {
         return networkThread.isAlive();
     }
 
+    /**
+     * Android is very particular about UI processes running on a separate thread. This function
+     * creates and returns a Runnable thread object that will display a Toast message.
+     */
     public Runnable makeToast(final String s) {
         return new Runnable() {
             public void run() {
@@ -257,53 +350,14 @@ public class MainActivity extends AppCompatActivity {
         fetch_data(interest);
     }
 
+    /**
+     * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
+     * @param interest the interest for the data we want
+     */
     public void fetch_data(final Interest interest) {
-        interest.setInterestLifetimeMilliseconds(6000);
-        /*SegmentFetcher.fetch(
-                face,
-                interest,
-                new SegmentFetcher.VerifySegment() {
-                    @Override
-                    public boolean verifySegment(Data data) {
-                        Log.d("VerifySegment", "We just return true.");
-                        return true;
-                    }
-                },
-                new SegmentFetcher.OnComplete() {
-                    @Override
-                    public void onComplete(Blob content) {
-                        FileManager manager = new FileManager(getApplicationContext());
-                        boolean wasSaved = manager.saveContentToFile(content, interest.getName().toUri());
-                        if(wasSaved) {
-                            String msg = "We got content.";
-                            runOnUiThread(makeToast(msg));
-                        }
-                        else {
-                            String msg = "Failed to save retrieved content";
-                            runOnUiThread(makeToast(msg));
-                        }
-                    }
-                },
-                new SegmentFetcher.OnError() {
-                    @Override
-                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                    }
-                },
-                new SegmentFetcher.OnError() {
-                    @Override
-                    public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        Log.d("fetch_data onError", message);
-                        runOnUiThread(makeToast(message));
-                    }
-                });*/
+        interest.setInterestLifetimeMilliseconds(10000);
+        // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
-        /*Thread fetchingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                new FetchingTask(m_mainActivity).execute(interest);
-            }
-        });
-        fetchingThread.start();*/
     }
 
     public void register_with_NFD(View view) {
@@ -317,6 +371,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
+     * @param name The provided name should be /ndn-snapchat/<username>
+     * @throws IOException
+     * @throws PibImpl.Error
+     */
     public void register_with_NFD(Name name) throws IOException, PibImpl.Error {
 
         if (!Globals.has_setup_security) {
@@ -330,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
         }
         try {
             Log.d("register_with_nfd", "Starting registration process.");
-            long prefixId = face.registerPrefix(name,
+            face.registerPrefix(name,
                     onDataInterest,
                     new OnRegisterFailed() {
                         @Override
@@ -354,6 +414,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Starts a new thread to publish the file/photo data.
+     * @param blob Blob of content
+     * @param prefix Name of the file (currently absolute path)
+     */
     public void publishData(final Blob blob, final Name prefix) {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
@@ -364,6 +429,7 @@ public class MainActivity extends AppCompatActivity {
                         keyChain.sign(data);
                         fileData.add(data);
                     }
+
                     faceProxy.putInCache(fileData);
                     FileManager manager = new FileManager(getApplicationContext());
                     String filename = prefix.toUri();
@@ -381,8 +447,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void select_files(View view) {
-        /* final ListView lv = (ListView) findViewById(R.id.listview);
-        List<String> filesStrings = new ArrayList<String>();*/
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -397,10 +461,9 @@ public class MainActivity extends AppCompatActivity {
                                  Intent resultData) {
 
         Log.d("onActivityResult", "requestCode: " + requestCode);
-        Uri uri = null;
+        Uri uri;
         if (resultData != null) {
             if (requestCode == FILE_SELECT_REQUEST_CODE) {
-                final ListView lv = (ListView) findViewById(R.id.listview);
 
                 uri = resultData.getData();
                 String path = getFilePath(uri);
@@ -410,8 +473,6 @@ public class MainActivity extends AppCompatActivity {
                     filesList.add(uri);
                     // filesStrings.add(uri.toString());
                     filesStrings.add(path);
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, filesStrings);
-                    lv.setAdapter(adapter);
                     AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle("You selected a file").setMessage(path).show();
                     byte[] bytes;
@@ -441,7 +502,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     // set up a new Activity for displaying. This way the back button brings us back
                     // to main activity.
-                    Intent display = new Intent(this, DisplayFileQRCode.class);
+                    Intent display = new Intent(this, DisplayQRActivity.class);
                     display.setData(resultData.getData());
                     startActivity(display);
                 } catch (NullPointerException e) {
@@ -498,6 +559,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // credit: https://stackoverflow.com/questions/13209494/how-to-get-the-full-file-path-from-uri/41520090
+
+    /**
+     * Converts a uri to its appropriate file pathname
+     * @param uri file uri
+     * @return
+     */
     public String getFilePath(Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
@@ -580,6 +648,12 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
     }
 
+    /**
+     * This takes a Blob and divides it into NDN data packets
+     * @param raw_blob The full content of data in Blob format
+     * @param prefix
+     * @return returns an ArrayList of all the data packets
+     */
     public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
         final int VERSION_NUMBER = 0;
         final int DEFAULT_PACKET_SIZE = 8000;
@@ -630,12 +704,12 @@ public class MainActivity extends AppCompatActivity {
 
     // start activity for add friends
     public void startMakingFriends(View view) {
-        Intent intent = new Intent(this, AddFriend.class);
+        Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
     }
 
     // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
-    // file expolorer and opener.
+    // file explorer and opener. This is intended for testing.
     public void browseRcvdFiles(View view) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         FileManager manager = new FileManager(getApplicationContext());
@@ -645,6 +719,11 @@ public class MainActivity extends AppCompatActivity {
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "*/*");
         startActivityForResult(intent, VIEW_FILE);
+    }
+
+    public void seeRcvdPhotos(View view) {
+        Intent intent = new Intent(this, NewContentActivity.class);
+        startActivity(intent);
     }
 
     /**
@@ -668,15 +747,23 @@ public class MainActivity extends AppCompatActivity {
      */
     public void startCamera() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        // String tsPhoto = new Timestamp(System.currentTimeMillis()).toString() + ".jpg";
+        // name the photo by using current time
         String tsPhoto = (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date())) + ".jpg";
-        // String tsPhoto = getDateTimeInstance().toString() + ".jpg";
+        /* The steps below are necessary for photo captures. We set up a temporary file for our
+           photo and pass the information to the Camera Activity. This is where it will store the
+           photo if we choose to save it. */
         FileManager manager = new FileManager(getApplicationContext());
         File pic = new File(manager.getPhotosDir(), tsPhoto);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
         startActivityForResult(intent, CAMERA_REQUEST_CODE);
     }
 
+    /**
+     * This checks if the user gave us permission for the camera or not when the dialog box popped up.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -691,6 +778,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This is registered with our prefix. Any interest sent with prefix /ndn-snapchat/<username>
+     * will be caught by this callback. We send it to the faceProxy to deal with it.
+     */
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,

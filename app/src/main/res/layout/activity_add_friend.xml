@@ -10,25 +10,50 @@
         android:id="@+id/showYourCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="68dp"
-        android:layout_marginTop="244dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="37dp"
         android:background="@color/colorAccent"
         android:onClick="displayMyQR"
         android:text="Display QR"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/add_remote_button" />
 
     <Button
         android:id="@+id/scanFriendButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="244dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="40dp"
         android:onClick="scanFriendQR"
         android:text="Scan QR"
-        app:layout_constraintStart_toEndOf="@+id/showYourCode"
-        app:layout_constraintTop_toTopOf="parent"
         android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showYourCode" />
+
+    <Button
+        android:id="@+id/viewFriendsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="146dp"
+        android:layout_marginTop="40dp"
+        android:background="@color/colorAccent"
+        android:onClick="viewFriendsList"
+        android:text="View Friends"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scanFriendButton" />
+
+    <Button
+        android:id="@+id/add_remote_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="122dp"
+        android:layout_marginTop="120dp"
+        android:background="@color/colorAccent"
+        android:text="Search For Friend"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

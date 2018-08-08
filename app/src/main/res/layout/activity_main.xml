@@ -7,41 +7,73 @@
     android:layout_height="match_parent"
     tools:context="memphis.myapplication.MainActivity">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/app_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorAccent"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+        <ImageView
+            android:id="@+id/toolbar_photo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:scaleType="centerCrop"
+            android:layout_marginStart="1dp"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="36sp"
+            android:paddingStart="2dp"
+            app:layout_constraintStart_toStartOf="@id/toolbar_photo"
+            />
+
+    </android.support.v7.widget.Toolbar>
+
     <EditText
         android:id="@+id/editText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="6dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:labelFor="@id/editText"
-        android:text="/ndn-snapchat/username"
+        android:text=""
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/app_toolbar" />
 
     <Button
         android:id="@+id/fetchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
         android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
         android:onClick="fetch_data_button"
         android:text="Fetch data"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toTopOf="@+id/editText" />
+        app:layout_constraintTop_toBottomOf="@id/app_toolbar" />
 
     <Button
         android:id="@+id/fileSelectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="12dp"
         android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
         android:onClick="select_files"
-        android:text="Files"
+        android:text="Share Files"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toEndOf="@+id/editText"
         app:layout_constraintTop_toBottomOf="@+id/fetchButton" />
 
@@ -57,15 +89,6 @@
         android:text="Register with NFD"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText" />
-
-    <ListView
-        android:id="@+id/listview"
-        android:layout_width="352dp"
-        android:layout_height="257dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginTop="292dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/QRButton"
@@ -131,5 +154,18 @@
         android:text="Browse Rcvd"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/scanFileQR" />
+
+    <Button
+        android:id="@+id/viewRcvdPhotosButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="37dp"
+        android:layout_marginTop="24dp"
+        android:onClick="seeRcvdPhotos"
+        android:background="@color/colorAccent"
+        android:textColor="#FFFFFF"
+        android:text="See Photos"
+        app:layout_constraintStart_toEndOf="@+id/viewRcvdButton"
+        app:layout_constraintTop_toBottomOf="@+id/QRButton" />
 
 </android.support.constraint.ConstraintLayout>

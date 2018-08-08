@@ -21,7 +21,7 @@ import java.security.KeyPair;
 import memphis.myapplication.FileManager;
 import memphis.myapplication.QRExchange;
 
-public class SignUp extends AppCompatActivity {
+public class SignUpActivity extends AppCompatActivity {
 
 /*    // Error return values to indicate what the user needs to correct in their signup form
     // some form elements are missing content (e.g., no email address provided)
