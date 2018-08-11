@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -32,44 +33,42 @@ import java.util.function.Function;
  */
 public class FaceProxy {
 
-    private Data[] mCache;
-    // private ArrayList<ArrayList<Data>> mCache;
-    // private ArrayList[] mCache;
-    private int mCurrentIndex;
+    private ConcurrentHashMap<String, ArrayList<Data>> mCacheMap;
 
     public FaceProxy() {
-        mCache = new Data[500];
-        // mCache = new ArrayList<ArrayList<Data>>(15);
-        // mCache = new ArrayList[15];
-        mCurrentIndex = 0;
+        mCacheMap = new ConcurrentHashMap<>();
     }
 
+    /**
+     * This checks if the corresponding Data to the incoming Interest is in the cache. If so, put
+     * it in the face. If not, publish the file, which will result in its placement in the cache.
+     * @param interest
+     * @param mainActivity
+     */
     public void process(Interest interest, MainActivity mainActivity) {
         // we should add a Nack or something for when we receive an interest of the wrong format.
         // for instance we sometimes try to publish something like /name/version/segNum/version/segNum
         Log.d("process", "Called process in FaceProxy");
-        int index = findDataSegmentIndex(interest);
+
         // we don't have the data stored in the cache. Let's retrieve the requested segment and go
         // ahead and push future segments to the cache for faster retrieval
-        if(index == -404) {
+        if(!hasKey(interest.getName())) {
             Log.d("process", "-404 with interest: " + interest.getName().toString());
-            Name interestName = interest.getName();
-            // String interestName = interest.getName().toUri();
-            // need to add this
-            if(interestName.get(-1).isSegment() && interestName.get(-2).isVersion()) {
-                interestName = interestName.getPrefix(-2);
-                Log.d("process", "interestName after removal of version && segNum: " + interestName.toUri());
+            Name iName = interest.getName();
+            if(iName.get(-1).isSegment() && iName.get(-2).isVersion()) {
+                iName = iName.getPrefix(-2);
+                Log.d("process", "interestName after removal of version && segNum: " + iName.toUri());
                 // malformed interest with one or more version and segment numbers (i.e., /prefix/version/segNum/version/segNum/
-                if(interestName.get(-1).isSegment() && interestName.get(-2).isVersion()) {
-                    interestName = new Name("/");
+                if(iName.get(-1).isSegment() && iName.get(-2).isVersion()) {
+                    iName = new Name("/");
                 }
             }
             else {
                 // malformed interest; let's change it to "/" and check for that so we do not attempt to publish
-                interestName = new Name("/");
+                iName = new Name("/");
             }
-            if(!interestName.toUri().equals("/")) {
-                String temp = FileManager.removeAppPrefix(interestName.toUri());
+            if(!iName.toUri().equals("/")) {
+                String temp = FileManager.removeAppPrefix(iName.toUri());
 
                 byte[] bytes;
                 try {
@@ -83,21 +82,35 @@ public class FaceProxy {
 
                 Blob blob = new Blob(bytes, true);
                 FileManager manager = new FileManager(mainActivity.getApplicationContext());
-                // String s = "/ndn-snapchat/test-user/" + temp;
                 String s = manager.addAppPrefix(temp);
-                // String s = "/ndn-snapchat/" + manager.getUsername() + filePath;
                 Name prefix = new Name(s);
                 mainActivity.publishData(blob, prefix);
             }
         }
         // otherwise, we know the name prefix has matched and we know where it is in the cache
         else {
+            Name interestName = interest.getName();
+            String baseInterest;
+            // if the Interest Name does not have the version and segment number components, we have the
+            // initial Interest
+            if(!interestName.get(-2).isVersion()) {
+                baseInterest = interestName.toUri();
+                // add the 0 version and 0 segment so we can retrieve it below
+                interestName.appendVersion(0);
+                interestName.appendSegment(0);
+            }
+            else {
+                // this is the key
+                baseInterest = interestName.getPrefix(-2).toUri();
+            }
+
             try {
-                Log.d("FaceProxy Process", "face.putData with index: " + index);
-                Log.d("FaceProxy Process", "data name: " + mCache[index].getName().toUri());
-                Log.d("FaceProxy Process", "data in face: " + mCache[index].getFullName().toUri());
-                // Log.d("FaceProxy Process", "data's metaInfo: " + mCache[index].getMetaInfo().getFinalBlockId().toEscapedString());
-                mainActivity.face.putData(mCache[index]);
+                // get segment number from interest
+                int segNum = (int)interestName.get(-1).toSegment();
+                Data data = mCacheMap.get(baseInterest).get(segNum);
+                Log.d("FaceProxy Process", "data name: " + data.getName().toUri());
+                Log.d("FaceProxy Process", "data in face: " + data.getFullName().toUri());
+                Globals.face.putData(data);
             }
             catch(IOException | EncodingException e) {
                 Log.d("FaceProxy Process", "Data not put in face.");
@@ -107,66 +120,39 @@ public class FaceProxy {
 
     }
 
-    // consider changing the design of the cache to hold all segments for a file in one index; that way
-    // we know we have all of the contents and we do not have to keep checking data name and segments. It's
-    // an alternative, not necessarily required but you should consider it. Also, to extend that
-    // alternative, we could use a map data structure. This would reduce my checks since I'm currently
-    // checking every data packet in the
-    private int findDataSegmentIndex(Interest requested_data) {
-        // another note: if we do not find the first segment, "it's not there" even if the rest of
-        // the segments are in the cache. Nick said treat it like memory deleting (i.e. removing the pointer)
-        // it's technically physically there, but we do not have access. Obviously, it is still accessible
-        // for my cache but as he said, treat it like memory in that case. All or nothing.
-        Name requestedName = requested_data.getName();
-        if(!requestedName.get(-2).isVersion()) {
-            // no version known; set to 0 for now and add interest for segment 0;
-            requestedName.appendVersion(0);
-            requestedName.appendSegment(0);
-        }
-        Log.d("findDataSegmentIndex", "Looking for data with Interest name: " + requestedName.toUri());
-        for(int i = 0; i < mCache.length; i++) {
-            if(mCurrentIndex > mCache.length - 1) {
-                mCurrentIndex = mCurrentIndex%mCache.length;
-            }
-
-            if (mCache[mCurrentIndex] != null) {
-                // Name cachedDataName = mCache[mCurrentIndex].getName().getPrefix(2);
-                Name cachedDataName = mCache[mCurrentIndex].getName();
-                Log.d("findDataSegmentIndex", "Interest name: " + requestedName.toString() +
-                        " , cache data name: " + cachedDataName.toString());
-                if (cachedDataName.equals(requestedName)) {
-                    // return index of content and then increment the variable one more time so if we
-                    // require more sequential segment numbers, we will have the right index when we return
-                    // for future segments in the best case scenario.
-                    return mCurrentIndex++;
-                }
-            }
-            mCurrentIndex++;
-        }
-        // If we don't find it, return a negative 404; this will trigger publishing of data
-        return -404;
-    }
-
     // need to put the newly published data segment in the cache
     public void putInCache(ArrayList<Data> fileData) {
-        // take data array and cycle through its content; put each segment into an index in cache
-        // or it might just be a single segment sent each time
-        if(mCurrentIndex > mCache.length - 1) {
-            mCurrentIndex = mCurrentIndex%mCache.length;
+        Data d = fileData.get(0);
+        String key = d.getName().getPrefix(-2).toUri();
+        // do this only if it is not in the cache
+        if(!mCacheMap.containsKey(key)) {
+            Log.d("putInCache", "key: " + key);
+            mCacheMap.put(key, new ArrayList<Data>());
+            ArrayList<Data> cacheSegments = mCacheMap.get(key);
+
+            // add the segments in order; the index will match their segment number
+            for (Data data : fileData) {
+                cacheSegments.add(data);
+                Log.d("putInCache", "Put " + data.getName().toUri() + " in the cache.");
+            }
         }
-        for(Data data : fileData) {
-            mCache[mCurrentIndex++] = data;
-            Log.d("putInCache", "Put " + data.getName().toUri() + " in the cache.");
-            //Log.d("putInCache", "Content: " + new String(data.getContent().getImmutableArray()));
-            //Log.d("putInCache", "Fresh?: " + data.getMetaInfo().getFreshnessPeriod());
+        else {
+            Log.d("putInCache", key + " is already in the cache");
         }
     }
 
-    public Data[] getCache() {
-        return mCache;
+    public boolean hasKey(Name name) {
+        String key;
+        if(!name.get(-2).isVersion()) {
+            key = name.toUri();
+            return mCacheMap.containsKey(key);
+        }
+        else {
+            key = name.getPrefix(-2).toUri();
+            return mCacheMap.containsKey(key);
+        }
     }
 }
 
 // find the file and publish the specific segment...maybe? Dr. Wang wants this
 // make a deterministic mapping of your file directories (/ndn-snapchat/username/<fullpath>)
-   // Nick said this is a security issue so maybe we can hash them (need a reverse hash to "decode")

@@ -424,17 +424,24 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     ArrayList<Data> fileData = new ArrayList<>();
-                    Log.d("publishData", "Publishing with prefix: " + prefix);
-                    for (Data data : packetize(blob, prefix)) {
-                        keyChain.sign(data);
-                        fileData.add(data);
-                    }
+                    ArrayList<Data> packets = packetize(blob, prefix);
+                    // it would be null if this file is already in our cache so we do not packetize
+                    if(packets != null) {
+                        Log.d("publishData", "Publishing with prefix: " + prefix);
+                        for (Data data : packetize(blob, prefix)) {
+                            keyChain.sign(data);
+                            fileData.add(data);
+                        }
 
-                    faceProxy.putInCache(fileData);
-                    FileManager manager = new FileManager(getApplicationContext());
-                    String filename = prefix.toUri();
-                    Bitmap bitmap = QRExchange.makeQRCode(filename);
-                    manager.saveFileQR(bitmap, filename);
+                        faceProxy.putInCache(fileData);
+                        FileManager manager = new FileManager(getApplicationContext());
+                        String filename = prefix.toUri();
+                        Bitmap bitmap = QRExchange.makeQRCode(filename);
+                        manager.saveFileQR(bitmap, filename);
+                    }
+                    else {
+                        Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
+                    }
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
                         KeyChain.Error e)
 
@@ -489,7 +496,6 @@ public class MainActivity extends AppCompatActivity {
                     final Blob blob = new Blob(bytes, true);
                     FileManager manager = new FileManager(getApplicationContext());
                     String prefix = manager.addAppPrefix(path);
-                    Log.d("added file prefix", "prefix: " + prefix);
                     publishData(blob, new Name(prefix));
                 }
                 else {
@@ -655,51 +661,56 @@ public class MainActivity extends AppCompatActivity {
      * @return returns an ArrayList of all the data packets
      */
     public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
-        final int VERSION_NUMBER = 0;
-        final int DEFAULT_PACKET_SIZE = 8000;
-        int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
-        ArrayList<Data> datas = new ArrayList<>();
-        int segment_number = 0;
-        ByteBuffer byteBuffer = raw_blob.buf();
-        do {
-            // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
-            // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
-            if(byteBuffer.remaining() < PACKET_SIZE) {
-                PACKET_SIZE = byteBuffer.remaining();
-            }
-            Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
-            byte[] segment_buffer = new byte[PACKET_SIZE];
-            Data data = new Data();
-            Name segment_name = new Name(prefix);
-            segment_name.appendVersion(VERSION_NUMBER);
-            segment_name.appendSegment(segment_number);
-            data.setName(segment_name);
-            try {
-                Log.d("packetize things", "full data name: " + data.getFullName().toString());
-            } catch (EncodingException e) {
-                Log.d("packetize things", "unable to print full name");
-            }
-            try {
-                Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
-                byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-            }
-            data.setContent(new Blob(segment_buffer));
-            MetaInfo meta_info = new MetaInfo();
-            meta_info.setType(ContentType.BLOB);
-            // not sure what is a good freshness period
-            meta_info.setFreshnessPeriod(30000);
-            if (!byteBuffer.hasRemaining()) {
-                // Set the final component to have a final block id.
-                Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
-                meta_info.setFinalBlockId(finalBlockId);
-            }
-            data.setMetaInfo(meta_info);
-            datas.add(data);
-            segment_number++;
-        } while (byteBuffer.hasRemaining());
-        return datas;
+        if(!faceProxy.hasKey(prefix)) {
+            final int VERSION_NUMBER = 0;
+            final int DEFAULT_PACKET_SIZE = 8000;
+            int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
+            ArrayList<Data> datas = new ArrayList<>();
+            int segment_number = 0;
+            ByteBuffer byteBuffer = raw_blob.buf();
+            do {
+                // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
+                // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
+                if (byteBuffer.remaining() < PACKET_SIZE) {
+                    PACKET_SIZE = byteBuffer.remaining();
+                }
+                Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
+                byte[] segment_buffer = new byte[PACKET_SIZE];
+                Data data = new Data();
+                Name segment_name = new Name(prefix);
+                segment_name.appendVersion(VERSION_NUMBER);
+                segment_name.appendSegment(segment_number);
+                data.setName(segment_name);
+                try {
+                    Log.d("packetize things", "full data name: " + data.getFullName().toString());
+                } catch (EncodingException e) {
+                    Log.d("packetize things", "unable to print full name");
+                }
+                try {
+                    Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
+                    byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
+                } catch (IndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+                data.setContent(new Blob(segment_buffer));
+                MetaInfo meta_info = new MetaInfo();
+                meta_info.setType(ContentType.BLOB);
+                // not sure what is a good freshness period
+                meta_info.setFreshnessPeriod(30000);
+                if (!byteBuffer.hasRemaining()) {
+                    // Set the final component to have a final block id.
+                    Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
+                    meta_info.setFinalBlockId(finalBlockId);
+                }
+                data.setMetaInfo(meta_info);
+                datas.add(data);
+                segment_number++;
+            } while (byteBuffer.hasRemaining());
+            return datas;
+        }
+        else {
+            return null;
+        }
     }
 
     // start activity for add friends

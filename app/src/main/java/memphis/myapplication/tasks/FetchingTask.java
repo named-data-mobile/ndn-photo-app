@@ -99,13 +99,9 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     new SegmentFetcher.OnError() {
                         @Override
                         public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                            /*try {
-                                m_resultMsg = message + " " + m_data.getFullName().toUri();
-                            }
-                            catch(EncodingException e) {
-                                e.printStackTrace();*/
-                                m_resultMsg = message;
-                            //}
+                            // if there is a timeout, could we just retrigger fetchingtask starting
+                            // with the last segment number?
+                            m_resultMsg = message;
                             m_shouldReturn = true;
                         }
                     });
