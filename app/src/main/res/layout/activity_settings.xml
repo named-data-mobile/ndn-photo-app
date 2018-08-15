@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="39dp"
         android:layout_marginTop="31dp"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:onClick="changePhoto"
         android:text="Change Photo"
         android:textColor="@color/white"

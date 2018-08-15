@@ -338,19 +338,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called when the user taps the fetch data button
-     */
-    public void fetch_data_button(View view) {
-        Log.d("fetch_data", "Called fetch_data");
-        EditText editText = (EditText) findViewById(R.id.editText);
-        String message = editText.getText().toString();
-        Log.d("fetch_data", "Message from editText: " + message);
-        final Interest interest = new Interest(new Name(message));
-        Log.d("fetch_data", "Interest: " + interest.getName().toString());
-        fetch_data(interest);
-    }
-
-    /**
      * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
      * @param interest the interest for the data we want
      */
@@ -358,17 +345,6 @@ public class MainActivity extends AppCompatActivity {
         interest.setInterestLifetimeMilliseconds(10000);
         // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
-    }
-
-    public void register_with_NFD(View view) {
-        EditText editText = findViewById(R.id.editText);
-        String msg = editText.getText().toString();
-        try {
-            Name name = new Name(msg);
-            register_with_NFD(name);
-        } catch (IOException | PibImpl.Error e) {
-            e.printStackTrace();
-        }
     }
 
     /**

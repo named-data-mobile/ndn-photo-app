@@ -36,7 +36,7 @@
         android:layout_marginEnd="148dp"
         android:layout_marginStart="148dp"
         android:layout_marginTop="48dp"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:onClick="onFormSubmission"
         android:text="Submit"
         android:textColor="#FFFFFF"

@@ -35,7 +35,7 @@ public class NewContentActivity extends AppCompatActivity {
     private void listReceivedContent() {
         FileManager manager = new FileManager(getApplicationContext());
         final ConcurrentHashMap<String, ArrayList<String>> userContent = manager.getReceivedPhotos();
-        int accent = ContextCompat.getColor(this, R.color.colorAccent);
+        int accent = ContextCompat.getColor(this, R.color.colorPrimary);
         int black = ContextCompat.getColor(this, R.color.jetBlack);
         int white = ContextCompat.getColor(this, R.color.white);
 

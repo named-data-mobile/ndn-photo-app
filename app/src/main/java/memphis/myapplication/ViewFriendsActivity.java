@@ -25,7 +25,7 @@ public class ViewFriendsActivity extends AppCompatActivity {
         LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
 
-        int accent = ContextCompat.getColor(this, R.color.colorAccent);
+        int accent = ContextCompat.getColor(this, R.color.colorPrimary);
         int black = ContextCompat.getColor(this, R.color.jetBlack);
         int white = ContextCompat.getColor(this, R.color.white);
         // if we don't have any saved friends, we have nothing to display; tell user

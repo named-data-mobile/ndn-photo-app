@@ -5,15 +5,17 @@
     android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorAccent"
     tools:context="memphis.myapplication.MainActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/app_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
@@ -22,120 +24,81 @@
             android:id="@+id/toolbar_photo"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:scaleType="centerCrop"
             android:layout_marginStart="1dp"
-            app:layout_constraintStart_toStartOf="parent"/>
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:layout_width="250dp"
             android:layout_height="match_parent"
+            android:paddingStart="2dp"
             android:text="@string/app_name"
             android:textColor="@color/white"
             android:textSize="36sp"
-            android:paddingStart="2dp"
-            app:layout_constraintStart_toStartOf="@id/toolbar_photo"
-            />
+            app:layout_constraintStart_toStartOf="@id/toolbar_photo" />
 
     </android.support.v7.widget.Toolbar>
-
-    <EditText
-        android:id="@+id/editText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="6dp"
-        android:ems="10"
-        android:inputType="textPersonName"
-        android:labelFor="@id/editText"
-        android:text=""
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/app_toolbar" />
-
-    <Button
-        android:id="@+id/fetchButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="6dp"
-        android:background="@color/colorAccent"
-        android:onClick="fetch_data_button"
-        android:text="Fetch data"
-        android:textColor="#FFFFFF"
-        app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@id/app_toolbar" />
 
     <Button
         android:id="@+id/fileSelectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/colorAccent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="133dp"
+        android:background="@color/colorPrimary"
+        android:elevation="3dp"
         android:onClick="select_files"
         android:text="Share Files"
         android:textColor="#FFFFFF"
-        app:layout_constraintStart_toEndOf="@+id/editText"
-        app:layout_constraintTop_toBottomOf="@+id/fetchButton" />
-
-    <Button
-        android:id="@+id/registerButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
-        android:onClick="register_with_NFD"
-        android:text="Register with NFD"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        app:layout_constraintStart_toEndOf="@+id/QRButton"
+        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
 
     <Button
         android:id="@+id/QRButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="140dp"
-        android:layout_marginTop="28dp"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="27dp"
+        android:background="@color/colorPrimary"
         android:onClick="lookup_file_QR"
-        android:text="Display QR"
+        android:text="Display File QR"
+        android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerButton" />
+        app:layout_constraintTop_toBottomOf="@+id/addFriendsButton" />
 
     <Button
         android:id="@+id/scanFileQR"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="56dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="28dp"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:onClick="scanFileQR"
-        android:textColor="#FFFFFF"
         android:text="Scan File QR"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerButton" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/viewRcvdButton"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/addFriendsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
+        android:layout_marginStart="164dp"
+        android:layout_marginTop="58dp"
+        android:background="@color/colorPrimary"
         android:onClick="startMakingFriends"
         android:text="Add Friend"
-        app:layout_constraintStart_toEndOf="@+id/registerButton"
-        app:layout_constraintTop_toBottomOf="@+id/editText" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
 
     <Button
         android:id="@+id/startCameraButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="22dp"
-        android:background="@color/colorAccent"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="36dp"
+        android:background="@color/colorPrimary"
         android:onClick="startCamera"
         android:text="Take Photo"
         android:textColor="#FFFFFF"
@@ -146,26 +109,26 @@
         android:id="@+id/viewRcvdButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="236dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:background="@color/colorPrimary"
         android:onClick="browseRcvdFiles"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
         android:text="Browse Rcvd"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/scanFileQR" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/viewRcvdPhotosButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="37dp"
-        android:layout_marginTop="24dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="100dp"
+        android:background="@color/colorPrimary"
         android:onClick="seeRcvdPhotos"
-        android:background="@color/colorAccent"
-        android:textColor="#FFFFFF"
         android:text="See Photos"
-        app:layout_constraintStart_toEndOf="@+id/viewRcvdButton"
-        app:layout_constraintTop_toBottomOf="@+id/QRButton" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addFriendsButton" />
 
 </android.support.constraint.ConstraintLayout>

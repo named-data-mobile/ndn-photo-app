@@ -30,7 +30,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:textColor="#FFFFFF" />
 
     <Button
@@ -45,7 +45,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/activateCamera"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:textColor="#FFFFFF" />
 
     <Button
@@ -61,7 +61,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/filesActivity"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         android:textColor="#FFFFFF" />
 
 </android.support.constraint.ConstraintLayout>
