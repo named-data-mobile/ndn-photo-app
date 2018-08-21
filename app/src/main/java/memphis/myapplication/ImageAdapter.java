@@ -9,6 +9,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import memphis.myapplication.R;
 
 public class ImageAdapter extends BaseAdapter {
@@ -53,7 +55,7 @@ public class ImageAdapter extends BaseAdapter {
         } else {
             imageView = (ImageView) convertView;
         }
-        imageView.setImageResource(m_photos[position]);
+        Picasso.get().load(m_photos[position]).fit().centerCrop().into(imageView);
         return imageView;
     }
 }

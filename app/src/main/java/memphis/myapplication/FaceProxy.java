@@ -63,9 +63,14 @@ public class FaceProxy {
                     iName = new Name("/");
                 }
             }
+            // this is the base interest (has no version or segment number) and we do not have it in our
+            // cache at the moment; first check if the file still exists, then operate accordingly
             else {
-                // malformed interest; let's change it to "/" and check for that so we do not attempt to publish
-                iName = new Name("/");
+                File file = new File(FileManager.removeAppPrefix(iName.toUri()));
+                if(!file.exists()) {
+                    // malformed interest; let's change it to "/" and check for that so we do not attempt to publish
+                    iName = new Name("/");
+                }
             }
             if(!iName.toUri().equals("/")) {
                 String temp = FileManager.removeAppPrefix(iName.toUri());

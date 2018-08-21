@@ -21,8 +21,8 @@
 
         <ImageView
             android:id="@+id/toolbar_photo"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_marginStart="1dp"
             android:scaleType="centerCrop"
             app:layout_constraintStart_toStartOf="parent" />
@@ -43,11 +43,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:numColumns="auto_fit"
-        android:columnWidth="90dp"
+        android:columnWidth="125dp"
         android:horizontalSpacing="10dp"
         android:verticalSpacing="10dp"
         android:gravity="center"
-        android:stretchMode="columnWidth" />
+        android:stretchMode="columnWidth"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/app_toolbar"/>
 
 
     <ImageView

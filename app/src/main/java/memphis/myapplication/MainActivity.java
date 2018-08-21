@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
      * @param interest the interest for the data we want
      */
     public void fetch_data(final Interest interest) {
-        interest.setInterestLifetimeMilliseconds(10000);
+        // interest.setInterestLifetimeMilliseconds(10000);
         // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
     }

@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -29,10 +31,10 @@ public class SettingsActivity extends AppCompatActivity {
         manager = new FileManager(getApplicationContext());
         File file = manager.getProfilePhoto();
         if(file.length() == 0) {
-            m_imageView.setImageResource(R.drawable.bandit);
+            Picasso.get().load(R.drawable.bandit).into(m_imageView);
         }
         else {
-            m_imageView.setImageURI(Uri.fromFile(file));
+            Picasso.get().load(file).fit().centerCrop().into(m_imageView);
         }
 
     }
@@ -58,7 +60,7 @@ public class SettingsActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Log.d("profilePhoto", "Problem making bitmap from chosen photo");
                 }
-                m_imageView.setImageURI(photoUri);
+                Picasso.get().load(photoUri).fit().centerCrop().into(m_imageView);
             }
         }
     }

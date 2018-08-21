@@ -43,48 +43,48 @@
         android:id="@+id/fileSelectButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="133dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="147dp"
         android:background="@color/colorPrimary"
         android:elevation="3dp"
         android:onClick="select_files"
         android:text="Share Files"
         android:textColor="#FFFFFF"
-        app:layout_constraintStart_toEndOf="@+id/QRButton"
-        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addFriendsButton" />
 
     <Button
         android:id="@+id/QRButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="136dp"
-        android:layout_marginTop="27dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
         android:background="@color/colorPrimary"
         android:onClick="lookup_file_QR"
         android:text="Display File QR"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addFriendsButton" />
+        app:layout_constraintTop_toBottomOf="@+id/scanFileQR" />
 
     <Button
         android:id="@+id/scanFileQR"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="56dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="104dp"
         android:background="@color/colorPrimary"
         android:onClick="scanFileQR"
         android:text="Scan File QR"
         android:textColor="#FFFFFF"
-        app:layout_constraintBottom_toTopOf="@+id/viewRcvdButton"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
 
     <Button
         android:id="@+id/addFriendsButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="164dp"
-        android:layout_marginTop="58dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="56dp"
         android:background="@color/colorPrimary"
         android:onClick="startMakingFriends"
         android:text="Add Friend"
@@ -96,21 +96,21 @@
         android:id="@+id/startCameraButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginStart="156dp"
+        android:layout_marginTop="104dp"
         android:background="@color/colorPrimary"
         android:onClick="startCamera"
         android:text="Take Photo"
         android:textColor="#FFFFFF"
-        app:layout_constraintStart_toEndOf="@+id/QRButton"
-        app:layout_constraintTop_toBottomOf="@+id/fileSelectButton" />
+        app:layout_constraintStart_toEndOf="@+id/scanFileQR"
+        app:layout_constraintTop_toBottomOf="@+id/app_toolbar" />
 
     <Button
         android:id="@+id/viewRcvdButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="236dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginBottom="144dp"
+        android:layout_marginStart="144dp"
         android:background="@color/colorPrimary"
         android:onClick="browseRcvdFiles"
         android:text="Browse Rcvd"
@@ -122,13 +122,13 @@
         android:id="@+id/viewRcvdPhotosButton"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_marginStart="148dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginStart="136dp"
+        android:layout_marginTop="24dp"
         android:background="@color/colorPrimary"
         android:onClick="seeRcvdPhotos"
         android:text="See Photos"
         android:textColor="#FFFFFF"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/addFriendsButton" />
+        app:layout_constraintStart_toEndOf="@+id/QRButton"
+        app:layout_constraintTop_toBottomOf="@+id/startCameraButton" />
 
 </android.support.constraint.ConstraintLayout>
