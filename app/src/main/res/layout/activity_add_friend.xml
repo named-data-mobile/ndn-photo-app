@@ -6,6 +6,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/files_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+    <ImageView
+        android:id="@+id/toolbar_friend_photo"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="1dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:layout_width="250dp"
+        android:layout_height="match_parent"
+        android:paddingStart="2dp"
+        android:text="Friends"
+        android:textColor="@color/white"
+        android:textSize="36sp"
+        app:layout_constraintStart_toStartOf="@id/toolbar_friend_photo" />
+
+    </android.support.v7.widget.Toolbar>
+
+
     <Button
         android:id="@+id/showYourCode"
         android:layout_width="wrap_content"

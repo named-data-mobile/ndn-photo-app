@@ -45,7 +45,7 @@ public class FaceProxy {
      * @param interest
      * @param mainActivity
      */
-    public void process(Interest interest, MainActivity mainActivity) {
+    public void process(Interest interest) {
         // we should add a Nack or something for when we receive an interest of the wrong format.
         // for instance we sometimes try to publish something like /name/version/segNum/version/segNum
         Log.d("process", "Called process in FaceProxy");
@@ -86,10 +86,11 @@ public class FaceProxy {
                 }
 
                 Blob blob = new Blob(bytes, true);
-                FileManager manager = new FileManager(mainActivity.getApplicationContext());
+                FilesActivity filesActivity = new FilesActivity();
+                FileManager manager = new FileManager(filesActivity.getApplicationContext());
                 String s = manager.addAppPrefix(temp);
                 Name prefix = new Name(s);
-                mainActivity.publishData(blob, prefix);
+                filesActivity.publishData(blob, prefix);
             }
         }
         // otherwise, we know the name prefix has matched and we know where it is in the cache

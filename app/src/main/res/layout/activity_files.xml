@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorAccent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/files_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+        <ImageView
+            android:id="@+id/toolbar_file_photo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="1dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:paddingStart="2dp"
+            android:text="Files"
+            android:textColor="@color/white"
+            android:textSize="36sp"
+            app:layout_constraintStart_toStartOf="@id/toolbar_file_photo" />
+
+    </android.support.v7.widget.Toolbar>
+
+    <Button
+        android:id="@+id/fileSelectButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="130dp"
+        android:background="@color/colorPrimary"
+        android:elevation="3dp"
+        android:gravity="center"
+        android:onClick="select_files"
+        android:text="Share Files"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/files_toolbar" />
+
+    <Button
+        android:id="@+id/QRButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="138dp"
+        android:layout_marginTop="36dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:onClick="lookup_file_QR"
+        android:text="Display File QR"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/scanFileQR" />
+
+    <Button
+        android:id="@+id/scanFileQR"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="36dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:onClick="scanFileQR"
+        android:text="Scan File QR"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/fileSelectButton" />
+
+    <Button
+        android:id="@+id/viewRcvdButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="36dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:onClick="browseRcvdFiles"
+        android:text="Browse Rcvd"
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/QRButton" />
+
+</android.support.constraint.ConstraintLayout>

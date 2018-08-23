@@ -19,6 +19,13 @@
         <service android:name=".services.NetworkService">
         </service>
 
+        <activity android:name=".FilesActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
         <activity android:name=".IntroActivity"
                   android:noHistory="true">
             <intent-filter>
@@ -54,15 +61,6 @@
         <activity
             android:name=".DisplayQRActivity"
             android:parentActivityName=".MainActivity" >
-        </activity>
-
-        <activity
-            android:name=".SampleActivity"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
         </activity>
 
         <activity android:name=".SignUpActivity"

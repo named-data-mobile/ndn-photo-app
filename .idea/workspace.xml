@@ -12,11 +12,13 @@
     <list default="true" id="6a2493af-be40-4aff-b12d-bbdb8657b727" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SettingsActivity.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SettingsActivity.java" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SampleActivity.java" afterPath="" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" afterPath="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/boxes.xml" afterPath="$PROJECT_DIR$/app/src/main/res/layout/boxes.xml" />
     </list>
@@ -41,41 +43,63 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="MainActivity.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="344" column="11" lean-forward="false" selection-start-line="344" selection-start-column="11" selection-end-line="344" selection-end-column="11" />
+            <state relative-caret-position="8087">
+              <caret line="544" column="0" lean-forward="false" selection-start-line="544" selection-start-column="0" selection-end-line="544" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#3266#3274#0" expanded="true" />
-                <element signature="e#7501#7529#0" expanded="true" />
-                <element signature="e#11215#12088#0" expanded="true" />
-                <element signature="e#12087#12088#0" expanded="true" />
-                <element signature="e#12302#12303#0" expanded="true" />
-                <element signature="e#12344#12345#0" expanded="true" />
-                <element signature="e#12390#12391#0" expanded="true" />
-                <element signature="e#12436#12437#0" expanded="true" />
-                <element signature="e#12702#12860#0" expanded="true" />
-                <element signature="e#12859#12860#0" expanded="true" />
-                <element signature="e#14058#14464#0" expanded="true" />
-                <element signature="e#14463#14464#0" expanded="true" />
-                <element signature="e#14486#14982#0" expanded="true" />
-                <element signature="e#14981#14982#0" expanded="true" />
-                <element signature="e#15382#16748#0" expanded="true" />
-                <element signature="e#16747#16748#0" expanded="true" />
-                <element signature="e#32458#32847#0" expanded="true" />
-                <element signature="e#32846#32847#0" expanded="true" />
+                <element signature="e#4694#5531#0" expanded="true" />
+                <element signature="e#5530#5531#0" expanded="true" />
+                <element signature="e#8617#8645#0" expanded="true" />
+                <element signature="e#12091#12964#0" expanded="true" />
+                <element signature="e#12963#12964#0" expanded="true" />
+                <element signature="e#13178#13179#0" expanded="true" />
+                <element signature="e#13220#13221#0" expanded="true" />
+                <element signature="e#13266#13267#0" expanded="true" />
+                <element signature="e#13312#13313#0" expanded="true" />
+                <element signature="e#13578#13736#0" expanded="true" />
+                <element signature="e#13735#13736#0" expanded="true" />
+                <element signature="e#14940#15346#0" expanded="true" />
+                <element signature="e#15345#15346#0" expanded="true" />
+                <element signature="e#15368#15864#0" expanded="true" />
+                <element signature="e#15863#15864#0" expanded="true" />
+                <element signature="e#33316#33689#0" expanded="true" />
+                <element signature="e#33688#33689#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="FetchingTask.java" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
+      <file leaf-file-name="ImageAdapter.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="828">
-              <caret line="119" column="68" lean-forward="false" selection-start-line="119" selection-start-column="68" selection-end-line="119" selection-end-column="68" />
+            <state relative-caret-position="285">
+              <caret line="69" column="26" lean-forward="false" selection-start-line="69" selection-start-column="26" selection-end-line="69" selection-end-column="26" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="boxes.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/boxes.xml">
+          <provider editor-type-id="android-designer2">
+            <state />
+          </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="306">
+              <caret line="38" column="72" lean-forward="false" selection-start-line="38" selection-start-column="72" selection-end-line="38" selection-end-column="72" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="AddFriendActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="180">
+              <caret line="36" column="80" lean-forward="false" selection-start-line="36" selection-start-column="80" selection-end-line="36" selection-end-column="80" />
               <folding />
             </state>
           </provider>
@@ -84,31 +108,44 @@
       <file leaf-file-name="FileManager.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="155">
-              <caret line="297" column="0" lean-forward="false" selection-start-line="297" selection-start-column="0" selection-end-line="297" selection-end-column="0" />
+            <state relative-caret-position="570">
+              <caret line="91" column="73" lean-forward="false" selection-start-line="91" selection-start-column="59" selection-end-line="91" selection-end-column="73" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="activity_main.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-          <provider editor-type-id="text-editor">
-            <state relative-caret-position="2124">
-              <caret line="118" column="56" lean-forward="false" selection-start-line="118" selection-start-column="56" selection-end-line="118" selection-end-column="56" />
+      <file leaf-file-name="FilesActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FilesActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="249">
+              <caret line="71" column="83" lean-forward="false" selection-start-line="71" selection-start-column="83" selection-end-line="71" selection-end-column="83" />
               <folding />
             </state>
           </provider>
-          <provider selected="true" editor-type-id="android-designer2">
+        </entry>
+      </file>
+      <file leaf-file-name="activity_add_friend.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml">
+          <provider editor-type-id="android-designer2">
             <state />
           </provider>
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="218">
+              <caret line="32" column="30" lean-forward="false" selection-start-line="32" selection-start-column="30" selection-end-line="32" selection-end-column="30" />
+              <folding />
+            </state>
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="FaceProxy.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java">
+      <file leaf-file-name="activity_files.xml" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_files.xml">
+          <provider editor-type-id="android-designer2">
+            <state />
+          </provider>
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="128">
-              <caret line="68" column="16" lean-forward="false" selection-start-line="68" selection-start-column="16" selection-end-line="68" selection-end-column="16" />
+            <state relative-caret-position="236">
+              <caret line="37" column="8" lean-forward="false" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
               <folding />
             </state>
           </provider>
@@ -120,43 +157,43 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="resourceFile" />
-        <option value="layoutResourceFile" />
         <option value="Class" />
+        <option value="layoutResourceFile" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>publickey</find>
-      <find>setkey</find>
-      <find>getpub</find>
-      <find>publishdata</find>
-      <find>verify</find>
-      <find>identityMan</find>
-      <find>globals.pibIdentity</find>
-      <find>setpibid</find>
-      <find>getF</find>
-      <find>scan_qr</find>
-      <find>file_qr_req</find>
-      <find>count</find>
-      <find>saveconte</find>
-      <find>getusername</find>
-      <find>save</find>
-      <find>getrec</find>
-      <find>getfullname</find>
-      <find>lv</find>
-      <find>edittext</find>
-      <find>get(-</find>
-      <find>publishData</find>
-      <find>haskey</find>
-      <find>register_with_NFD</find>
-      <find>(View view</find>
-      <find>colorAccent</find>
-      <find>display</find>
       <find>displayQR</find>
-      <find>packetize</find>
       <find>appprefix</find>
       <find>lifetime</find>
+      <find>main_layout</find>
+      <find>fileslist</find>
+      <find>filesstrings</find>
+      <find>startcamera</find>
+      <find>startmaking</find>
+      <find>photos</find>
+      <find>setuptoolbar</find>
+      <find>VIEW_FILE</find>
+      <find>View view</find>
+      <find>publishData</find>
+      <find>makeToast</find>
+      <find>activity</find>
+      <find>filesac</find>
+      <find>getfile</find>
+      <find>maina</find>
+      <find>fetch_data</find>
+      <find>packetize</find>
+      <find>Filemanager</find>
+      <find>manager</find>
+      <find>publishdata</find>
+      <find>mainactivity</find>
+      <find>startupc</find>
+      <find>main</find>
+      <find>m_manager</find>
+      <find>parentActivity</find>
+      <find>filesactivity</find>
+      <find>m_profilePhoto</find>
     </findStrings>
     <replaceStrings>
       <replace>colorPrimary</replace>
@@ -2207,7 +2244,6 @@
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_settings.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/DisplayQRActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
         <option value="$PROJECT_DIR$/app/src/androidTest/java/memphis/myapplication/PublisherAndFetcherTest.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/QRExchange.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Story.java" />
@@ -2224,20 +2260,23 @@
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/OnSwipeListener.java" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/status_bar.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/styles.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/values/colors.xml" />
         <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/ImageAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/LoginActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SampleActivity.java" />
-        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/boxes.xml" />
-        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SettingsActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/RetryFetcher.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SampleActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java" />
+        <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_files.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/res/layout/boxes.xml" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FilesActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java" />
       </list>
     </option>
@@ -2285,9 +2324,19 @@
             <path>
               <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
               <item name="app" type="feadf853:AndroidModuleNode" />
-              <item name="java" type="edd41e36:AndroidSourceTypeNode" />
-              <item name="myapplication" type="cbb59c9e:AndroidPsiDirectoryNode" />
-              <item name="tasks" type="462c0819:PsiDirectoryNode" />
+              <item name="res" type="d4f16f75:AndroidResFolderNode" />
+            </path>
+            <path>
+              <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
+              <item name="app" type="feadf853:AndroidModuleNode" />
+              <item name="res" type="d4f16f75:AndroidResFolderNode" />
+              <item name="drawable" type="ddeffd01:AndroidResFolderTypeNode" />
+            </path>
+            <path>
+              <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
+              <item name="app" type="feadf853:AndroidModuleNode" />
+              <item name="res" type="d4f16f75:AndroidResFolderNode" />
+              <item name="layout" type="ddeffd01:AndroidResFolderTypeNode" />
             </path>
             <path>
               <item name="ndn-snapchat" type="1abcf292:AndroidViewProjectNode" />
@@ -2297,7 +2346,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -2320,6 +2368,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
       <pane id="Scratches" />
       <pane id="PackagesPane" />
     </panes>
@@ -2331,7 +2380,7 @@
     <property name="SearchEverywhereHistoryKey" value="!!!!&#9;null&#9;null&#10;saveMy&#9;PSI&#9;JAVA://memphis.myapplication.FileManager#saveMyQRCode&#10;session&#9;FILE&#9;file:///home/dmcoomes/Desktop/github-projects/ndn-snapchat/app/src/main/java/memphis/myapplication/Session.java" />
     <property name="android.profiler.active" value="true" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
-    <property name="sync.plugin.last.upgrade.timestamp" value="1534784268327" />
+    <property name="sync.plugin.last.upgrade.timestamp" value="1534999578624" />
   </component>
   <component name="RecentsManager">
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
@@ -2571,10 +2620,11 @@
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946298" sideWeight="0.5026415" order="12" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20645595" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3293011" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32795697" sideWeight="0.4973585" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Logcat" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.30376345" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Logcat" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.30376345" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -2593,7 +2643,6 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20645595" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3293011" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
@@ -2605,72 +2654,34 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="101" column="12" lean-forward="false" selection-start-line="101" selection-start-column="12" selection-end-line="101" selection-end-column="12" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#3266#3274#0" expanded="true" />
-            <element signature="e#7501#7529#0" expanded="true" />
-            <element signature="e#11215#12088#0" expanded="true" />
-            <element signature="e#12087#12088#0" expanded="true" />
-            <element signature="e#12302#12303#0" expanded="true" />
-            <element signature="e#12344#12345#0" expanded="true" />
-            <element signature="e#12390#12391#0" expanded="true" />
-            <element signature="e#12436#12437#0" expanded="true" />
-            <element signature="e#12702#12860#0" expanded="true" />
-            <element signature="e#12859#12860#0" expanded="true" />
-            <element signature="e#14058#14464#0" expanded="true" />
-            <element signature="e#14463#14464#0" expanded="true" />
-            <element signature="e#14486#14982#0" expanded="true" />
-            <element signature="e#14981#14982#0" expanded="true" />
-            <element signature="e#15382#16748#0" expanded="true" />
-            <element signature="e#16747#16748#0" expanded="true" />
-            <element signature="e#32458#32847#0" expanded="true" />
-            <element signature="e#32846#32847#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1116">
-          <caret line="62" column="60" lean-forward="false" selection-start-line="62" selection-start-column="60" selection-end-line="62" selection-end-column="60" />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_base.xml">
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_base.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="432">
           <caret line="24" column="40" lean-forward="false" selection-start-line="24" selection-start-column="40" selection-end-line="24" selection-end-column="40" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml">
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
           <caret line="5" column="61" lean-forward="false" selection-start-line="5" selection-start-column="61" selection-end-line="5" selection-end-column="61" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_base.xml">
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_base.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="329">
           <caret line="24" column="40" lean-forward="false" selection-start-line="24" selection-start-column="40" selection-end-line="24" selection-end-column="40" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer2">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/drawable/border.xml" />
@@ -2682,23 +2693,23 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_settings.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="216">
           <caret line="12" column="36" lean-forward="false" selection-start-line="12" selection-start-column="36" selection-end-line="12" selection-end-column="36" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml">
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/menu/menu_main.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
           <caret line="3" column="54" lean-forward="false" selection-start-line="3" selection-start-column="54" selection-end-line="3" selection-end-column="54" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer2">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/strings.xml">
@@ -2751,13 +2762,13 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_display_qr.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="288">
           <caret line="16" column="55" lean-forward="false" selection-start-line="16" selection-start-column="55" selection-end-line="16" selection-end-column="55" />
         </state>
-      </provider>
-      <provider editor-type-id="android-designer2">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/build.gradle">
@@ -2776,56 +2787,42 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_sign_up.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-432">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_story.xml" />
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_view_photos.xml">
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_story.xml" />
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="54" column="21" lean-forward="false" selection-start-line="54" selection-start-column="16" selection-end-line="54" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_view_photos.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="11" column="35" lean-forward="false" selection-start-line="11" selection-start-column="35" selection-end-line="11" selection-end-column="35" />
         </state>
       </provider>
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/Story.java" />
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/StoryActivity.java" />
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_with_list.xml">
+      <provider selected="true" editor-type-id="android-designer2">
+        <state />
+      </provider>
       <provider editor-type-id="text-editor">
         <state relative-caret-position="72">
           <caret line="4" column="0" lean-forward="false" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
         </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer2">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ViewFriendsActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="468">
           <caret line="37" column="43" lean-forward="false" selection-start-line="37" selection-start-column="43" selection-end-line="37" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/NewContentActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="51" column="77" lean-forward="false" selection-start-line="51" selection-start-column="77" selection-end-line="51" selection-end-column="77" />
         </state>
       </provider>
     </entry>
@@ -2844,16 +2841,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/content_qr_exchange.xml" />
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml">
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="4" column="43" lean-forward="false" selection-start-line="4" selection-start-column="43" selection-end-line="4" selection-end-column="43" />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer2">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/values/colors.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="126">
@@ -2862,19 +2849,12 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1908">
-          <caret line="106" column="30" lean-forward="false" selection-start-line="106" selection-start-column="30" selection-end-line="106" selection-end-column="30" />
-        </state>
-      </provider>
       <provider editor-type-id="android-designer2">
         <state />
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ViewPhotosActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="846">
-          <caret line="57" column="81" lean-forward="false" selection-start-line="57" selection-start-column="81" selection-end-line="57" selection-end-column="81" />
+        <state relative-caret-position="1908">
+          <caret line="106" column="30" lean-forward="false" selection-start-line="106" selection-start-column="30" selection-end-line="106" selection-end-column="30" />
         </state>
       </provider>
     </entry>
@@ -2893,128 +2873,165 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SampleActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="288">
-          <caret line="21" column="40" lean-forward="false" selection-start-line="21" selection-start-column="40" selection-end-line="21" selection-end-column="40" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/boxes.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="792">
-          <caret line="44" column="36" lean-forward="false" selection-start-line="44" selection-start-column="36" selection-end-line="44" selection-end-column="36" />
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-designer2">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="702">
-          <caret line="58" column="0" lean-forward="false" selection-start-line="58" selection-start-column="0" selection-end-line="58" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="2124">
-          <caret line="118" column="56" lean-forward="false" selection-start-line="118" selection-start-column="56" selection-end-line="118" selection-end-column="56" />
-          <folding />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="android-designer2">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/LoginActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="342">
           <caret line="39" column="94" lean-forward="false" selection-start-line="39" selection-start-column="94" selection-end-line="39" selection-end-column="94" />
-          <folding />
         </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1134">
-          <caret line="63" column="75" lean-forward="false" selection-start-line="63" selection-start-column="75" selection-end-line="63" selection-end-column="75" />
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="android-manifest">
-        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SettingsActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
           <caret line="63" column="0" lean-forward="false" selection-start-line="63" selection-start-column="0" selection-end-line="63" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/RetryFetcher.java" />
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/SampleActivity.java" />
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="9" column="0" lean-forward="false" selection-start-line="9" selection-start-column="0" selection-end-line="9" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/RetryFetcher.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/AndroidManifest.xml">
+      <provider editor-type-id="android-manifest">
+        <state />
+      </provider>
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="5" column="16" lean-forward="false" selection-start-line="5" selection-start-column="16" selection-end-line="5" selection-end-column="16" />
+        <state relative-caret-position="211">
+          <caret line="14" column="53" lean-forward="false" selection-start-line="14" selection-start-column="53" selection-end-line="14" selection-end-column="53" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="558">
+          <caret line="40" column="40" lean-forward="false" selection-start-line="40" selection-start-column="40" selection-end-line="40" selection-end-column="40" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ViewPhotosActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="455">
+          <caret line="57" column="81" lean-forward="false" selection-start-line="57" selection-start-column="81" selection-end-line="57" selection-end-column="81" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/NewContentActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="293">
+          <caret line="51" column="77" lean-forward="false" selection-start-line="51" selection-start-column="77" selection-end-line="51" selection-end-column="77" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FaceProxy.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="128">
-          <caret line="68" column="16" lean-forward="false" selection-start-line="68" selection-start-column="16" selection-end-line="68" selection-end-column="16" />
+        <state relative-caret-position="18">
+          <caret line="92" column="56" lean-forward="false" selection-start-line="92" selection-start-column="56" selection-end-line="92" selection-end-column="56" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_files.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="236">
+          <caret line="37" column="8" lean-forward="false" selection-start-line="37" selection-start-column="8" selection-end-line="37" selection-end-column="8" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_add_friend.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="218">
+          <caret line="32" column="30" lean-forward="false" selection-start-line="32" selection-start-column="30" selection-end-line="32" selection-end-column="30" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/boxes.xml">
+      <provider editor-type-id="android-designer2">
+        <state />
+      </provider>
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="38" column="72" lean-forward="false" selection-start-line="38" selection-start-column="72" selection-end-line="38" selection-end-column="72" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/ImageAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="69" column="26" lean-forward="false" selection-start-line="69" selection-start-column="26" selection-end-line="69" selection-end-column="26" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FileManager.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="297" column="0" lean-forward="false" selection-start-line="297" selection-start-column="0" selection-end-line="297" selection-end-column="0" />
+        <state relative-caret-position="570">
+          <caret line="91" column="73" lean-forward="false" selection-start-line="91" selection-start-column="59" selection-end-line="91" selection-end-column="73" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/AddFriendActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="180">
+          <caret line="36" column="80" lean-forward="false" selection-start-line="36" selection-start-column="80" selection-end-line="36" selection-end-column="80" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/FilesActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="71" column="83" lean-forward="false" selection-start-line="71" selection-start-column="83" selection-end-line="71" selection-end-column="83" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/MainActivity.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="344" column="11" lean-forward="false" selection-start-line="344" selection-start-column="11" selection-end-line="344" selection-end-column="11" />
+        <state relative-caret-position="8087">
+          <caret line="544" column="0" lean-forward="false" selection-start-line="544" selection-start-column="0" selection-end-line="544" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#3266#3274#0" expanded="true" />
-            <element signature="e#7501#7529#0" expanded="true" />
-            <element signature="e#11215#12088#0" expanded="true" />
-            <element signature="e#12087#12088#0" expanded="true" />
-            <element signature="e#12302#12303#0" expanded="true" />
-            <element signature="e#12344#12345#0" expanded="true" />
-            <element signature="e#12390#12391#0" expanded="true" />
-            <element signature="e#12436#12437#0" expanded="true" />
-            <element signature="e#12702#12860#0" expanded="true" />
-            <element signature="e#12859#12860#0" expanded="true" />
-            <element signature="e#14058#14464#0" expanded="true" />
-            <element signature="e#14463#14464#0" expanded="true" />
-            <element signature="e#14486#14982#0" expanded="true" />
-            <element signature="e#14981#14982#0" expanded="true" />
-            <element signature="e#15382#16748#0" expanded="true" />
-            <element signature="e#16747#16748#0" expanded="true" />
-            <element signature="e#32458#32847#0" expanded="true" />
-            <element signature="e#32846#32847#0" expanded="true" />
+            <element signature="e#4694#5531#0" expanded="true" />
+            <element signature="e#5530#5531#0" expanded="true" />
+            <element signature="e#8617#8645#0" expanded="true" />
+            <element signature="e#12091#12964#0" expanded="true" />
+            <element signature="e#12963#12964#0" expanded="true" />
+            <element signature="e#13178#13179#0" expanded="true" />
+            <element signature="e#13220#13221#0" expanded="true" />
+            <element signature="e#13266#13267#0" expanded="true" />
+            <element signature="e#13312#13313#0" expanded="true" />
+            <element signature="e#13578#13736#0" expanded="true" />
+            <element signature="e#13735#13736#0" expanded="true" />
+            <element signature="e#14940#15346#0" expanded="true" />
+            <element signature="e#15345#15346#0" expanded="true" />
+            <element signature="e#15368#15864#0" expanded="true" />
+            <element signature="e#15863#15864#0" expanded="true" />
+            <element signature="e#33316#33689#0" expanded="true" />
+            <element signature="e#33688#33689#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/memphis/myapplication/tasks/FetchingTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="828">
-          <caret line="119" column="68" lean-forward="false" selection-start-line="119" selection-start-column="68" selection-end-line="119" selection-end-column="68" />
-          <folding />
         </state>
       </provider>
     </entry>

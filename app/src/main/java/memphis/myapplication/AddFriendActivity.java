@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -19,11 +22,27 @@ import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPE
 public class AddFriendActivity extends AppCompatActivity {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
+    private FileManager m_manager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+        m_manager = new FileManager(this);
+        setupToolbar();
+    }
+
+    private void setupToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        ImageView imageView = (ImageView) findViewById(R.id.toolbar_friend_photo);
+        File file = m_manager.getProfilePhoto();
+        if(file == null || file.length() == 0) {
+            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
+        }
+        else {
+            Picasso.get().load(file).fit().centerCrop().into(imageView);
+        }
+        setSupportActionBar(toolbar);
     }
 
     // To do: add new Intent for the remote friend button; this new activity should allow the user

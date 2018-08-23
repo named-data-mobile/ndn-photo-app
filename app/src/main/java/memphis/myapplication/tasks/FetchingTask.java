@@ -1,16 +1,12 @@
 package memphis.myapplication.tasks;
 
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.util.Xml;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
-import net.named_data.jndn.KeyLocator;
 import net.named_data.jndn.Name;
-import net.named_data.jndn.Signature;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.WireFormat;
 import net.named_data.jndn.security.DigestAlgorithm;
@@ -29,8 +25,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
 import memphis.myapplication.FileManager;
+import memphis.myapplication.FilesActivity;
 import memphis.myapplication.Globals;
-import memphis.myapplication.MainActivity;
 import memphis.myapplication.R;
 
 import static java.lang.Thread.sleep;
@@ -38,7 +34,7 @@ import static java.lang.Thread.sleep;
 // revisit params
 public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
 
-    private MainActivity m_mainActivity;
+    private FilesActivity m_parentActivity;
     private Face m_face;
     private Blob m_content;
     private ArrayList<Data> m_tempContent;
@@ -53,8 +49,8 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private String m_appPrefix;
     private int m_numRetries = 5;
 
-    public FetchingTask(MainActivity activity) {
-        m_mainActivity = activity;
+    public FetchingTask(FilesActivity activity) {
+        m_parentActivity = activity;
         m_appPrefix = "/" + activity.getApplication().getString(R.string.app_name);
         m_face = new Face();
         Log.d("Face Check", "m_face: " + m_face.toString() + " globals: " + Globals.face);
@@ -110,6 +106,8 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     @Override
                     public void onComplete(Blob content) {
                         if(m_numRetries < 5) {
+                            // This is from the SegmentFetcher; most everything in the class is private
+                            // including its constructors; this is how it keeps track of content
                             int totalSize = 0;
                             for (int i = 0; i < m_tempContent.size(); ++i)
                                 totalSize += ((Blob)m_tempContent.get(i).getContent()).size();
@@ -170,7 +168,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         String s = interest.getName().getPrefix(2).toUri();
         s = s.substring(1);
         int index = s.indexOf("/");
-        if(s.substring(0, index).equals(m_mainActivity.getString(R.string.app_name))) {
+        if(s.substring(0, index).equals(m_parentActivity.getString(R.string.app_name))) {
             m_user = s.substring(index+1, s.length());
             // we have the user, check if we're friends. If so, retrieve their key from file.
             ArrayList<String> friendsList = m_manager.getFriendsList();
@@ -214,19 +212,19 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean wasReceived) {
         if (m_received) {
-            FileManager manager = new FileManager(m_mainActivity.getApplicationContext());
+            FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
             boolean wasSaved = manager.saveContentToFile(m_content, m_baseInterest.getName().toUri());
             if (wasSaved) {
                 m_resultMsg = "We got content.";
-                m_mainActivity.runOnUiThread(m_mainActivity.makeToast(m_resultMsg));
+                m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
             } else {
                 m_resultMsg = "Failed to save retrieved content";
-                m_mainActivity.runOnUiThread(m_mainActivity.makeToast(m_resultMsg));
+                m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
             }
         }
         else {
             Log.d("fetch_data onError", m_resultMsg);
-            m_mainActivity.runOnUiThread(m_mainActivity.makeToast(m_resultMsg));
+            m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
         }
     }
 }

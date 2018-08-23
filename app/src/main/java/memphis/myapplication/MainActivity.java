@@ -19,16 +19,22 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.picasso.Picasso;
+
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
 import net.named_data.jndn.ContentType;
@@ -79,35 +85,71 @@ public class MainActivity extends AppCompatActivity {
     //
     // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
     Globals globals = (Globals) getApplication();
-    final MainActivity m_mainActivity = this;
     public KeyChain keyChain;
     public Face face;
     public FaceProxy faceProxy;
-    // think about adding a memoryContentCache instead of faceProxy
-    // eventually remove these lists; they are used to display the file path of one we selected to publish
-    List<String> filesStrings = new ArrayList<String>();
-    List<Uri> filesList = new ArrayList<Uri>();
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-    private final int FILE_SELECT_REQUEST_CODE = 0;
+    /*private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
-    private final int SCAN_QR_REQUEST_CODE = 2;
-    private final int CAMERA_REQUEST_CODE = 3;
-    private final int VIEW_FILE = 4;
+    private final int SCAN_QR_REQUEST_CODE = 2;*/
+    private final int CAMERA_REQUEST_CODE = 0;
+    // private final int VIEW_FILE = 4;
 
     private boolean netThreadShouldStop = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        // setContentView(R.layout.activity_main);
+        setContentView(R.layout.boxes);
         setupToolbar();
 
-        this.filesList = new ArrayList<Uri>();
+        // new UI
+        setupToolbar();
+        TypedValue tv = new TypedValue();
+        this.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
+        int actionBarHeight = getResources().getDimensionPixelSize(tv.resourceId);
+
+        GridView gridView = (GridView) findViewById(R.id.mainGrid);
+        ImageAdapter imgAdapter = new ImageAdapter(this, actionBarHeight);
+        Integer[] images = {R.drawable.florence, R.drawable.hotel, R.drawable.park, R.drawable.atlanta};
+        String[] text = {"Camera", "Files", "Friends", "See Photos"};
+        imgAdapter.setGridView(gridView);
+        imgAdapter.setPhotoResources(images);
+        imgAdapter.setTextValues(text);
+        gridView.setAdapter(imgAdapter);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            public void onItemClick(AdapterView<?> parent,
+                                    View v, int position, long id)
+            {
+                switch (position) {
+                    case 0:
+                        startUpCamera();
+                        break;
+                    case 1:
+                        startFiles();
+                        break;
+                    case 2:
+                        startMakingFriends();
+                        break;
+                    case 3:
+                        seeRcvdPhotos();
+                        break;
+                    default:
+                        Log.d("onGridImage", "selected image does not match a position in switch statment.");
+                        break;
+                }
+            }
+        });
+         // new UI
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -145,13 +187,13 @@ public class MainActivity extends AppCompatActivity {
     private void setupToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
         FileManager manager = new FileManager(getApplicationContext());
-        ImageView imageView = (ImageView) findViewById(R.id.toolbar_photo);
+        ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
         File file = manager.getProfilePhoto();
-        if(file.length() == 0) {
-            imageView.setImageResource(R.drawable.bandit);
+        if(file == null || file.length() == 0) {
+            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
         }
         else {
-            imageView.setImageURI(Uri.fromFile(file));
+            Picasso.get().load(file).fit().centerCrop().into(imageView);
         }
         setSupportActionBar(toolbar);
     }
@@ -177,12 +219,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Still think of MainActivity as our true MainActivity, but things will change towards background
-    // automation and a better UI. A user is likely not going to know the actual filenames to ask for.
-    // The app will take care of this process behind the scenes thanks to our synchronization protocol
-    // (and other things) letting the app know what to request. We are in a purely functional stage
-    // at the moment.
-
     /**
      * This function sets up identity storage, keys, and the face our app will use.
      */
@@ -191,9 +227,6 @@ public class MainActivity extends AppCompatActivity {
         // /ndn-snapchat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
-        // v2 changes
-        // So when we make these changes, we need to make sure we set up our identities correctly;
-        // lessons learned from V1; also make sure you set your Globals variables and change your related conditionals
         Context context = getApplicationContext();
         String rootPath = getApplicationContext().getFilesDir().toString();
         String pibPath = "pib-sqlite3:" + rootPath;
@@ -337,15 +370,15 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    /**
+    /*/**
      * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
      * @param interest the interest for the data we want
      */
-    public void fetch_data(final Interest interest) {
+    /*public void fetch_data(final Interest interest) {
         // interest.setInterestLifetimeMilliseconds(10000);
         // /tasks/FetchingTask
         new FetchingTask(m_mainActivity).execute(interest);
-    }
+    }*/
 
     /**
      * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
@@ -390,12 +423,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
+    /*/**
      * Starts a new thread to publish the file/photo data.
      * @param blob Blob of content
      * @param prefix Name of the file (currently absolute path)
      */
-    public void publishData(final Blob blob, final Name prefix) {
+    /*public void publishData(final Blob blob, final Name prefix) {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
                 try {
@@ -427,17 +460,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         publishingThread.start();
-    }
+    }*/
 
-    public void select_files(View view) {
+    //public void select_files(View view) {
         // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
         // browser.
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+     //   Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         // To search for all documents available via installed storage providers,
         // it would be "*/*".
-        intent.setType("*/*");
-        startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
-    }
+     //   intent.setType("*/*");
+     //   startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
+    //}
 
     @Override
     public void onActivityResult(int requestCode, int resultCode,
@@ -446,16 +479,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d("onActivityResult", "requestCode: " + requestCode);
         Uri uri;
         if (resultData != null) {
-            if (requestCode == FILE_SELECT_REQUEST_CODE) {
+            /*if (requestCode == FILE_SELECT_REQUEST_CODE) {
 
                 uri = resultData.getData();
                 String path = getFilePath(uri);
 
                 if (path != null) {
-                    // Log.d("file select result", "String s: " + uri.getPath().toString());
-                    filesList.add(uri);
-                    // filesStrings.add(uri.toString());
-                    filesStrings.add(path);
                     AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle("You selected a file").setMessage(path).show();
                     byte[] bytes;
@@ -511,7 +540,7 @@ public class MainActivity extends AppCompatActivity {
                     super.onActivityResult(requestCode, resultCode, resultData);
                 }
             }
-            else if (requestCode == CAMERA_REQUEST_CODE) {
+            else */ if (requestCode == CAMERA_REQUEST_CODE) {
                 try {
                     Bitmap pic = (Bitmap) resultData.getExtras().get("data");
                     // runOnUiThread(makeToast(pic.toString()));
@@ -521,7 +550,7 @@ public class MainActivity extends AppCompatActivity {
                     // runOnUiThread(makeToast("Something went wrong. Null image."));
                 }
             }
-            else if (requestCode == VIEW_FILE){
+            /*else if (requestCode == VIEW_FILE){
                 ContentResolver cr = getContentResolver();
                 try {
                     uri = resultData.getData();
@@ -534,7 +563,7 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     runOnUiThread(makeToast("Unable to open file."));
                 }
-            }
+            }*/
             else {
                 Log.d("onActivityResult", "Unexpected activity requestcode caught");
             }
@@ -543,12 +572,12 @@ public class MainActivity extends AppCompatActivity {
 
     // credit: https://stackoverflow.com/questions/13209494/how-to-get-the-full-file-path-from-uri/41520090
 
-    /**
+    /*/**
      * Converts a uri to its appropriate file pathname
      * @param uri file uri
      * @return
      */
-    public String getFilePath(Uri uri) {
+    /*public String getFilePath(Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
         if (DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
@@ -596,14 +625,14 @@ public class MainActivity extends AppCompatActivity {
             return uri.getPath();
         }
         return null;
-    }
+    }*/
 
-    /**
+    /*/**
      * Start a file selection activity to find a QR image to display. This is triggered by pressing
      * the "Display QR" button.
      * @param view The view of MainActivity passed by our button press.
      */
-    public void lookup_file_QR(View view) {
+    /*public void lookup_file_QR(View view) {
         // ACTION_GET_CONTENT is used for reading; no modifications
         // We're going to find a png file of our choosing (should be used for displaying QR codes,
         // but it can display any image)
@@ -614,12 +643,12 @@ public class MainActivity extends AppCompatActivity {
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "image/png");
         startActivityForResult(intent, FILE_QR_REQUEST_CODE);
-    }
+    }*/
 
-    /**
+    /*/**
      * initiate scan for QR codes upon button press
      */
-    public void scanFileQR(View view) {
+    /*public void scanFileQR(View view) {
         IntentIntegrator scanner = new IntentIntegrator(this);
         // only want QR code scanner
         scanner.setDesiredBarcodeFormats(QR_CODE_TYPES);
@@ -628,15 +657,15 @@ public class MainActivity extends AppCompatActivity {
         scanner.setCameraId(0);
         Intent intent = scanner.createScanIntent();
         startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
-    }
+    }*/
 
-    /**
+    /*/**
      * This takes a Blob and divides it into NDN data packets
      * @param raw_blob The full content of data in Blob format
      * @param prefix
      * @return returns an ArrayList of all the data packets
      */
-    public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
+    /*public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
         if(!faceProxy.hasKey(prefix)) {
             final int VERSION_NUMBER = 0;
             final int DEFAULT_PACKET_SIZE = 8000;
@@ -687,28 +716,28 @@ public class MainActivity extends AppCompatActivity {
         else {
             return null;
         }
-    }
+    }*/
 
     // start activity for add friends
-    public void startMakingFriends(View view) {
+    public void startMakingFriends() {
         Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
     }
 
-    // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
+    /*// browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
     // file explorer and opener. This is intended for testing.
     public void browseRcvdFiles(View view) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         FileManager manager = new FileManager(getApplicationContext());
         File rcvFilesDir = new File(manager.getRcvdFilesDir());
         Uri uri = Uri.fromFile(rcvFilesDir);
-        Log.d("browse", uri.toString());
+        Log.d("browse", uri.toString());*/
         // start in app's file directory and limit allowable selections to .png files
-        intent.setDataAndType(uri, "*/*");
-        startActivityForResult(intent, VIEW_FILE);
-    }
+        //intent.setDataAndType(uri, "*/*");
+        //startActivityForResult(intent, VIEW_FILE);
+    //}
 
-    public void seeRcvdPhotos(View view) {
+    public void seeRcvdPhotos() {
         Intent intent = new Intent(this, NewContentActivity.class);
         startActivity(intent);
     }
@@ -718,7 +747,8 @@ public class MainActivity extends AppCompatActivity {
      * access the camera if we do not have it. If we are granted permission or have permission, we
      * will call startCamera()
      */
-    public void startCamera(View view) {
+    // public void startCamera(View view) {
+    public void startUpCamera() {
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if(permission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
@@ -765,6 +795,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void startFiles() {
+        Intent intent = new Intent(this, FilesActivity.class);
+        startActivity(intent);
+    }
+
     /**
      * This is registered with our prefix. Any interest sent with prefix /ndn-snapchat/<username>
      * will be caught by this callback. We send it to the faceProxy to deal with it.
@@ -774,7 +809,7 @@ public class MainActivity extends AppCompatActivity {
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            faceProxy.process(interest, m_mainActivity);
+            faceProxy.process(interest);
         }
     };
 
