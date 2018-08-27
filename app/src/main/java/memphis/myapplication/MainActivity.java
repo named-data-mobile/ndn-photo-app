@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -108,9 +109,52 @@ public class MainActivity extends AppCompatActivity {
         // setContentView(R.layout.activity_main);
         setContentView(R.layout.boxes);
         setupToolbar();
+        setupGrid();
 
-        // new UI
-        setupToolbar();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        // check if user has given us permissions for storage manipulation (one time dialog box)
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
+        boolean faceExists = (Globals.face == null);
+        Log.d("onCreate", "Globals face is null?: " + faceExists +
+                "; Globals security is setup: " + Globals.has_setup_security);
+        // need to check if we have an existing face or if security is not setup; either way, we
+        // need to make changes; see setup_security()
+        if (faceExists || !Globals.has_setup_security) {
+            setup_security();
+        }
+
+        face = Globals.face;
+        faceProxy = Globals.faceProxy;
+        keyChain = Globals.keyChain;
+
+        startNetworkThread();
+    }
+
+    private void setupToolbar() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        FileManager manager = new FileManager(getApplicationContext());
+        ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
+        File file = manager.getProfilePhoto();
+        if(file == null || file.length() == 0) {
+            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
+        }
+        else {
+            Picasso.get().load(file).fit().centerCrop().into(imageView);
+        }
+        setSupportActionBar(toolbar);
+    }
+
+    private void setupGrid() {
         TypedValue tv = new TypedValue();
         this.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
         int actionBarHeight = getResources().getDimensionPixelSize(tv.resourceId);
@@ -148,54 +192,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-         // new UI
-
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        // check if user has given us permissions for storage manipulation (one time dialog box)
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
-        boolean faceExists = (Globals.face == null);
-        Log.d("onCreate", "Globals face is null?: " + faceExists +
-                "; Globals security is setup: " + Globals.has_setup_security);
-        // need to check if we have an existing face or if security is not setup; either way, we
-        // need to make changes; see setup_security()
-        if (faceExists || !Globals.has_setup_security) {
-            setup_security();
-        }
-
-        face = Globals.face;
-        faceProxy = Globals.faceProxy;
-        keyChain = Globals.keyChain;
-        try {
-            Log.d("MainActivity", "pubKey der: " + Globals.pibIdentity.getKey(Globals.pubKeyName).getPublicKey().toString());
-        }
-        catch(PibImpl.Error | Pib.Error | java.lang.SecurityException e) {
-            e.printStackTrace();
-        }
-        startNetworkThread();
-    }
-
-    private void setupToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
-        FileManager manager = new FileManager(getApplicationContext());
-        ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
-        File file = manager.getProfilePhoto();
-        if(file == null || file.length() == 0) {
-            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
-        }
-        else {
-            Picasso.get().load(file).fit().centerCrop().into(imageView);
-        }
-        setSupportActionBar(toolbar);
     }
 
     @Override
@@ -479,91 +475,16 @@ public class MainActivity extends AppCompatActivity {
         Log.d("onActivityResult", "requestCode: " + requestCode);
         Uri uri;
         if (resultData != null) {
-            /*if (requestCode == FILE_SELECT_REQUEST_CODE) {
-
-                uri = resultData.getData();
-                String path = getFilePath(uri);
-
-                if (path != null) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-                    builder.setTitle("You selected a file").setMessage(path).show();
-                    byte[] bytes;
-                    try {
-                        InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
-                        bytes = IOUtils.toByteArray(is);
-                        Log.d("select file activity", "file byte array size: " + bytes.length);
-                    } catch (IOException e) {
-                        Log.d("onItemClick", "failed to byte");
-                        e.printStackTrace();
-                        bytes = new byte[0];
-                    }
-                    Log.d("file selection result", "file path: " + path);
-                    final Blob blob = new Blob(bytes, true);
-                    FileManager manager = new FileManager(getApplicationContext());
-                    String prefix = manager.addAppPrefix(path);
-                    publishData(blob, new Name(prefix));
-                }
-                else {
-                    String msg = "File path could not be resolved";
-                    runOnUiThread(makeToast(msg));
-                }
-            }
-            // We received a request to display a QR image
-            else if (requestCode == FILE_QR_REQUEST_CODE) {
-                try {
-                    // set up a new Activity for displaying. This way the back button brings us back
-                    // to main activity.
-                    Intent display = new Intent(this, DisplayQRActivity.class);
-                    display.setData(resultData.getData());
-                    startActivity(display);
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            } else if (requestCode == SCAN_QR_REQUEST_CODE) {
-                IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, resultData);
-                if (result == null) {
-                    runOnUiThread(makeToast("Null"));
-                }
-                if (result != null) {
-                    // check resultCode to determine what type of code we're scanning, file or friend
-
-                    if (result.getContents() == null) {
-                        runOnUiThread(makeToast("Nothing is here"));
-                    } else {
-                        String content = result.getContents();
-                        // need to check this content to determine if we are scanning file or friend code
-                        runOnUiThread(makeToast(content));
-                        final Interest interest = new Interest(new Name(content));
-                        fetch_data(interest);
-                    }
-                } else {
-                    super.onActivityResult(requestCode, resultCode, resultData);
-                }
-            }
-            else */ if (requestCode == CAMERA_REQUEST_CODE) {
+            if (requestCode == CAMERA_REQUEST_CODE) {
                 try {
                     Bitmap pic = (Bitmap) resultData.getExtras().get("data");
-                    // runOnUiThread(makeToast(pic.toString()));
                 }
                 catch (NullPointerException e) {
+                    // heads up; this happens when you exit the camera without taking a photo; don't
+                    // worry about it when it pops up.
                     e.printStackTrace();
-                    // runOnUiThread(makeToast("Something went wrong. Null image."));
                 }
             }
-            /*else if (requestCode == VIEW_FILE){
-                ContentResolver cr = getContentResolver();
-                try {
-                    uri = resultData.getData();
-                    // cr.openInputStream(uri);
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(uri);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    runOnUiThread(makeToast("Unable to open file."));
-                }
-            }*/
             else {
                 Log.d("onActivityResult", "Unexpected activity requestcode caught");
             }
