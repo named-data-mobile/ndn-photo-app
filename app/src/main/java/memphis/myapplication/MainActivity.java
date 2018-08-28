@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
 
         GridView gridView = (GridView) findViewById(R.id.mainGrid);
         ImageAdapter imgAdapter = new ImageAdapter(this, actionBarHeight);
-        Integer[] images = {R.drawable.florence, R.drawable.hotel, R.drawable.park, R.drawable.atlanta};
+        Integer[] images = {R.drawable.camera_white, R.drawable.folder, R.drawable.add_friend, R.drawable.images_icon};
         String[] text = {"Camera", "Files", "Friends", "See Photos"};
         imgAdapter.setGridView(gridView);
         imgAdapter.setPhotoResources(images);

@@ -17,6 +17,8 @@ import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -67,22 +69,35 @@ public class ImageAdapter extends BaseAdapter {
     // This sets each image we provided in our activity to a gridview of 4 images.
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView;
+        View grid;
+        LayoutInflater inflater = (LayoutInflater) m_context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         if (convertView == null) {
-            imageView = new ImageView(m_context);
+
+            grid = new View(m_context);
+            grid = inflater.inflate(R.layout.grid_item, null);
+
             // get screen size
             DisplayMetrics metrics = m_context.getResources().getDisplayMetrics();
             // set up two columns
             int width = metrics.widthPixels/2;
             // account for the actionBar so pictures on both rows are the same size
             int height = (metrics.heightPixels - m_actionBarHeight)/2;
-            imageView.setLayoutParams(new GridView.LayoutParams(width, height-20));
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            imageView.setPadding(20, 20, 20, 10);
-        } else {
-            imageView = (ImageView) convertView;
+
+            TextView textView = (TextView) grid.findViewById(R.id.grid_text);
+            ImageView imageView = (ImageView)grid.findViewById(R.id.grid_image);
+            imageView.setLayoutParams(new RelativeLayout.LayoutParams(width, height-20));
+            imageView.setPadding(10, 10, 10, 10);
+            Picasso.get().load(m_photos[position]).fit().centerCrop().into(imageView);
+
+            textView.setText(m_text[position]);
+
         }
-        Picasso.get().load(m_photos[position]).fit().centerCrop().into(imageView);
-        return imageView;
+        else {
+            grid = (View) convertView;
+        }
+
+        return grid;
     }
 }
