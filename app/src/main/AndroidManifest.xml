@@ -76,6 +76,12 @@
         <activity android:name=".SettingsActivity">
         </activity>
 
+        <activity android:name=".SelectRecipientsActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+            </intent-filter>
+        </activity>
+
         <activity android:name=".ViewFriendsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT"/>

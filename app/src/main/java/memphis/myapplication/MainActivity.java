@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -77,14 +78,11 @@ import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    // security v2 experimental changes
-    // look at KeyChain.java; with V2, it works with CertificateV2, Pib, Tpm, and Validator
     public AndroidSqlite3Pib m_pib;
     public TpmBackEndFile m_tpm;
-    public PibIdentity m_pibIdentity;
 
-    //
-    // not sure if globals instance is necessary here but this should ensure we have at least one instance so the vars exist
+    // not sure if this globals instance is necessary here but this should ensure we have at least
+    // one instance so the security vars exist
     Globals globals = (Globals) getApplication();
     public KeyChain keyChain;
     public Face face;
@@ -95,11 +93,8 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
-    /*private final int FILE_SELECT_REQUEST_CODE = 0;
-    private final int FILE_QR_REQUEST_CODE = 1;
-    private final int SCAN_QR_REQUEST_CODE = 2;*/
     private final int CAMERA_REQUEST_CODE = 0;
-    // private final int VIEW_FILE = 4;
+    private File m_curr_photo_file;
 
     private boolean netThreadShouldStop = true;
 
@@ -161,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         GridView gridView = (GridView) findViewById(R.id.mainGrid);
         ImageAdapter imgAdapter = new ImageAdapter(this, actionBarHeight);
+        // free icons were obtained from https://icons8.com/
         Integer[] images = {R.drawable.camera_white, R.drawable.folder, R.drawable.add_friend, R.drawable.images_icon};
         String[] text = {"Camera", "Files", "Friends", "See Photos"};
         imgAdapter.setGridView(gridView);
@@ -366,16 +362,6 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    /*/**
-     * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
-     * @param interest the interest for the data we want
-     */
-    /*public void fetch_data(final Interest interest) {
-        // interest.setInterestLifetimeMilliseconds(10000);
-        // /tasks/FetchingTask
-        new FetchingTask(m_mainActivity).execute(interest);
-    }*/
-
     /**
      * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
      * @param name The provided name should be /ndn-snapchat/<username>
@@ -419,244 +405,56 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*/**
-     * Starts a new thread to publish the file/photo data.
-     * @param blob Blob of content
-     * @param prefix Name of the file (currently absolute path)
-     */
-    /*public void publishData(final Blob blob, final Name prefix) {
-        Thread publishingThread = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    ArrayList<Data> fileData = new ArrayList<>();
-                    ArrayList<Data> packets = packetize(blob, prefix);
-                    // it would be null if this file is already in our cache so we do not packetize
-                    if(packets != null) {
-                        Log.d("publishData", "Publishing with prefix: " + prefix);
-                        for (Data data : packetize(blob, prefix)) {
-                            keyChain.sign(data);
-                            fileData.add(data);
-                        }
-
-                        faceProxy.putInCache(fileData);
-                        FileManager manager = new FileManager(getApplicationContext());
-                        String filename = prefix.toUri();
-                        Bitmap bitmap = QRExchange.makeQRCode(filename);
-                        manager.saveFileQR(bitmap, filename);
-                    }
-                    else {
-                        Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
-                    }
-                } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
-                        KeyChain.Error e)
-
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
-        publishingThread.start();
-    }*/
-
-    //public void select_files(View view) {
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-     //   Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        // To search for all documents available via installed storage providers,
-        // it would be "*/*".
-     //   intent.setType("*/*");
-     //   startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
-    //}
-
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
 
         Log.d("onActivityResult", "requestCode: " + requestCode);
-        Uri uri;
-        if (resultData != null) {
-            if (requestCode == CAMERA_REQUEST_CODE) {
-                try {
-                    Bitmap pic = (Bitmap) resultData.getExtras().get("data");
-                }
-                catch (NullPointerException e) {
-                    // heads up; this happens when you exit the camera without taking a photo; don't
-                    // worry about it when it pops up.
-                    e.printStackTrace();
-                }
-            }
-            else {
-                Log.d("onActivityResult", "Unexpected activity requestcode caught");
-            }
-        }
-    }
+        if (requestCode == CAMERA_REQUEST_CODE) {
+            Log.d("onActivityResult", "Got result data");
+            // check if we even took a picture
+            if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
+                Log.d("onActivityResult", "We have an actual file");
+                // Bitmap pix = (Bitmap) m_curr_photo_path;
+                // Bitmap pic = (Bitmap) resultData.getExtras().get("data");
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
-    // credit: https://stackoverflow.com/questions/13209494/how-to-get-the-full-file-path-from-uri/41520090
+                builder.setTitle(R.string.share_photo).setCancelable(false);
 
-    /*/**
-     * Converts a uri to its appropriate file pathname
-     * @param uri file uri
-     * @return
-     */
-    /*public String getFilePath(Uri uri) {
-        String selection = null;
-        String[] selectionArgs = null;
-        if (DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
-            if (uri.getAuthority().equals("com.android.externalstorage.documents")) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                Log.d("file selection", "docId: " + docId);
-                final String[] split = docId.split(":");
-                return Environment.getExternalStorageDirectory() + "/" + split[1];
+                builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Send them to a new page to select friends to send photo to
+                        makeToast("Will do");
+                        Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
+
+                        FileManager manager = new FileManager(getApplicationContext());
+                        ArrayList<String> friendsList = manager.getFriendsList();
+                        intent.putStringArrayListExtra("friendsList", friendsList);
+                        intent.putExtra("pic", m_curr_photo_file);
+                        startActivity(intent);
+                        m_curr_photo_file = null;
+                    }
+                });
+                builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        makeToast("Photo was not shared but can be later.");
+                        m_curr_photo_file = null;
+                    }
+                });
+
+                builder.show();
             }
-            else if (uri.getAuthority().equals("com.android.providers.downloads.documents")) {
-                final String id = DocumentsContract.getDocumentId(uri);
-                uri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-            }
-            else if (uri.getAuthority().equals("com.android.providers.media.documents")) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-                if ("image".equals(type)) {
-                    uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-                selection = "_id=?";
-                selectionArgs = new String[]{split[1]};
-            }
-        }
-
-        if (uri.getScheme().equalsIgnoreCase("content")) {
-            String[] projection = {MediaStore.Images.Media.DATA};
-            Cursor cursor = null;
-            try {
-                cursor = getApplicationContext().getContentResolver().query(uri, projection, selection, selectionArgs, null);
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                if (cursor.moveToFirst()) {
-                    return cursor.getString(column_index);
-                }
-            } catch (Exception e) {
-                return null;
-            }
-        }
-        else if (uri.getScheme().equalsIgnoreCase("file")) {
-            return uri.getPath();
-        }
-        return null;
-    }*/
-
-    /*/**
-     * Start a file selection activity to find a QR image to display. This is triggered by pressing
-     * the "Display QR" button.
-     * @param view The view of MainActivity passed by our button press.
-     */
-    /*public void lookup_file_QR(View view) {
-        // ACTION_GET_CONTENT is used for reading; no modifications
-        // We're going to find a png file of our choosing (should be used for displaying QR codes,
-        // but it can display any image)
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        FileManager manager = new FileManager(getApplicationContext());
-        File appDir = new File(manager.getFilesDir());
-        Uri uri = Uri.fromFile(appDir);
-        // start in app's file directory and limit allowable selections to .png files
-        intent.setDataAndType(uri, "image/png");
-        startActivityForResult(intent, FILE_QR_REQUEST_CODE);
-    }*/
-
-    /*/**
-     * initiate scan for QR codes upon button press
-     */
-    /*public void scanFileQR(View view) {
-        IntentIntegrator scanner = new IntentIntegrator(this);
-        // only want QR code scanner
-        scanner.setDesiredBarcodeFormats(QR_CODE_TYPES);
-        scanner.setOrientationLocked(true);
-        // back facing camera id
-        scanner.setCameraId(0);
-        Intent intent = scanner.createScanIntent();
-        startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
-    }*/
-
-    /*/**
-     * This takes a Blob and divides it into NDN data packets
-     * @param raw_blob The full content of data in Blob format
-     * @param prefix
-     * @return returns an ArrayList of all the data packets
-     */
-    /*public ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
-        if(!faceProxy.hasKey(prefix)) {
-            final int VERSION_NUMBER = 0;
-            final int DEFAULT_PACKET_SIZE = 8000;
-            int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
-            ArrayList<Data> datas = new ArrayList<>();
-            int segment_number = 0;
-            ByteBuffer byteBuffer = raw_blob.buf();
-            do {
-                // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
-                // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
-                if (byteBuffer.remaining() < PACKET_SIZE) {
-                    PACKET_SIZE = byteBuffer.remaining();
-                }
-                Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
-                byte[] segment_buffer = new byte[PACKET_SIZE];
-                Data data = new Data();
-                Name segment_name = new Name(prefix);
-                segment_name.appendVersion(VERSION_NUMBER);
-                segment_name.appendSegment(segment_number);
-                data.setName(segment_name);
-                try {
-                    Log.d("packetize things", "full data name: " + data.getFullName().toString());
-                } catch (EncodingException e) {
-                    Log.d("packetize things", "unable to print full name");
-                }
-                try {
-                    Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
-                    byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
-                } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
-                }
-                data.setContent(new Blob(segment_buffer));
-                MetaInfo meta_info = new MetaInfo();
-                meta_info.setType(ContentType.BLOB);
-                // not sure what is a good freshness period
-                meta_info.setFreshnessPeriod(30000);
-                if (!byteBuffer.hasRemaining()) {
-                    // Set the final component to have a final block id.
-                    Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
-                    meta_info.setFinalBlockId(finalBlockId);
-                }
-                data.setMetaInfo(meta_info);
-                datas.add(data);
-                segment_number++;
-            } while (byteBuffer.hasRemaining());
-            return datas;
         }
         else {
-            return null;
+            Log.d("onActivityResult", "Unexpected activity requestcode caught");
         }
-    }*/
+    }
 
     // start activity for add friends
     public void startMakingFriends() {
         Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
     }
-
-    /*// browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
-    // file explorer and opener. This is intended for testing.
-    public void browseRcvdFiles(View view) {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        FileManager manager = new FileManager(getApplicationContext());
-        File rcvFilesDir = new File(manager.getRcvdFilesDir());
-        Uri uri = Uri.fromFile(rcvFilesDir);
-        Log.d("browse", uri.toString());*/
-        // start in app's file directory and limit allowable selections to .png files
-        //intent.setDataAndType(uri, "*/*");
-        //startActivityForResult(intent, VIEW_FILE);
-    //}
 
     public void seeRcvdPhotos() {
         Intent intent = new Intent(this, NewContentActivity.class);
@@ -668,7 +466,6 @@ public class MainActivity extends AppCompatActivity {
      * access the camera if we do not have it. If we are granted permission or have permission, we
      * will call startCamera()
      */
-    // public void startCamera(View view) {
     public void startUpCamera() {
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if(permission != PackageManager.PERMISSION_GRANTED) {
@@ -692,6 +489,7 @@ public class MainActivity extends AppCompatActivity {
            photo if we choose to save it. */
         FileManager manager = new FileManager(getApplicationContext());
         File pic = new File(manager.getPhotosDir(), tsPhoto);
+        m_curr_photo_file = pic;
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
         startActivityForResult(intent, CAMERA_REQUEST_CODE);
     }

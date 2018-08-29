@@ -1,4 +1,5 @@
 <resources>
+
     <string name="app_name">ndn-snapchat</string>
     <string name="scan">Scan</string>
     <string name="action_settings">Settings</string>
@@ -6,4 +7,8 @@
     <string name="publish">Publish</string>
     <string name="advertise">Advertise</string>
     <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="share_photo">Share Photo?</string>
+
 </resources>
