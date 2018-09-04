@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private final int CAMERA_REQUEST_CODE = 0;
+    private final int SELECT_RECIPIENTS_CODE = 1;
     private File m_curr_photo_file;
 
     private boolean netThreadShouldStop = true;
@@ -415,34 +416,83 @@ public class MainActivity extends AppCompatActivity {
             // check if we even took a picture
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
                 Log.d("onActivityResult", "We have an actual file");
-                // Bitmap pix = (Bitmap) m_curr_photo_path;
-                // Bitmap pic = (Bitmap) resultData.getExtras().get("data");
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.share_photo).setCancelable(false);
 
                 builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send them to a new page to select friends to send photo to
-                        makeToast("Will do");
                         Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
 
                         FileManager manager = new FileManager(getApplicationContext());
                         ArrayList<String> friendsList = manager.getFriendsList();
                         intent.putStringArrayListExtra("friendsList", friendsList);
-                        intent.putExtra("pic", m_curr_photo_file);
-                        startActivity(intent);
+                        // make this startActivityForResult and catch the list of recipients;
+                        intent.putExtra("photo", m_curr_photo_file.toString());
                         m_curr_photo_file = null;
+                        //startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
+                        startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
                     }
                 });
                 builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        makeToast("Photo was not shared but can be later.");
+                        runOnUiThread(makeToast("Photo was not shared but can be later."));
                         m_curr_photo_file = null;
                     }
                 });
 
                 builder.show();
+            }
+        }
+        else if(requestCode == SELECT_RECIPIENTS_CODE) {
+            if(resultCode == RESULT_OK) {
+                try {
+                    final String path = resultData.getStringExtra("photo");
+                    final File photo = new File(path);
+                    final Uri uri = Uri.fromFile(photo);
+
+                    Thread publishingThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            byte[] bytes;
+                            try {
+                                InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                                bytes = IOUtils.toByteArray(is);
+                                Log.d("select file activity", "file byte array size: " + bytes.length);
+                            } catch (IOException e) {
+                                Log.d("onItemClick", "failed to byte");
+                                e.printStackTrace();
+                                bytes = new byte[0];
+                            }
+                            Log.d("file selection result", "file path: " + path);
+                            final Blob blob = new Blob(bytes, true);
+                            final FileManager manager = new FileManager(getApplicationContext());
+                            final String prefix = manager.addAppPrefix(path);
+
+                            Common.publishData(blob, new Name(prefix));
+                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                            manager.saveFileQR(bitmap, prefix);
+                            runOnUiThread(makeToast("Photo sent successfully"));
+                        }
+                    });
+                    publishingThread.run();
+                /*ArrayList<String> recipients;
+                try {
+                    // do something with PSync with recipients
+                    recipients = resultData.getStringArrayListExtra("recipients");
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                }*/
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
+                }
+            }
+            else {
+                runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
             }
         }
         else {

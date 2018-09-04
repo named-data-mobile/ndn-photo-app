@@ -60,7 +60,7 @@ public class FilesActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_files);
-        m_manager = new FileManager(getApplicationContext());
+        m_manager = new FileManager(this);
         setupToolbar();
     }
 
@@ -75,6 +75,10 @@ public class FilesActivity extends AppCompatActivity {
             Picasso.get().load(file).fit().centerCrop().into(imageView);
         }
         setSupportActionBar(toolbar);
+    }
+
+    public FileManager getFileManager() {
+        return m_manager;
     }
 
     /**
@@ -245,7 +249,9 @@ public class FilesActivity extends AppCompatActivity {
         // but it can display any image)
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         File appDir = new File(m_manager.getFilesDir());
-        Uri uri = Uri.fromFile(appDir);
+        Log.d("lookup_file_QR", appDir.toString());
+        // Uri uri = Uri.fromFile(appDir);
+        Uri uri = Uri.parse(appDir.toString());
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "image/png");
         startActivityForResult(intent, FILE_QR_REQUEST_CODE);
@@ -270,7 +276,8 @@ public class FilesActivity extends AppCompatActivity {
     public void browseRcvdFiles(View view) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         File rcvFilesDir = new File(m_manager.getRcvdFilesDir());
-        Uri uri = Uri.fromFile(rcvFilesDir);
+        //Uri uri = Uri.fromFile(rcvFilesDir);
+        Uri uri = Uri.parse(rcvFilesDir.toString());
         Log.d("browse", uri.toString());
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "*/*");
@@ -358,6 +365,7 @@ public class FilesActivity extends AppCompatActivity {
                         Globals.faceProxy.putInCache(fileData);
                         String filename = prefix.toUri();
                         Bitmap bitmap = QRExchange.makeQRCode(filename);
+                        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
                         m_manager.saveFileQR(bitmap, filename);
                     }
                     else {

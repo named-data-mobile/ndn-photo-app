@@ -365,7 +365,7 @@ public class FileManager {
         return false;
     }
 
-    // need to map files to one another; start off with full path where we append /ndn-snapchat/<username>
+    // need to map files to one another; start off with full path where we prepend /ndn-snapchat/<username>
     // or remove /ndn-snapchat/<username>, depending on which way we are going. Then, incorporate a hash.
 
     // ok; this shows us the full path now. That was easy. Now let's do some hashing for security purposes.
