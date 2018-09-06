@@ -40,6 +40,8 @@ public class SelectRecipientsActivity extends AppCompatActivity {
         final int white = ContextCompat.getColor(this, R.color.white);
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
+            m_sendButton = findViewById(R.id.send_button);
+            m_sendButton.setVisibility(View.GONE);
             TextView message = new TextView(this);
             String s = "You currently haven't added any friends.";
             message.setText(s);
@@ -57,18 +59,23 @@ public class SelectRecipientsActivity extends AppCompatActivity {
                 friendName.setTextColor(white);
                 friendName.setTextSize(34);
                 // create a border for each TextView (friend slot)
-                final GradientDrawable drawable = new GradientDrawable();
-                drawable.setColor(primary);
-                drawable.setStroke(2, black);
-                // place border around TextView
-                friendName.setBackground(drawable);
+                final GradientDrawable drawable1 = new GradientDrawable();
+                drawable1.setColor(primary);
+                drawable1.setStroke(2, black);
+
+                final GradientDrawable drawable2 = new GradientDrawable();
+                drawable2.setColor(Color.parseColor("#333377"));
+                drawable2.setStroke(2, black);
+
+                // place border around TextView and set background
+                friendName.setBackground(drawable1);
+
                 friendName.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Log.d("SelectRecipients", "We selected " + friendName.getText());
                         if (friendName.isSelected()) {
-                            friendName.setBackgroundColor(primary);
-                            friendName.setBackground(drawable);
+                            friendName.setBackground(drawable1);
                             friendName.setSelected(false);
                             m_selectedFriends.remove(friendName.getText().toString());
                             if(m_selectedFriends.size() < 1) {
@@ -77,11 +84,11 @@ public class SelectRecipientsActivity extends AppCompatActivity {
                             }
                             Log.d("showFriends", "After removed: " + m_selectedFriends.size());
                         } else {
-                            friendName.setBackgroundColor(Color.parseColor("#333377"));
+                            friendName.setBackground(drawable2);
                             friendName.setSelected(true);
                             m_selectedFriends.add(friendName.getText().toString());
                             if(m_selectedFriends.size() == 1) {
-                                // only need to set visibility when we add the first friend
+                                // only need to set visibility for button when we add the first friend
                                 m_sendButton.setVisibility(View.VISIBLE);
                             }
                             Log.d("showFriends", "After add: " + m_selectedFriends.size());
