@@ -161,4 +161,4 @@ public class FaceProxy {
 }
 
 // find the file and publish the specific segment...maybe? Dr. Wang wants this
-// make a deterministic mapping of your file directories (/ndn-snapchat/username/<fullpath>)
+// make a deterministic mapping of your file directories (/NP-Chat/username/<fullpath>)

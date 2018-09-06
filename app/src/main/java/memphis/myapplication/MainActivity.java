@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void setup_security() {
         FileManager manager = new FileManager(getApplicationContext());
-        // /ndn-snapchat/<username>
+        // /NP-Chat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
         Context context = getApplicationContext();
@@ -365,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
-     * @param name The provided name should be /ndn-snapchat/<username>
+     * @param name The provided name should be /NP-Chat/<username>
      * @throws IOException
      * @throws PibImpl.Error
      */
@@ -570,7 +570,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * This is registered with our prefix. Any interest sent with prefix /ndn-snapchat/<username>
+     * This is registered with our prefix. Any interest sent with prefix /NP-Chat/<username>
      * will be caught by this callback. We send it to the faceProxy to deal with it.
      */
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {
