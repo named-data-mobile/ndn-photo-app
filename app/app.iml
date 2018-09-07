@@ -133,6 +133,7 @@
     <orderEntry type="library" name="Gradle: org.khronos:opengl-api:gl1.1-android-2.1_r1@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.journeyapps:zxing-android-embedded-3.5.0" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-fragment-27.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: net.named-data.jndn-extra:jndn-management:1.2.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:design-27.1.0" level="project" />
     <orderEntry type="library" name="Gradle: android.arch.core:runtime-1.1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.android.support.test:monitor-1.0.2" level="project" />

@@ -37,6 +37,9 @@ import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.intel.jndn.management.ManagementException;
+import com.intel.jndn.management.Nfdc;
+import com.intel.jndn.management.types.FaceStatus;
 import com.squareup.picasso.Picasso;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
