@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: net.named-data.jndn-extra:jndn-management:1.2.1@jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.named-data.jndn-extra/jndn-management/1.2.1/e7ddd6eaef86510411eeed4760418162a99147a8/jndn-management-1.2.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.named-data.jndn-extra/jndn-management/1.2.1/7a56eede21f8ff36dcb5ceb4e4fa1299dfd44233/jndn-management-1.2.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
