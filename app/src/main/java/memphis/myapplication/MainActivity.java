@@ -10,7 +10,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.DhcpInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -402,6 +404,57 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
         catch (IOException | SecurityException e) {
+            e.printStackTrace();
+        }
+
+        registerRouteToAp();
+    }
+
+    public void registerRouteToAp() {
+        Name prefix = new Name(getString(R.string.app_name));
+
+        DhcpInfo d;
+        WifiManager wifi;
+        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        d = wifi.getDhcpInfo();
+        int gatewayInt = d.gateway;
+        String gatewayIP = (gatewayInt & 0xFF) + "." + ((gatewayInt >> 8 ) & 0xFF) + "." +
+                ((gatewayInt >> 16 ) & 0xFF) + "." + ((gatewayInt >> 24 ) & 0xFF );
+
+        String faceUri = "udp4://" + gatewayIP + ":6363";
+        try {
+            // Cannot get face-id here, because there is an exception
+            // So query a list of faces and then get the face-id there (see below)
+            Nfdc.createFace(face, faceUri);
+        } catch (ManagementException e) {
+            // e.printStackTrace();
+        }
+
+        int myFace = 0;
+        try {
+            final List<FaceStatus> faceList = Nfdc.getFaceList(face);
+            for (FaceStatus f : faceList) {
+                Log.d("Nfdc", f.getRemoteUri() + " " + f.getFaceId());
+                if (f.getRemoteUri().equals(faceUri)) {
+                    myFace = f.getFaceId();
+                }
+            }
+        } catch (ManagementException e) {
+            e.printStackTrace();
+        }
+
+        if (myFace != 0) {
+            try {
+                Nfdc.register(face, myFace, prefix, 0);
+            } catch (ManagementException e) {
+                e.printStackTrace();
+            }
+        }
+
+        Name multicastStrategy = new Name("/localhost/nfd/strategy/multicast");
+        try {
+            Nfdc.setStrategy(face, prefix, multicastStrategy);
+        } catch (ManagementException e) {
             e.printStackTrace();
         }
     }
