@@ -74,17 +74,20 @@ public class Producer {
 	private final OnInterestCallback onInterest = new OnInterestCallback() {
 		public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
 				InterestFilter filter) {
-			System.out.print("Received interest: " + interest);
+			System.out.print("Received interest: " + interest.toUri());
 		}
 	};
 
 	private final OnInterestCallback onHelloInterest = new OnInterestCallback() {
 		public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
 							   InterestFilter filterData) {
-			  System.out.println("Hello Interest Received, nonce: " + interest);
+			  System.out.println("Hello Interest Received, nonce: " + interest.toUri());
 			  final Name interestName = interest.getName();
 
-			  if (!interestName.get(interestName.size()-2).equals(m_userPrefix)) {
+			  Log.d("producer", interestName.get(interestName.size()-1).toEscapedString());
+              Log.d("producer", m_userPrefix.get(m_userPrefix.size()-1).toEscapedString());
+			  if (!interestName.get(interestName.size()-1).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
+			      Log.d("producer", "Interest not for us");
 			      return;
               }
 
@@ -122,82 +125,89 @@ public class Producer {
 		}
 	};
 
-    private final OnInterestCallback onSyncInterest = new OnInterestCallback() {
-        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
-                               InterestFilter filterData) {
-        	System.out.println("Sync Interest Received, nonce: " + interest.getNonce());
-        	final Name interestName = interest.getName();
+    private final OnInterestCallback onSyncInterest;
 
-            if (!interestName.get(interestName.size()-2).equals(m_userPrefix)) {
-                return;
-            }
+    {
+        onSyncInterest = new OnInterestCallback() {
+            public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
+                                   InterestFilter filterData) {
+                System.out.println("Sync Interest Received " + interest.toUri());
+                final Name interestName = interest.getName();
 
-            Long seq = interestName.get(interestName.size()-1).toNumber();
-
-            State state = new State();
-            if (seq < m_seq) {
-                while (seq < m_seq) {
-                    ArrayList<Name> filesAndFriends = m_seqToFileName.get(seq);
-                    for (Name content : filesAndFriends) {
-                        state.addContent(content);
-                    }
-                    seq++;
+                if (!interestName.get(interestName.size() - 1).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
+                    return;
                 }
+
+                Long seq = interestName.get(interestName.size() - 1).toNumber();
+
+                State state = new State();
+                if (seq < m_seq) {
+                    while (seq < m_seq) {
+                        ArrayList<Name> filesAndFriends = m_seqToFileName.get(seq);
+                        for (Name content : filesAndFriends) {
+                            state.addContent(content);
+                        }
+                        seq++;
+                    }
+                }
+
+                if (!state.getContent().isEmpty()) {
+                    // send back data
+                    Name syncDataName = interestName;
+                    syncDataName.append(Component.fromNumber(m_seq));
+
+                    Data data = new Data(syncDataName);
+                    MetaInfo metaInfo = new MetaInfo();
+                    metaInfo.setFreshnessPeriod(m_syncReplyFreshness);
+                    data.setMetaInfo(metaInfo);
+                    data.setContent(state.wireEncode());
+
+                    try {
+                        m_keyChain.sign(data);
+                    } catch (SecurityException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (Error e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (net.named_data.jndn.security.pib.PibImpl.Error e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (KeyChain.Error e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    System.out.println("Sending sync data");
+                    try {
+                        m_face.putData(data);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    return;
+                }
+
+                PendingInterestInfo entry = m_pendingEntries.get(interestName);
+
+                if (entry == null) {
+                    entry = new PendingInterestInfo();
+                    m_pendingEntries.put(interestName, entry);
+                }
+
+                entry.expiryEvent.schedule(new Runnable() {
+                                               public void run() {
+                                                   System.out.println("Deleting pending interest");
+                                                   m_pendingEntries.remove(interestName);
+                                               }
+                                           },
+                                           (long) interest.getInterestLifetimeMilliseconds(),
+                                           MILLISECONDS);
             }
+        };
+    }
 
-        	if (!state.getContent().isEmpty()) {
-                // send back data
-                Name syncDataName = interestName;
-                syncDataName.append(Component.fromNumber(m_seq));
-
-                Data data = new Data(syncDataName);
-                MetaInfo metaInfo = new MetaInfo();
-                metaInfo.setFreshnessPeriod(m_syncReplyFreshness);
-                data.setMetaInfo(metaInfo);
-                data.setContent(state.wireEncode());
-
-                try {
-					m_keyChain.sign(data);
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Error e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (net.named_data.jndn.security.pib.PibImpl.Error e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (net.named_data.jndn.security.KeyChain.Error e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                System.out.println("Sending sync data");
-                try {
-					m_face.putData(data);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-                return;
-        	}
-        	
-        	PendingInterestInfo entry = new PendingInterestInfo();
-
-            // To-do use alternative to putIfAbsent
-        	m_pendingEntries.putIfAbsent(interestName, entry);
-        	entry.expiryEvent.schedule(new Runnable() {
-        								   public void run() {
-        									   System.out.println("Deleting pending interesr");
-        									  m_pendingEntries.remove(interestName);
-        								   }
-        							   },
-        			                   (long) interest.getInterestLifetimeMilliseconds(),
-        							   MILLISECONDS);
-        }
-    };
-
-	public void
-	publishName(Name fileName, ArrayList<Name> friendList) {
+    public void
+	publishName(Name fileName, ArrayList<String> friendList) {
 		m_seq = m_seq + 1;
 
 		for (Name interestName: m_pendingEntries.keySet()) {
@@ -205,7 +215,7 @@ public class Producer {
 
             state.addContent(fileName);
 
-            for (Name friend : friendList) {
+            for (String friend : friendList) {
                 state.addContent(new Name("friend").append(friend));
             }
 

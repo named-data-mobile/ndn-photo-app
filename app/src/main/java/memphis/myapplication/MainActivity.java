@@ -421,6 +421,20 @@ public class MainActivity extends AppCompatActivity {
         registerRouteToAp();
 
         m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
+
+        FileManager manager = new FileManager(getApplicationContext());
+        for (String friend : manager.getFriendsList()) {
+            startConsumer(friend);
+        }
+    }
+
+    public void startConsumer(String friend) {
+        FileManager manager = new FileManager(getApplicationContext());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name friendsUserName = new Name(friend);
+        Consumer consumer = new Consumer(new Name(getString(R.string.app_name)), appAndUsername, friendsUserName, face, onSyncData);
+        m_consumers.add(consumer);
+        Log.d("Consumer", "Added consumer for friend for " + friend);
     }
 
     public void registerRouteToAp() {
@@ -545,16 +559,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     publishingThread.run();
-                /*ArrayList<String> recipients;
-                try {
-                    // do something with PSync with recipients
-                    recipients = resultData.getStringArrayListExtra("recipients");
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                }
-                m_producer.();
-                */
+                    ArrayList<String> recipients;
+                    try {
+                        recipients = resultData.getStringArrayListExtra("recipients");
+                        m_producer.publishName(new Name(path), recipients);
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -567,17 +579,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
-                FileManager manager = new FileManager(getApplicationContext());
-                Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
-                Name friendsUserName = new Name(resultData.getStringExtra("username"));
-                // To-do: If the app opens up after being closed, we need to recreate all the consumers!
-                Consumer consumer = new Consumer(new Name(getString(R.string.app_name)), appAndUsername, friendsUserName, face, onSyncData);
-                m_consumers.add(consumer);
-                Log.d("Consumer", "Added consumer");
-            }
-            else {
-                // Not sure why this is triggered upon returning from "Friends" page
-                runOnUiThread(makeToast("Something went wrong when trying to add a consumer for friend!"));
+                startConsumer(resultData.getStringExtra("username"));
             }
         }
         else {
@@ -588,7 +590,6 @@ public class MainActivity extends AppCompatActivity {
     private final static ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
         public void onReceivedSyncData(Name fileName) {
             Log.d("Consumer", "Will fetch file: " + fileName);
-            // To-do: Fetch the fileName
         }
     };
 
