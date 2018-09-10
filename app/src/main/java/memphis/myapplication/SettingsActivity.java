@@ -31,7 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
         manager = new FileManager(getApplicationContext());
         File file = manager.getProfilePhoto();
         if(file.length() == 0) {
-            Picasso.get().load(R.drawable.bandit).into(m_imageView);
+            Picasso.get().load(R.drawable.avatar).into(m_imageView);
         }
         else {
             Picasso.get().load(file).fit().centerCrop().into(m_imageView);

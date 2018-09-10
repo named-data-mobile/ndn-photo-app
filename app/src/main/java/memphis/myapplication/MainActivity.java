@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
         File file = manager.getProfilePhoto();
         if(file == null || file.length() == 0) {
-            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
+            Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
         }
         else {
             Picasso.get().load(file).fit().centerCrop().into(imageView);
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         GridView gridView = (GridView) findViewById(R.id.mainGrid);
         ImageAdapter imgAdapter = new ImageAdapter(this, actionBarHeight);
         // free icons were obtained from https://icons8.com/
-        Integer[] images = {R.drawable.camera_white, R.drawable.folder, R.drawable.add_friend, R.drawable.images_icon};
+        Integer[] images = {R.drawable.camera_blue, R.drawable.folder, R.drawable.add_friend, R.drawable.images_icon};
         String[] text = {"Camera", "Files", "Friends", "See Photos"};
         imgAdapter.setGridView(gridView);
         imgAdapter.setPhotoResources(images);
@@ -510,7 +510,6 @@ public class MainActivity extends AppCompatActivity {
                     final Uri uri = UriFileProvider.getUriForFile(this,
                             getApplicationContext().getPackageName() +
                                     ".UriFileProvider", photo);
-                    // final Uri uri = Uri.fromFile(photo);
 
                     Thread publishingThread = new Thread(new Runnable() {
                         @Override

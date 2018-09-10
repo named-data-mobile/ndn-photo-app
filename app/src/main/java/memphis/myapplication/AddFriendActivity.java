@@ -37,7 +37,7 @@ public class AddFriendActivity extends AppCompatActivity {
         ImageView imageView = (ImageView) findViewById(R.id.toolbar_friend_photo);
         File file = m_manager.getProfilePhoto();
         if(file == null || file.length() == 0) {
-            Picasso.get().load(R.drawable.bandit).fit().centerCrop().into(imageView);
+            Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
         }
         else {
             Picasso.get().load(file).fit().centerCrop().into(imageView);

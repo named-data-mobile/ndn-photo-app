@@ -1,7 +1,10 @@
 package memphis.myapplication.tasks;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -34,7 +37,8 @@ import static java.lang.Thread.sleep;
 // revisit params
 public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
 
-    private FilesActivity m_parentActivity;
+    private Activity m_parentActivity;
+    private Context m_currContext;
     private Face m_face;
     private Blob m_content;
     private ArrayList<Data> m_tempContent;
@@ -49,14 +53,23 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private String m_appPrefix;
     private int m_numRetries = 5;
 
-    public FetchingTask(FilesActivity activity) {
+    public FetchingTask(Activity activity) {
+        m_parentActivity = activity;
+        m_currContext = activity.getApplicationContext();
+        m_appPrefix = "/" + m_currContext.getResources().getString(R.string.app_name);
+        m_face = new Face();
+        Log.d("Face Check", "m_face: " + m_face.toString() + " globals: " + Globals.face);
+        m_manager = new FileManager(m_currContext);
+        m_tempContent = new ArrayList();
+    }
+    /*public FetchingTask(Activity activity) {
         m_parentActivity = activity;
         m_appPrefix = "/" + activity.getApplication().getString(R.string.app_name);
         m_face = new Face();
         Log.d("Face Check", "m_face: " + m_face.toString() + " globals: " + Globals.face);
         m_manager = new FileManager(activity.getApplicationContext());
         m_tempContent = new ArrayList();
-    }
+    }*/
 
     /*@Override
     protected void onPreExecute() {
@@ -168,7 +181,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         String s = interest.getName().getPrefix(2).toUri();
         s = s.substring(1);
         int index = s.indexOf("/");
-        if(s.substring(0, index).equals(m_parentActivity.getString(R.string.app_name))) {
+        if(s.substring(0, index).equals(m_appPrefix.substring(1))) {
             m_user = s.substring(index+1, s.length());
             // we have the user, check if we're friends. If so, retrieve their key from file.
             ArrayList<String> friendsList = m_manager.getFriendsList();
@@ -212,19 +225,31 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean wasReceived) {
         if (m_received) {
-            FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
-            boolean wasSaved = manager.saveContentToFile(m_content, m_baseInterest.getName().toUri());
+            // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
+            boolean wasSaved = m_manager.saveContentToFile(m_content, m_baseInterest.getName().toUri());
             if (wasSaved) {
                 m_resultMsg = "We got content.";
-                m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
+                m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
             } else {
                 m_resultMsg = "Failed to save retrieved content";
-                m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
+                m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
             }
         }
         else {
             Log.d("fetch_data onError", m_resultMsg);
-            m_parentActivity.runOnUiThread(m_parentActivity.makeToast(m_resultMsg));
+            m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
         }
+    }
+
+    /**
+     * Android is very particular about UI processes running on a separate thread. This function
+     * creates and returns a Runnable thread object that will display a Toast message.
+     */
+    public Runnable makeToast(final String s) {
+        return new Runnable() {
+            public void run() {
+                Toast.makeText(m_currContext, s, Toast.LENGTH_LONG).show();
+            }
+        };
     }
 }
