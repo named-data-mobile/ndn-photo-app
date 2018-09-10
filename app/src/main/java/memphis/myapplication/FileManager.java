@@ -368,12 +368,12 @@ public class FileManager {
         return false;
     }
 
-    // need to map files to one another; start off with full path where we prepend /NP-Chat/<username>
-    // or remove /NP-Chat/<username>, depending on which way we are going. Then, incorporate a hash.
+    // need to map files to one another; start off with full path where we prepend /npChat/<username>
+    // or remove /npChat/<username>, depending on which way we are going. Then, incorporate a hash.
 
     // ok; this shows us the full path now. That was easy. Now let's do some hashing for security purposes.
     public String findFile(String providedPath) {
-        // remove /NP-Chat/<username>, gives /path/to/file
+        // remove /npChat/<username>, gives /path/to/file
         String trimmed = providedPath;
         int index = 0;
         try {
@@ -403,13 +403,13 @@ public class FileManager {
     }
 
     /**
-     * prepends "/NP-Chat/<username>" to file path; temporarily static for testing purposes
+     * prepends "/npChat/<username>" to file path; temporarily static for testing purposes
      * @param path the provided absolute path of the file
-     * @return string of the form /NP-Chat/<username>/path/to/file
+     * @return string of the form /npChat/<username>/path/to/file
      */
     public String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
-        // /NP-Chat/<username>/
+        // /npChat/<username>/
         String username = this.getUsername();
         if (username != null) {
             // check that path already comes with "/" prepended
@@ -426,14 +426,14 @@ public class FileManager {
     }
 
     /**
-     * removes the prefix "/NP-Chat/<username>" so we can find the file
-     * @param fullname : "NP-Chat/<username>/path/to/file"
+     * removes the prefix "/npChat/<username>" so we can find the file
+     * @param fullname : "npChat/<username>/path/to/file"
      * @return String of file path
      */
     public static String removeAppPrefix(String fullname) {
         int fileIndex = 0;
         String temp = fullname.substring(fileIndex);
-        // name is of the form /NP-Chat/username/full-file-path; find third instance of "/"
+        // name is of the form /npChat/username/full-file-path; find third instance of "/"
         for(int i = 0; i < 3; i++) {
             fileIndex = temp.indexOf("/");
             temp = temp.substring(fileIndex + 1);
@@ -444,7 +444,7 @@ public class FileManager {
     private String parsePathForFriend(String path) {
         int fileIndex = 1;
         String temp = path.substring(fileIndex);
-        // path is of the form /NP-Chat/username/full-file-path; extract username
+        // path is of the form /npChat/username/full-file-path; extract username
         int firstIndex = temp.indexOf("/") + 1;
         temp = temp.substring(firstIndex);
         int lastIndex = temp.indexOf("/");

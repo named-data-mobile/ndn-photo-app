@@ -19,6 +19,7 @@ import android.os.StrictMode;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void setup_security() {
         FileManager manager = new FileManager(getApplicationContext());
-        // /NP-Chat/<username>
+        // /npChat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
 
         Context context = getApplicationContext();
@@ -370,7 +371,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
-     * @param name The provided name should be /NP-Chat/<username>
+     * @param name The provided name should be /npChat/<username>
      * @throws IOException
      * @throws PibImpl.Error
      */
@@ -506,7 +507,10 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     final String path = resultData.getStringExtra("photo");
                     final File photo = new File(path);
-                    final Uri uri = Uri.fromFile(photo);
+                    final Uri uri = UriFileProvider.getUriForFile(this,
+                            getApplicationContext().getPackageName() +
+                                    ".UriFileProvider", photo);
+                    // final Uri uri = Uri.fromFile(photo);
 
                     Thread publishingThread = new Thread(new Runnable() {
                         @Override
@@ -596,7 +600,11 @@ public class MainActivity extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         File pic = new File(manager.getPhotosDir(), tsPhoto);
         m_curr_photo_file = pic;
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
+        final Uri uri = UriFileProvider.getUriForFile(this,
+                getApplicationContext().getPackageName() +
+                        ".UriFileProvider", pic);
+        // intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(pic));
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         startActivityForResult(intent, CAMERA_REQUEST_CODE);
     }
 
@@ -626,7 +634,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * This is registered with our prefix. Any interest sent with prefix /NP-Chat/<username>
+     * This is registered with our prefix. Any interest sent with prefix /npChat/<username>
      * will be caught by this callback. We send it to the faceProxy to deal with it.
      */
     private final OnInterestCallback onDataInterest = new OnInterestCallback() {

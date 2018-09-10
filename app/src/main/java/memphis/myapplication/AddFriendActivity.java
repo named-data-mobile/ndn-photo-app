@@ -89,9 +89,7 @@ public class AddFriendActivity extends AppCompatActivity {
             if (result != null) {
                 // check resultCode to determine what type of code we're scanning, file or friend
 
-                if (result.getContents() == null) {
-                    Toast.makeText(this, "Nothing is here", Toast.LENGTH_LONG).show();
-                } else {
+                if (result.getContents() != null) {
                     String content = result.getContents();
                     Log.d("ScannedFriend", content);
                     // need to check this content to determine if we are scanning file or friend code

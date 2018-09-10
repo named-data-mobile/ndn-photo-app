@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">NP-Chat</string>
+    <string name="app_name">npChat</string>
     <string name="scan">Scan</string>
     <string name="action_settings">Settings</string>
     <string name="register">Register</string>

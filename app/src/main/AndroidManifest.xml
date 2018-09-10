@@ -17,6 +17,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
 
+        <provider
+            android:name=".UriFileProvider"
+            android:authorities="memphis.myapplication.UriFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+
         <service android:name=".services.NetworkService">
         </service>
 
