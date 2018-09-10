@@ -123,7 +123,6 @@ public class FaceProxy {
                 e.printStackTrace();
             }
         }
-
     }
 
     // need to put the newly published data segment in the cache

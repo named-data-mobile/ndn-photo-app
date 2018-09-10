@@ -98,13 +98,27 @@ public class AddFriendActivity extends AppCompatActivity {
                     int saveResult = manager.saveFriend(content);
                     if (saveResult == 0) {
                         Toast.makeText(this, "Friend was saved successfully.", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent();
+                        if (content.length() > 0) {
+                            int index = content.indexOf(" ");
+                            String username = content.substring(0, index);
+                            intent.putExtra("username", username);
+                            setResult(RESULT_OK, intent);
+                        }
+                        else {
+                            setResult(RESULT_CANCELED, intent);
+                        }
+                        finish();
                     }
                     else if (saveResult == 1) {
                         Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG).show();
-
+                        setResult(RESULT_CANCELED, data);
+                        finish();
                     }
                     else {
                         Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
+                        setResult(RESULT_CANCELED, data);
+                        finish();
                     }
                 }
             } else {

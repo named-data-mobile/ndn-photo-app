@@ -71,6 +71,10 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         m_tempContent = new ArrayList();
     }*/
 
+    public FetchingTask(Name fileName) {
+
+    }
+
     /*@Override
     protected void onPreExecute() {
 

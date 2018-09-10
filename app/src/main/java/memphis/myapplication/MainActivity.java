@@ -80,6 +80,9 @@ import java.util.Date;
 import java.util.List;
 import static java.lang.Thread.sleep;
 
+import memphis.myapplication.psync.Consumer;
+import memphis.myapplication.psync.Consumer.ReceiveSyncCallback;
+import memphis.myapplication.psync.Producer;
 import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
@@ -101,9 +104,13 @@ public class MainActivity extends AppCompatActivity {
 
     private final int CAMERA_REQUEST_CODE = 0;
     private final int SELECT_RECIPIENTS_CODE = 1;
+    private final int ADD_FRIEND_CODE = 2;
     private File m_curr_photo_file;
 
     private boolean netThreadShouldStop = true;
+
+    Producer m_producer;
+    ArrayList<Consumer> m_consumers = new ArrayList<Consumer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -412,6 +419,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         registerRouteToAp();
+
+        m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
     }
 
     public void registerRouteToAp() {
@@ -543,7 +552,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 catch(Exception e) {
                     e.printStackTrace();
-                }*/
+                }
+                m_producer.();
+                */
                 }
                 catch (Exception e) {
                     e.printStackTrace();
@@ -554,15 +565,37 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
             }
         }
+        else if (requestCode == ADD_FRIEND_CODE) {
+            if(resultCode == RESULT_OK) {
+                FileManager manager = new FileManager(getApplicationContext());
+                Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+                Name friendsUserName = new Name(resultData.getStringExtra("username"));
+                // To-do: If the app opens up after being closed, we need to recreate all the consumers!
+                Consumer consumer = new Consumer(new Name(getString(R.string.app_name)), appAndUsername, friendsUserName, face, onSyncData);
+                m_consumers.add(consumer);
+                Log.d("Consumer", "Added consumer");
+            }
+            else {
+                // Not sure why this is triggered upon returning from "Friends" page
+                runOnUiThread(makeToast("Something went wrong when trying to add a consumer for friend!"));
+            }
+        }
         else {
             Log.d("onActivityResult", "Unexpected activity requestcode caught");
         }
     }
 
+    private final static ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
+        public void onReceivedSyncData(Name fileName) {
+            Log.d("Consumer", "Will fetch file: " + fileName);
+            // To-do: Fetch the fileName
+        }
+    };
+
     // start activity for add friends
     public void startMakingFriends() {
         Intent intent = new Intent(this, AddFriendActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, ADD_FRIEND_CODE);
     }
 
     public void seeRcvdPhotos() {
