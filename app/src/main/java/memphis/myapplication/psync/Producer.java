@@ -62,32 +62,24 @@ public class Producer {
         m_keyChain = keyChain;
 
 		try {
-		    Log.d("psync", "registering prefix " + syncPrefix);
-			m_face.registerPrefix(syncPrefix, onInterest, onRegisterFailed);
-			m_face.setInterestFilter(new InterestFilter(new Name(syncPrefix).append("hello")), onHelloInterest);
-			m_face.setInterestFilter(new InterestFilter(new Name(syncPrefix).append("sync")), onSyncInterest);
+		    Log.d("psync", "registering prefixes " + syncPrefix);
+			m_face.registerPrefix(new Name(syncPrefix).append("hello"), onHelloInterest, onRegisterFailed);
+			m_face.registerPrefix(new Name(syncPrefix).append("sync"), onSyncInterest, onRegisterFailed);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	private final OnInterestCallback onInterest = new OnInterestCallback() {
-		public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
-				InterestFilter filter) {
-			System.out.print("Received interest: " + interest.toUri());
-		}
-	};
 
 	private final OnInterestCallback onHelloInterest = new OnInterestCallback() {
 		public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
 							   InterestFilter filterData) {
-			  System.out.println("Hello Interest Received, nonce: " + interest.toUri());
+			  System.out.println("Hello Interest Received: " + interest.getName().toUri());
 			  final Name interestName = interest.getName();
 
-			  Log.d("producer", interestName.get(interestName.size()-1).toEscapedString());
-              Log.d("producer", m_userPrefix.get(m_userPrefix.size()-1).toEscapedString());
+			  // Log.d("producer", interestName.get(interestName.size()-1).toEscapedString());
+              // Log.d("producer", m_userPrefix.get(m_userPrefix.size()-1).toEscapedString());
 			  if (!interestName.get(interestName.size()-1).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
-			      Log.d("producer", "Interest not for us");
+			      // Log.d("producer", "Hello Interest not for us");
 			      return;
               }
 
@@ -131,11 +123,13 @@ public class Producer {
         onSyncInterest = new OnInterestCallback() {
             public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                    InterestFilter filterData) {
-                System.out.println("Sync Interest Received " + interest.toUri());
+                System.out.println("Sync Interest Received " + interest.getName().toUri());
                 final Name interestName = interest.getName();
 
+                // Log.d("Producer", interestName.get(interestName.size() - 2).toEscapedString());
+                // Log.d("Producer", m_userPrefix.get(m_userPrefix.size()-1).toEscapedString());
                 if (!interestName.get(interestName.size() - 2).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
-                    Log.d("Producer", "Sync interest not for us!");
+                    // Log.d("Producer", "Sync interest not for us!");
                     return;
                 }
 

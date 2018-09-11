@@ -6,4 +6,4 @@ local.properties
 
 # ItelliJ
 *.iml
-*.idea/
+.idea

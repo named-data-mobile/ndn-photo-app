@@ -66,7 +66,7 @@ public class Consumer {
 
     public void sendHelloInterest() {
         Interest helloInterest = new Interest(m_helloInterestName);
-        helloInterest.setInterestLifetimeMilliseconds(4000);
+        helloInterest.setInterestLifetimeMilliseconds(60000);
         helloInterest.setMustBeFresh(true);
 
         System.out.println("Send hello interest " + helloInterest.toUri());
@@ -101,12 +101,12 @@ public class Consumer {
 
     private OnNetworkNack onHelloNack = new OnNetworkNack() {
 		public void onNetworkNack(Interest interest, NetworkNack networkNack) {
-			System.out.println("Nack Hello");
+            System.out.println("Nack for interest " + interest.getName().toUri());
             m_expiryEvent.schedule(new Runnable() {
                 public void run() {
                     sendHelloInterest();
                 }
-            }, (long) 1000,  MILLISECONDS);
+            }, (long) 60000,  MILLISECONDS);
 		}
     };
 
@@ -190,12 +190,12 @@ public class Consumer {
             
     private OnNetworkNack onSyncNack = new OnNetworkNack() {
 		public void onNetworkNack(Interest interest, NetworkNack networkNack) {
-			System.out.println("Nack Sync");
+			System.out.println("Nack for interest " + interest.getName().toUri());
             m_expiryEvent.schedule(new Runnable() {
                 public void run() {
                     sendSyncInterest();
                 }
-            }, (long) 1000,  MILLISECONDS);
+            }, (long) 60000,  MILLISECONDS);
 		}
     };
 }
