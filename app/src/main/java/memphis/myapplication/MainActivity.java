@@ -420,6 +420,7 @@ public class MainActivity extends AppCompatActivity {
 
         registerRouteToAp();
 
+        Log.d("MainActivity", "Creating producer");
         m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
 
         FileManager manager = new FileManager(getApplicationContext());
@@ -476,13 +477,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (ManagementException e) {
                 e.printStackTrace();
             }
-        }
-
-        Name multicastStrategy = new Name("/localhost/nfd/strategy/multicast");
-        try {
-            Nfdc.setStrategy(face, prefix, multicastStrategy);
-        } catch (ManagementException e) {
-            e.printStackTrace();
         }
     }
 
@@ -592,6 +586,7 @@ public class MainActivity extends AppCompatActivity {
     private final ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
         public void onReceivedSyncData(Name fileName) {
             Log.d("Consumer", "Will fetch file: " + fileName);
+            runOnUiThread(makeToast("Fetching: " + fileName));
             fetch_data(new Interest(fileName));
         }
     };

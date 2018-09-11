@@ -109,6 +109,7 @@ public class Producer {
 			  }
 
 			  try {
+			      Log.d("Producer", "Sent hello data");
 				  m_face.putData(data);
 			  } catch (IOException e) {
 				  // TODO Auto-generated catch block

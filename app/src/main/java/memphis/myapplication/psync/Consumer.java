@@ -119,7 +119,7 @@ public class Consumer {
         syncInterest.setInterestLifetimeMilliseconds(60000);
         syncInterest.setMustBeFresh(true);
 
-        System.out.println("Send sync interest " + syncInterest);
+        System.out.println("Send sync interest " + syncInterestName.toUri());
 
         try {
         	if (m_outstandingInterestId != 0) {
