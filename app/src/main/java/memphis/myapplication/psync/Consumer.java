@@ -1,4 +1,6 @@
 package memphis.myapplication.psync;
+import android.util.Log;
+
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import memphis.myapplication.R;
 import memphis.myapplication.psync.State;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -109,11 +112,11 @@ public class Consumer {
 
     private void sendSyncInterest() {
     	// Sync interest format for partial: /<sync-prefix>/sync/<user-name>
-    	Name syncInterestName = m_syncInterestName;
+    	Name syncInterestName = new Name(m_syncInterestName);
         syncInterestName.append(Name.Component.fromNumber(m_seq));
 
         Interest syncInterest = new Interest(syncInterestName);
-        syncInterest.setInterestLifetimeMilliseconds(4000);
+        syncInterest.setInterestLifetimeMilliseconds(60000);
         syncInterest.setMustBeFresh(true);
 
         System.out.println("Send sync interest " + syncInterest);
@@ -135,6 +138,7 @@ public class Consumer {
     
     private OnData onSyncDataCallback = new OnData() {
         public void onData(Interest interest, Data data) {
+            Log.d("Consumer", "Received sync data " + data.getName().toUri());
         	Name syncDataName = data.getName();
         	m_seq = syncDataName.get(syncDataName.size()-1).toNumber();
 
@@ -146,21 +150,31 @@ public class Consumer {
 				e.printStackTrace();
 			}
 
-			// Format = filename, friend1, friend2, ... friend n, filename2, ....
-            // filename2 would be there if we missed some previous update from the producer
-
-        	Name lastFileName = new Name("");
         	for (Name content : state.getContent()) {
-        	    // Check if first component is friend
-        	    Name prefix = content.getPrefix(0);
-        	    if (prefix.equals("friend")) {
-                    Name intendedRecipient = content.getSubName(1, content.size()-1);
-                    if (intendedRecipient.equals(m_userName) && !lastFileName.equals("")) {
-                        m_onReceivedSyncData.onReceivedSyncData(lastFileName);
+                // <fileName>/friends/<username>/<username>/...
+        	    Log.d("Consumer ", content.toUri());
+
+        	    int friendPos = -1;
+        	    for (int i = 0; i < content.size(); ++i) {
+                    if (content.get(i).equals(new Name.Component("friends"))) {
+                        friendPos = i;
+                        break;
                     }
                 }
-                else {
-        	        lastFileName = content;
+
+                Name fileName = content.getSubName(0, friendPos);
+        	    Name userNames = content.getSubName(friendPos + 1);
+
+                boolean shouldFetch = false;
+        	    for (int i = 0; i < userNames.size(); ++i) {
+        	        if (userNames.get(i).equals(new Name.Component(m_userName.get(m_userName.size()-1)))) {
+                        shouldFetch = true;
+                        break;
+                    }
+                }
+
+                if (shouldFetch) {
+                    m_onReceivedSyncData.onReceivedSyncData(fileName);
                 }
         	}
         	sendSyncInterest();

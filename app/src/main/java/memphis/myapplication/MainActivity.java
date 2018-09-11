@@ -562,7 +562,9 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList<String> recipients;
                     try {
                         recipients = resultData.getStringArrayListExtra("recipients");
-                        m_producer.publishName(new Name(path), recipients);
+                        final FileManager manager = new FileManager(getApplicationContext());
+                        final String prefix = manager.addAppPrefix(path);
+                        m_producer.publishName(new Name(prefix), recipients);
                     }
                     catch(Exception e) {
                         e.printStackTrace();
@@ -587,11 +589,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private final static ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
+    private final ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
         public void onReceivedSyncData(Name fileName) {
             Log.d("Consumer", "Will fetch file: " + fileName);
+            fetch_data(new Interest(fileName));
         }
     };
+
+    private void fetch_data(final Interest interest) {
+        // /tasks/FetchingTask
+        new FetchingTask(this).execute(interest);
+    }
 
     // start activity for add friends
     public void startMakingFriends() {

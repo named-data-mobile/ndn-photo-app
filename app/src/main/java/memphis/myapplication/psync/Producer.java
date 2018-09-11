@@ -50,7 +50,7 @@ public class Producer {
     private Long m_seq = new Long(0);
 
     // Need to cleanup periodically
-    private Map<Long, ArrayList<Name>> m_seqToFileName = new HashMap<Long, ArrayList<Name>>();
+    private Map<Long, Name> m_seqToFileName = new HashMap<Long, Name>();
 
 	public Producer(Face face, Name syncPrefix, Name userPrefix,
                     double syncReplyFreshness, double helloReplyFreshness, KeyChain keyChain)
@@ -134,19 +134,23 @@ public class Producer {
                 System.out.println("Sync Interest Received " + interest.toUri());
                 final Name interestName = interest.getName();
 
-                if (!interestName.get(interestName.size() - 1).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
+                if (!interestName.get(interestName.size() - 2).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
+                    Log.d("Producer", "Sync interest not for us!");
                     return;
                 }
 
                 Long seq = interestName.get(interestName.size() - 1).toNumber();
+                Log.d("producer", "Seq rcvd in interest: " + seq);
+                Log.d("producer", "Our seq " + m_seq);
 
                 State state = new State();
                 if (seq < m_seq) {
                     while (seq < m_seq) {
-                        ArrayList<Name> filesAndFriends = m_seqToFileName.get(seq);
-                        for (Name content : filesAndFriends) {
-                            state.addContent(content);
+                        Name friendsAndFile = m_seqToFileName.get(seq);
+                        if (friendsAndFile == null) {
+                            continue;
                         }
+                        state.addContent(friendsAndFile);
                         seq++;
                     }
                 }
@@ -187,6 +191,7 @@ public class Producer {
                     return;
                 }
 
+                Log.d("Producer", "Save interest!");
                 PendingInterestInfo entry = m_pendingEntries.get(interestName);
 
                 if (entry == null) {
@@ -207,20 +212,23 @@ public class Producer {
     }
 
     public void
-	publishName(Name fileName, ArrayList<String> friendList) {
+	publishName(final Name fileName, ArrayList<String> friendList) {
 		m_seq = m_seq + 1;
 
+		Log.d("Producer", "Going over pending interests");
 		for (Name interestName: m_pendingEntries.keySet()) {
-            State state = new State();
 
-            state.addContent(fileName);
-
+            Name encodedName = new Name(fileName);
+            encodedName.append(new Name("friends"));
             for (String friend : friendList) {
-                state.addContent(new Name("friend").append(friend));
+                encodedName.append(new Name(friend));
             }
 
+            State state = new State();
+            state.addContent(encodedName);
+
             // Need to cleanup this map
-            m_seqToFileName.put(m_seq, state.getContent());
+            m_seqToFileName.put(m_seq, encodedName);
 
             Name syncDataName = interestName;
             syncDataName.append(Component.fromNumber(m_seq));
@@ -247,7 +255,7 @@ public class Producer {
               e.printStackTrace();
             }
 
-            System.out.println("Sending sync data");
+            System.out.println("Sending sync data " + data);
 
             try {
               m_face.putData(data);
