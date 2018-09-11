@@ -93,7 +93,7 @@ public class AddFriendActivity extends AppCompatActivity {
                     String content = result.getContents();
                     Log.d("ScannedFriend", content);
                     // need to check this content to determine if we are scanning file or friend code
-                    Toast.makeText(this, content, Toast.LENGTH_LONG).show();
+                    // Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                     FileManager manager = new FileManager(getApplicationContext());
                     int saveResult = manager.saveFriend(content);
                     if (saveResult == 0) {

@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.DhcpInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -69,8 +70,12 @@ import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -490,6 +495,17 @@ public class MainActivity extends AppCompatActivity {
             // check if we even took a picture
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
                 Log.d("onActivityResult", "We have an actual file");
+
+                FileOutputStream out = null;;
+                try {
+                    Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
+                    out = new FileOutputStream(m_curr_photo_file);
+                    Log.d("bitmapOnActivity", "bitmap is null?: " + (bitmap == null));
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle(R.string.share_photo).setCancelable(false);
