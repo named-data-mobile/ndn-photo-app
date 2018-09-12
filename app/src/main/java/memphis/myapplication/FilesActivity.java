@@ -14,8 +14,10 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -62,6 +64,7 @@ public class FilesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_files);
         m_manager = new FileManager(this);
         setupToolbar();
+        setButtonWidth();
     }
 
     private void setupToolbar() {
@@ -75,6 +78,19 @@ public class FilesActivity extends AppCompatActivity {
             Picasso.get().load(file).fit().centerCrop().into(imageView);
         }
         setSupportActionBar(toolbar);
+    }
+
+    private void setButtonWidth() {
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        int width = metrics.widthPixels/3;
+        Button btn1 = findViewById(R.id.fileSelectButton);
+        btn1.setWidth(width);
+        Button btn2 = findViewById(R.id.scanFileQR);
+        btn2.setWidth(width);
+        Button btn3 = findViewById(R.id.QRButton);
+        btn3.setWidth(width);
+        Button btn4 = findViewById(R.id.viewRcvdButton);
+        btn4.setWidth(width);
     }
 
     public FileManager getFileManager() {

@@ -4,6 +4,7 @@
     <color name="jetBlack">#000000</color>
     <color name="white">#ffffff</color>
     <color name="colorAccent">#00d2d2</color>
+    <color name="colorAccentBright">#00ffff</color>
     <color name="colorAccentDark">#303F9F</color>
     <color name="colorPrimaryDark">#260441</color>
 

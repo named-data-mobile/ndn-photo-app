@@ -5,8 +5,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -30,6 +32,7 @@ public class AddFriendActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_friend);
         m_manager = new FileManager(this);
         setupToolbar();
+        setButtonWidth();
     }
 
     private void setupToolbar() {
@@ -43,6 +46,17 @@ public class AddFriendActivity extends AppCompatActivity {
             Picasso.get().load(file).fit().centerCrop().into(imageView);
         }
         setSupportActionBar(toolbar);
+    }
+
+    private void setButtonWidth() {
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        int width = metrics.widthPixels/3;
+        Button btn1 = findViewById(R.id.showYourCode);
+        btn1.setWidth(width);
+        Button btn2 = findViewById(R.id.scanFriendButton);
+        btn2.setWidth(width);
+        Button btn3 = findViewById(R.id.viewFriendsButton);
+        btn3.setWidth(width);
     }
 
     // To do: add new Intent for the remote friend button; this new activity should allow the user
