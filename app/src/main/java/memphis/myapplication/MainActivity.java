@@ -42,6 +42,7 @@ import com.google.zxing.integration.android.IntentResult;
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
 import com.intel.jndn.management.types.FaceStatus;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
     private final int CAMERA_REQUEST_CODE = 0;
     private final int SELECT_RECIPIENTS_CODE = 1;
     private final int ADD_FRIEND_CODE = 2;
+    private final int SETTINGS_CODE = 3;
     private File m_curr_photo_file;
 
     private boolean netThreadShouldStop = true;
@@ -156,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupToolbar() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        toolbar.setTitle("");
         FileManager manager = new FileManager(getApplicationContext());
         ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
         File file = manager.getProfilePhoto();
@@ -224,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, SETTINGS_CODE);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -592,6 +595,20 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
                 startConsumer(resultData.getStringExtra("username"));
+            }
+        }
+        else if (requestCode == SETTINGS_CODE) {
+            Log.d("onActivityResult", "SETTINGS_CODE hit");
+            FileManager manager = new FileManager(getApplicationContext());
+            ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
+            File file = manager.getProfilePhoto();
+            if(file == null || file.length() == 0) {
+                Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
+            }
+            else {
+                // needed the MemoryPolicy.NO_CACHE because it was using the cached (last) profile photo
+                // and was not showing the new one when we changed it in SettingsActivity
+                Picasso.get().load(file).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(imageView);
             }
         }
         else {

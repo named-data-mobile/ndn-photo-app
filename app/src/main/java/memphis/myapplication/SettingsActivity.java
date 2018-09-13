@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -34,7 +35,7 @@ public class SettingsActivity extends AppCompatActivity {
             Picasso.get().load(R.drawable.avatar).into(m_imageView);
         }
         else {
-            Picasso.get().load(file).fit().centerCrop().into(m_imageView);
+            Picasso.get().load(file).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
         }
 
     }
@@ -60,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Log.d("profilePhoto", "Problem making bitmap from chosen photo");
                 }
-                Picasso.get().load(photoUri).fit().centerCrop().into(m_imageView);
+                Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
             }
         }
     }

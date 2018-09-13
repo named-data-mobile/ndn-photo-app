@@ -36,7 +36,8 @@ public class AddFriendActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.friend_toolbar);
+        toolbar.setTitle("");
         ImageView imageView = (ImageView) findViewById(R.id.toolbar_friend_photo);
         File file = m_manager.getProfilePhoto();
         if(file == null || file.length() == 0) {
