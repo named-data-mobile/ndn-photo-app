@@ -10,8 +10,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -25,16 +27,26 @@ import java.io.InputStream;
 public class LoginActivity extends AppCompatActivity {
 
     final private int MISSING_ELEMENT = 1;
-    // final private int NOT_IN_DATABASE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        setBackgroundImage();
+        setButtonWidth();
+        // setBackgroundImage();
     }
 
-    private void setBackgroundImage() {
+    private void setButtonWidth() {
+        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        int width = metrics.widthPixels/3;
+        Button btn1 = findViewById(R.id.login_button);
+        btn1.setWidth(width);
+    }
+
+    // The image is rather large, so it sometimes takes a while for it to appear since Picasso must
+    // resize it first. I'm leaving this here for now in case we do want to put a photo in the
+    // background. If not, just delete this function.
+    /*private void setBackgroundImage() {
         try {
             ImageView backImg = findViewById(R.id.backImg);
             Picasso.get().load(R.drawable.hotel).rotate(90f).fit().centerCrop().into(backImg);
@@ -42,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         catch(Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     // we are heading towards a decentralized network (no database), so this is where the user will
     // ask for the user manifest (to be added) to see if their username is unique
@@ -57,11 +69,6 @@ public class LoginActivity extends AppCompatActivity {
         }
         return false;
     }
-
-    // what needs to happen for login:
-    //// we need to query a DB for the username and password
-    ////// if true: redirect to mainpage
-    ////// if false: print message stating username and/or password is incorrect
 
     public void login(View view) {
         EditText name = (EditText) findViewById(R.id.username_text);
@@ -83,9 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
         }
-        /*else if (attempt == NOT_IN_DATABASE) {
-            Toast.makeText(this, "username and/or password incorrect", Toast.LENGTH_LONG).show();
-        }*/
         else {
             Toast.makeText(this, "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
         }
