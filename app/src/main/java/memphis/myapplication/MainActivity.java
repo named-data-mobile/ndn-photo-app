@@ -568,7 +568,7 @@ public class MainActivity extends AppCompatActivity {
                             Common.publishData(blob, new Name(prefix));
                             Bitmap bitmap = QRExchange.makeQRCode(prefix);
                             manager.saveFileQR(bitmap, prefix);
-                            runOnUiThread(makeToast("Photo sent successfully"));
+                            runOnUiThread(makeToast("Sending photo"));
                         }
                     });
                     publishingThread.run();
