@@ -123,17 +123,14 @@ public class AddFriendActivity extends AppCompatActivity {
                         else {
                             setResult(RESULT_CANCELED, intent);
                         }
-                        finish();
                     }
                     else if (saveResult == 1) {
                         Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG).show();
                         setResult(RESULT_CANCELED, data);
-                        finish();
                     }
                     else {
                         Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
                         setResult(RESULT_CANCELED, data);
-                        finish();
                     }
                 }
             } else {
