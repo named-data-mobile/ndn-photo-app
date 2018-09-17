@@ -11,9 +11,9 @@
     <application
         android:name=".Globals"
         android:allowBackup="true"
-        android:icon="@drawable/logo"
+        android:icon="@mipmap/npchat_logo_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/logo"
+        android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
 
