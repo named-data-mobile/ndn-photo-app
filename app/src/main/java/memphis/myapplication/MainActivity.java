@@ -2,62 +2,43 @@ package memphis.myapplication;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.DhcpInfo;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
 import com.intel.jndn.management.types.FaceStatus;
+import com.intel.jndn.management.types.RibEntry;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
-import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
-import net.named_data.jndn.ContentType;
-import net.named_data.jndn.Data;
+
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
-import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
-import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -71,15 +52,12 @@ import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -122,10 +100,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // setContentView(R.layout.activity_main);
-        setContentView(R.layout.boxes);
+        setContentView(R.layout.activity_main);
         setupToolbar();
-        setupGrid();
+        System.out.println("Testing startup");
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -157,59 +134,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_toolbar);
-        toolbar.setTitle("");
-        FileManager manager = new FileManager(getApplicationContext());
-        ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
-        File file = manager.getProfilePhoto();
-        if(file == null || file.length() == 0) {
-            Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
-        }
-        else {
-            Picasso.get().load(file).fit().centerCrop().into(imageView);
-        }
+        ToolbarHelper toolbarHelper = new ToolbarHelper(this, getString(R.string.app_name));
+        Toolbar toolbar = toolbarHelper.setupToolbar();
         setSupportActionBar(toolbar);
-    }
-
-    private void setupGrid() {
-        TypedValue tv = new TypedValue();
-        this.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true);
-        int actionBarHeight = getResources().getDimensionPixelSize(tv.resourceId);
-
-        GridView gridView = (GridView) findViewById(R.id.mainGrid);
-        ImageAdapter imgAdapter = new ImageAdapter(this, actionBarHeight);
-        // free icons were obtained from https://icons8.com/
-        Integer[] images = {R.drawable.camera_blue, R.drawable.folder, R.drawable.add_friend, R.drawable.images_icon};
-        String[] text = {"Camera", "Files", "Friends", "See Photos"};
-        imgAdapter.setGridView(gridView);
-        imgAdapter.setPhotoResources(images);
-        imgAdapter.setTextValues(text);
-        gridView.setAdapter(imgAdapter);
-
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
-            public void onItemClick(AdapterView<?> parent,
-                                    View v, int position, long id)
-            {
-                switch (position) {
-                    case 0:
-                        startUpCamera();
-                        break;
-                    case 1:
-                        startFiles();
-                        break;
-                    case 2:
-                        startMakingFriends();
-                        break;
-                    case 3:
-                        seeRcvdPhotos();
-                        break;
-                    default:
-                        Log.d("onGridImage", "selected image does not match a position in switch statment.");
-                        break;
-                }
-            }
-        });
     }
 
     @Override
@@ -237,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
      * This function sets up identity storage, keys, and the face our app will use.
      */
     public void setup_security() {
+        Log.d("setup_security", "Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
@@ -448,45 +376,45 @@ public class MainActivity extends AppCompatActivity {
 
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));
-
-        DhcpInfo d;
-        WifiManager wifi;
-        wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        d = wifi.getDhcpInfo();
-        int gatewayInt = d.gateway;
-        String gatewayIP = (gatewayInt & 0xFF) + "." + ((gatewayInt >> 8 ) & 0xFF) + "." +
-                ((gatewayInt >> 16 ) & 0xFF) + "." + ((gatewayInt >> 24 ) & 0xFF );
-
-        String faceUri = "udp4://" + gatewayIP + ":6363";
-        try {
-            // Cannot get face-id here, because there is an exception
-            // So query a list of faces and then get the face-id there (see below)
-            Nfdc.createFace(face, faceUri);
-        } catch (ManagementException e) {
-            // e.printStackTrace();
-        }
-
         int myFace = 0;
+
         try {
             final List<FaceStatus> faceList = Nfdc.getFaceList(face);
-            for (FaceStatus f : faceList) {
-                Log.d("Nfdc", f.getRemoteUri() + " " + f.getFaceId());
-                if (f.getRemoteUri().equals(faceUri)) {
-                    myFace = f.getFaceId();
+            final List<RibEntry> routeInfo = Nfdc.getRouteList(face);
+            boolean wifiDirect = false;
+            for (RibEntry r : routeInfo) {
+                String name = r.getName().toString();
+                if (name.contains("wifidirect")) {
+                    Log.d("registerRouteToAp", "Connected via WifiDirect");
+                    wifiDirect = true;
+                    break;
                 }
             }
-        } catch (ManagementException e) {
+
+            if (!wifiDirect) {
+                for (FaceStatus f : faceList) {
+                    if (f.getRemoteUri().contains("udp4://224")) {
+                        Log.d("registerRouteToAp", "Using multicast face: " + f.getRemoteUri());
+                        System.out.println("Testing this");
+                        myFace = f.getFaceId();
+
+                    }
+                }
+            }
+
+            if (myFace != 0) {
+                try {
+                    Nfdc.register(face, myFace, prefix, 0);
+                } catch (ManagementException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
-        if (myFace != 0) {
-            try {
-                Nfdc.register(face, myFace, prefix, 0);
-            } catch (ManagementException e) {
-                e.printStackTrace();
-            }
-        }
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode,
@@ -630,12 +558,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // start activity for add friends
-    public void startMakingFriends() {
+    public void startMakingFriends(View view) {
         Intent intent = new Intent(this, AddFriendActivity.class);
         startActivityForResult(intent, ADD_FRIEND_CODE);
     }
 
-    public void seeRcvdPhotos() {
+    public void seeRcvdPhotos(View view) {
         Intent intent = new Intent(this, NewContentActivity.class);
         startActivity(intent);
     }
@@ -645,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
      * access the camera if we do not have it. If we are granted permission or have permission, we
      * will call startCamera()
      */
-    public void startUpCamera() {
+    public void startUpCamera(View view) {
         int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         if(permission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
@@ -697,7 +625,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void startFiles() {
+    public void startFiles(View view) {
         Intent intent = new Intent(this, FilesActivity.class);
         startActivity(intent);
     }

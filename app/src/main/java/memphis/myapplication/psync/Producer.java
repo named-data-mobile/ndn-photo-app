@@ -79,7 +79,7 @@ public class Producer {
 			  // Log.d("producer", interestName.get(interestName.size()-1).toEscapedString());
               // Log.d("producer", m_userPrefix.get(m_userPrefix.size()-1).toEscapedString());
 			  if (!interestName.get(interestName.size()-1).equals(m_userPrefix.get(m_userPrefix.size()-1))) {
-			      // Log.d("producer", "Hello Interest not for us");
+			      Log.d("producer", "Hello Interest " +  interest.getName().toUri() + " not for us");
 			      return;
               }
 
@@ -176,7 +176,7 @@ public class Producer {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    System.out.println("Sending sync data");
+                    Log.d("Producer","Sending sync data");
                     try {
                         m_face.putData(data);
                     } catch (IOException e) {
@@ -250,7 +250,7 @@ public class Producer {
               e.printStackTrace();
             }
 
-            System.out.println("Sending sync data " + data);
+            Log.d("Producer", "Sending sync data " + data);
 
             try {
               m_face.putData(data);
@@ -264,7 +264,7 @@ public class Producer {
 
     protected final OnRegisterFailed onRegisterFailed = new OnRegisterFailed() {
         public void onRegisterFailed(Name arg0) {
-        System.out.println("Register failed for: " + arg0);
+        Log.e("Producer", "Register failed for: " + arg0);
         }
     };
 }

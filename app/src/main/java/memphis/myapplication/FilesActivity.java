@@ -3,7 +3,6 @@ package memphis.myapplication;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -18,12 +17,11 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.squareup.picasso.Picasso;
+
 
 import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
@@ -57,27 +55,22 @@ public class FilesActivity extends AppCompatActivity {
     private final int VIEW_FILE = 3;
 
     private FileManager m_manager;
+    private ToolbarHelper toolbarHelper;
+    private Toolbar toolbar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_files);
-        m_manager = new FileManager(this);
+        m_manager = new FileManager(getApplicationContext());
+
         setupToolbar();
         setButtonWidth();
     }
 
     private void setupToolbar() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.files_toolbar);
-        toolbar.setTitle("");
-        ImageView imageView = (ImageView) findViewById(R.id.toolbar_file_photo);
-        File file = m_manager.getProfilePhoto();
-        if(file == null || file.length() == 0) {
-            Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
-        }
-        else {
-            Picasso.get().load(file).fit().centerCrop().into(imageView);
-        }
+        toolbarHelper = new ToolbarHelper(this, getString(R.string.files));
+        toolbar = toolbarHelper.setupToolbar();
         setSupportActionBar(toolbar);
     }
 

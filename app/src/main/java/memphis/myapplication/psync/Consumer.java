@@ -43,7 +43,7 @@ public class Consumer {
                     Face face,
                     ReceiveSyncCallback onReceivedSyncData)
     {
-    	m_syncPrefix = syncPrefix;
+        m_syncPrefix = syncPrefix;
         m_userName = userName;
         m_friendsUserName = friendsUserName;
 
@@ -73,9 +73,9 @@ public class Consumer {
 
         try {
             m_face.expressInterest(helloInterest,
-                                   onHelloDataCallback,
-                                   onHelloTimeout,
-                                   onHelloNack);
+                    onHelloDataCallback,
+                    onHelloTimeout,
+                    onHelloNack);
         }
         catch(IOException e) {
             e.printStackTrace();
@@ -87,6 +87,7 @@ public class Consumer {
             Name helloDataName = data.getName();
 
             m_seq =  helloDataName.get(helloDataName.size()-1).toNumber();
+            System.out.println("Hello data callback");
 
             sendSyncInterest();
         }
@@ -94,25 +95,25 @@ public class Consumer {
 
     private OnTimeout onHelloTimeout = new OnTimeout() {
         public void onTimeout(Interest interest) {
-            System.out.println("Timeout for interest " + interest.getName().toString());
+            System.out.println("Timeout for hello interest " + interest.getName().toString());
             sendHelloInterest();
         }
     };
 
     private OnNetworkNack onHelloNack = new OnNetworkNack() {
-		public void onNetworkNack(Interest interest, NetworkNack networkNack) {
-            System.out.println("Nack for interest " + interest.getName().toUri());
+        public void onNetworkNack(Interest interest, NetworkNack networkNack) {
+            System.out.println("Nack for hello interest " + interest.getName().toUri());
             m_expiryEvent.schedule(new Runnable() {
                 public void run() {
                     sendHelloInterest();
                 }
-            }, (long) 60000,  MILLISECONDS);
-		}
+            }, (long) 1000,  MILLISECONDS);
+        }
     };
 
     private void sendSyncInterest() {
-    	// Sync interest format for partial: /<sync-prefix>/sync/<user-name>
-    	Name syncInterestName = new Name(m_syncInterestName);
+        // Sync interest format for partial: /<sync-prefix>/sync/<user-name>
+        Name syncInterestName = new Name(m_syncInterestName);
         syncInterestName.append(Name.Component.fromNumber(m_seq));
 
         Interest syncInterest = new Interest(syncInterestName);
@@ -122,40 +123,40 @@ public class Consumer {
         System.out.println("Send sync interest " + syncInterestName.toUri());
 
         try {
-        	if (m_outstandingInterestId != 0) {
-        		m_face.removePendingInterest(m_outstandingInterestId);
-        	}
+            if (m_outstandingInterestId != 0) {
+                m_face.removePendingInterest(m_outstandingInterestId);
+            }
 
-        	m_outstandingInterestId = m_face.expressInterest(syncInterest,
-				                                             onSyncDataCallback,
-				                                             onSyncTimeout,
-				                                             onSyncNack);
+            m_outstandingInterestId = m_face.expressInterest(syncInterest,
+                    onSyncDataCallback,
+                    onSyncTimeout,
+                    onSyncNack);
         }
         catch (IOException e) {
             e.printStackTrace();
         }
     }
-    
+
     private OnData onSyncDataCallback = new OnData() {
         public void onData(Interest interest, Data data) {
             Log.d("Consumer", "Received sync data " + data.getName().toUri());
-        	Name syncDataName = data.getName();
-        	m_seq = syncDataName.get(syncDataName.size()-1).toNumber();
+            Name syncDataName = data.getName();
+            m_seq = syncDataName.get(syncDataName.size()-1).toNumber();
 
-        	State state = new State();
-        	try {
-				state.wireDecode(data.getContent().buf());
-			} catch (EncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+            State state = new State();
+            try {
+                state.wireDecode(data.getContent().buf());
+            } catch (EncodingException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
 
-        	for (Name content : state.getContent()) {
+            for (Name content : state.getContent()) {
                 // <fileName>/friends/<username>/<username>/...
-        	    Log.d("Consumer ", content.toUri());
+                Log.d("Consumer ", content.toUri());
 
-        	    int friendPos = -1;
-        	    for (int i = 0; i < content.size(); ++i) {
+                int friendPos = -1;
+                for (int i = 0; i < content.size(); ++i) {
                     if (content.get(i).equals(new Name.Component("friends"))) {
                         friendPos = i;
                         break;
@@ -163,11 +164,11 @@ public class Consumer {
                 }
 
                 Name fileName = content.getSubName(0, friendPos);
-        	    Name userNames = content.getSubName(friendPos + 1);
+                Name userNames = content.getSubName(friendPos + 1);
 
                 boolean shouldFetch = false;
-        	    for (int i = 0; i < userNames.size(); ++i) {
-        	        if (userNames.get(i).equals(new Name.Component(m_userName.get(m_userName.size()-1)))) {
+                for (int i = 0; i < userNames.size(); ++i) {
+                    if (userNames.get(i).equals(new Name.Component(m_userName.get(m_userName.size()-1)))) {
                         shouldFetch = true;
                         break;
                     }
@@ -176,26 +177,26 @@ public class Consumer {
                 if (shouldFetch) {
                     m_onReceivedSyncData.onReceivedSyncData(fileName);
                 }
-        	}
-        	sendSyncInterest();
+            }
+            sendSyncInterest();
         }
     };
 
     private OnTimeout onSyncTimeout = new OnTimeout() {
         public void onTimeout(Interest interest) {
-            System.out.println("Timeout for interest " + interest.getName().toString());
+            System.out.println("Timeout for sync interest " + interest.getName().toString());
             sendSyncInterest();
         }
     };
-            
+
     private OnNetworkNack onSyncNack = new OnNetworkNack() {
-		public void onNetworkNack(Interest interest, NetworkNack networkNack) {
-			System.out.println("Nack for interest " + interest.getName().toUri());
+        public void onNetworkNack(Interest interest, NetworkNack networkNack) {
+            System.out.println("Nack for sync interest " + interest.getName().toUri());
             m_expiryEvent.schedule(new Runnable() {
                 public void run() {
                     sendSyncInterest();
                 }
             }, (long) 60000,  MILLISECONDS);
-		}
+        }
     };
 }

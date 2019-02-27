@@ -6,7 +6,7 @@
     <!-- insert a drawable here so we can have white dots -->
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="101"
         android:title="@string/action_settings"
         app:showAsAction="collapseActionView" />
 </menu>

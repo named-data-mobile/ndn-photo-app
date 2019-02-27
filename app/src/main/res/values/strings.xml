@@ -10,5 +10,11 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="share_photo">Share Photo?</string>
+    <string name="send_photo">Send Photo</string>
+    <string name="camera">Camera</string>
+    <string name="received_images">See Photos</string>
+    <string name="friends">Friends</string>
+    <string name="files">Files</string>
+    <string name="friends_title">Friends</string>
 
 </resources>

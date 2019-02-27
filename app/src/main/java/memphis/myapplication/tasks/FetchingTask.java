@@ -93,6 +93,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private void fetch(Interest interest) {
         m_shouldReturn = false;
         m_received = false;
+        System.out.println("Interest lifetime in fetch: " + interest.getInterestLifetimeMilliseconds());
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(m_baseInterest);
@@ -111,6 +112,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                                         DigestAlgorithm.SHA256);
                         if(isVerified) {
                             m_tempContent.add(data);
+                            Log.d("SegmentFetcher", "Adding to tempContent " + m_tempContent.size());
                         }
                         return isVerified;
                         //return VerificationHelpers.verifyDataSignature(data, m_pubKey, DigestAlgorithm.SHA256);
@@ -125,6 +127,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                         if(m_numRetries < 5) {
                             // This is from the SegmentFetcher; most everything in the class is private
                             // including its constructors; this is how it keeps track of content
+                            Log.d("onComplete", "Calling onComplete");
                             int totalSize = 0;
                             for (int i = 0; i < m_tempContent.size(); ++i)
                                 totalSize += ((Blob)m_tempContent.get(i).getContent()).size();
@@ -147,6 +150,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                         // if there is a timeout, could we just retrigger fetchingtask starting
                         // with the last segment number?
                         if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
+                            Log.d("Segment fetcher", "timed out");
                             // get the name we timed out with from message
                             int index = message.lastIndexOf(m_appPrefix);
                             if(index != -1) {
@@ -233,6 +237,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
             boolean wasSaved = m_manager.saveContentToFile(m_content, m_baseInterest.getName().toUri());
             if (wasSaved) {
                 m_resultMsg = "We got content.";
+                Log.d("FetchingTask: ", "Data saved");
                 m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
             } else {
                 m_resultMsg = "Failed to save retrieved content";

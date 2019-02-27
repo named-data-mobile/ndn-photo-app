@@ -324,6 +324,7 @@ public class FileManager {
         ConcurrentHashMap<String, ArrayList<String>> map = new ConcurrentHashMap<>();
         for(File file : files) {
             String filename = file.getName();
+            Log.d("getReceivedPhotos", filename);
             String key = filename.substring(0, filename.indexOf('_'));
             ArrayList<String> list = map.get(key);
 
