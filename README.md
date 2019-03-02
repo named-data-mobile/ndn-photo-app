@@ -5,7 +5,7 @@ goals are to develop a completely decentralized application that runs over the N
 a partial sync protocol, and utilize a Web-Of-Trust like model instead of the traditional NDN hierarchical model.
 
 ## Prerequisites
-npChat requires the NDN Forwarding Daemon be run alongside it. NFD can be installed via [Google Play](https://play.google.com/store/apps/details?id=net.named_data.nfd) or directly from the [source](https://github.com/named-data/NFD).
+npChat requires the NDN Forwarding Daemon be run alongside it. NFD can be installed via [Google Play](https://play.google.com/store/apps/details?id=net.named_data.nfd) or directly from the [source](https://github.com/named-data-mobile/NFD-android).
 
 ## Building
 
