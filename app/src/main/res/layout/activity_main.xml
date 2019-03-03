@@ -10,20 +10,18 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar"
         android:layout_width="729dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/camera"
         android:layout_width="178dp"
         android:layout_height="195dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:contentDescription="@string/camera"
         android:onClick="startUpCamera"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:srcCompat="@drawable/camera_blue" />
@@ -32,13 +30,11 @@
         android:id="@+id/files"
         android:layout_width="178dp"
         android:layout_height="195dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
         android:contentDescription="@string/files"
         android:onClick="startFiles"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/camera"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         app:srcCompat="@drawable/folder" />
 
@@ -46,25 +42,24 @@
         android:id="@+id/friends"
         android:layout_width="178dp"
         android:layout_height="195dp"
-        android:layout_marginTop="52dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:contentDescription="@string/friends"
         android:onClick="startMakingFriends"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/camera"
+        app:layout_constraintTop_toBottomOf="@+id/camera_label"
         app:srcCompat="@drawable/add_friend" />
 
     <ImageView
         android:id="@+id/rcvdImages"
         android:layout_width="178dp"
         android:layout_height="195dp"
-        android:layout_marginTop="52dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
         android:contentDescription="@string/received_images"
         android:onClick="seeRcvdPhotos"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/friends"
-        app:layout_constraintTop_toBottomOf="@+id/files"
+        app:layout_constraintTop_toBottomOf="@+id/files_label"
         app:srcCompat="@drawable/images_icon" />
 
 
@@ -77,50 +72,42 @@
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/camera"
         app:layout_constraintEnd_toEndOf="@+id/camera"
-        app:layout_constraintStart_toStartOf="@+id/camera"
-        app:layout_constraintTop_toTopOf="@+id/camera"
-        app:layout_constraintVertical_bias="0.914" />
+        app:layout_constraintStart_toStartOf="@+id/camera" />
 
     <TextView
         android:id="@+id/files_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:text="@string/files"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/files"
         app:layout_constraintEnd_toEndOf="@+id/files"
-        app:layout_constraintHorizontal_bias="0.456"
-        app:layout_constraintStart_toStartOf="@+id/files"
-        app:layout_constraintTop_toTopOf="@+id/files"
-        app:layout_constraintVertical_bias="0.914" />
+        app:layout_constraintStart_toStartOf="@+id/files" />
 
     <TextView
         android:id="@+id/friends_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="184dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="@string/friends"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/friends"
         app:layout_constraintEnd_toEndOf="@+id/friends"
-        app:layout_constraintHorizontal_bias="0.484"
-        app:layout_constraintStart_toStartOf="@+id/friends"
-        app:layout_constraintTop_toTopOf="@+id/friends" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/images_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="184dp"
         android:text="@string/received_images"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/rcvdImages"
         app:layout_constraintEnd_toEndOf="@+id/rcvdImages"
-        app:layout_constraintHorizontal_bias="0.507"
-        app:layout_constraintStart_toStartOf="@+id/rcvdImages"
-        app:layout_constraintTop_toTopOf="@+id/rcvdImages" />
+        app:layout_constraintStart_toStartOf="@+id/rcvdImages" />
 
 
 </android.support.constraint.ConstraintLayout>
