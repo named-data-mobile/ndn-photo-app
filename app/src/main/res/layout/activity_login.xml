@@ -48,6 +48,7 @@
         android:textSize="20dp"
         android:backgroundTint="#FFFFFF"
         android:id="@+id/login_button"
+        android:onClick="login"
         />
 
 
