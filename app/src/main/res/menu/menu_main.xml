@@ -11,7 +11,7 @@
         app:showAsAction="collapseActionView" />
     <item
         android:id="@+id/action_logout"
-        android:orderInCategory="101"
+        android:orderInCategory="102"
         android:title="@string/action_logout"
         app:showAsAction="collapseActionView" />
 </menu>
