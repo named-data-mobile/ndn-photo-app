@@ -37,7 +37,7 @@ public class SelectRecipientsActivity extends AppCompatActivity {
 
         final int primary = ContextCompat.getColor(this, R.color.colorPrimary);
         final int black = ContextCompat.getColor(this, R.color.jetBlack);
-        final int white = ContextCompat.getColor(this, R.color.white);
+        final int white = ContextCompat.getColor(this, R.color.primaryTextColor);
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
             m_sendButton = findViewById(R.id.send_button);

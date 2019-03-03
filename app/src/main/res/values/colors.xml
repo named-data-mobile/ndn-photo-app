@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#66229F</color>
+    <color name="colorPrimary">#0f3b52</color>
+    <color name="colorPrimaryDark">#001529</color>
+    <color name="colorAccent">#40657e</color>
+    <color name="toolbarwhite">#FFFFFF</color>
+    <color name="colorGrey"> #c3c3c3</color>
+    <color name="blueWallet">#41a0f4</color>
+    <color name="skyBlue">#00c5ff</color>
+    <color name="primaryLightColor">#40657e</color>
+    <color name="primaryTextColor">#ffffff</color>
     <color name="jetBlack">#000000</color>
-    <color name="white">#ffffff</color>
-    <color name="colorAccent">#00d2d2</color>
-    <color name="colorAccentBright">#00ffff</color>
-    <color name="colorAccentDark">#303F9F</color>
-    <color name="colorPrimaryDark">#260441</color>
-
 </resources>

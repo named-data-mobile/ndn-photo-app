@@ -37,7 +37,7 @@ public class NewContentActivity extends AppCompatActivity {
         final ConcurrentHashMap<String, ArrayList<String>> userContent = manager.getReceivedPhotos();
         int accent = ContextCompat.getColor(this, R.color.colorPrimary);
         int black = ContextCompat.getColor(this, R.color.jetBlack);
-        int white = ContextCompat.getColor(this, R.color.white);
+        int white = ContextCompat.getColor(this, R.color.primaryTextColor);
 
         // if empty, tell the user there are "No new photos"
         if(userContent.isEmpty()) {

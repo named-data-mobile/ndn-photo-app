@@ -27,7 +27,7 @@ public class ViewFriendsActivity extends AppCompatActivity {
 
         int accent = ContextCompat.getColor(this, R.color.colorPrimary);
         int black = ContextCompat.getColor(this, R.color.jetBlack);
-        int white = ContextCompat.getColor(this, R.color.white);
+        int white = ContextCompat.getColor(this, R.color.primaryTextColor);
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
             TextView message = new TextView(this);
