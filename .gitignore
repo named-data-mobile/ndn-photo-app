@@ -3,7 +3,7 @@ build/
 gen/
 .gradle
 local.properties
-
 # ItelliJ
 *.iml
+app/app.iml
 .idea
