@@ -155,8 +155,24 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivityForResult(intent, SETTINGS_CODE);
+            case R.id.action_logout:
+                Session session = new Session(getApplicationContext());
+                session.setLoginStatus(false);
+                Toast.makeText(MainActivity.this, getResources().getString(R.string.logout_message), Toast.LENGTH_LONG).show();
+                Intent i = new Intent(MainActivity.this, IntroActivity.class);
+                startActivity(i);
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Session session = new Session(getApplicationContext());
+        if (!session.getLoginStatus()) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
         }
     }
 

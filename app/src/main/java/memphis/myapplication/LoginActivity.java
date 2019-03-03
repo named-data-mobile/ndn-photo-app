@@ -81,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
             FileManager manager = new FileManager(getApplicationContext());
             manager.saveUsername(username);
             Session session = new Session(getApplicationContext());
-            session.setLoginStatus();
+            session.setLoginStatus(true);
             // uncomment this later; in manifest, add no history option for LoginActivity
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);

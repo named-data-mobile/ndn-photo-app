@@ -16,8 +16,8 @@ public class Session {
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public void setLoginStatus() {
-        preferences.edit().putBoolean("isLoggedIn", true).apply();
+    public void setLoginStatus(boolean loginStatus) {
+        preferences.edit().putBoolean("isLoggedIn", loginStatus).apply();
     }
 
     public boolean getLoginStatus() {
