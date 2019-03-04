@@ -30,7 +30,7 @@
         android:layout_marginStart="158dp"
         android:layout_marginTop="227dp"
         android:onClick="setupQR"
-        android:text="QR Me"
+        android:text="@string/qr_me"
         app:layout_anchorGravity="center_vertical|center_horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
