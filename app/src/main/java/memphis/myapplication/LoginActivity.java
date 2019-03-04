@@ -28,20 +28,32 @@ import java.io.InputStream;
 public class LoginActivity extends AppCompatActivity {
 
     final private int MISSING_ELEMENT = 1;
+    private EditText name;
+    private EditText pass;
+    private Button loginBttn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        name = (EditText) findViewById(R.id.username_text);
+        pass = (EditText) findViewById(R.id.password_text);
+        loginBttn = (Button)findViewById(R.id.login_button);
         setButtonWidth();
-        EditText pass = (EditText) findViewById(R.id.password_text);
         pass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
                 if (keyEvent.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
-                    login(view);
+                    login();
                 }
                 return false;
+            }
+        });
+
+        loginBttn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                login();
             }
         });
         // setBackgroundImage();
@@ -50,8 +62,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setButtonWidth() {
         DisplayMetrics metrics = this.getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
-        Button btn1 = findViewById(R.id.login_button);
-        btn1.setWidth(width);
+        loginBttn.setWidth(width);
     }
 
     // The image is rather large, so it sometimes takes a while for it to appear since Picasso must
@@ -81,9 +92,7 @@ public class LoginActivity extends AppCompatActivity {
         return false;
     }
 
-    public void login(View view) {
-        EditText name = (EditText) findViewById(R.id.username_text);
-        EditText pass = (EditText) findViewById(R.id.password_text);
+    public void login() {
         String username = name.getText().toString();
         String password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
