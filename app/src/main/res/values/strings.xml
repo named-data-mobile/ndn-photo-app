@@ -16,5 +16,8 @@
     <string name="friends">Friends</string>
     <string name="files">Files</string>
     <string name="friends_title">Friends</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
 
 </resources>

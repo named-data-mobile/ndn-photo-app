@@ -56,4 +56,6 @@ dependencies {
         exclude group: 'org.xerial'
         exclude group: 'com.google.android'
     }
+
+    implementation 'com.android.support:cardview-v7:27.1.0'
 }
