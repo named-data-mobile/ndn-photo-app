@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+        android:theme="@style/AppTheme.NoActionBar">
 
         <provider
             android:name=".UriFileProvider"
@@ -30,7 +30,16 @@
         <service android:name=".services.NetworkService">
         </service>
 
-        <activity android:name=".FilesActivity">
+        <activity android:name=".FilesActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".AddFriendActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -52,13 +61,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".AddFriendActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -66,7 +68,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".NewContentActivity">
+        <activity android:name=".NewContentActivity"
+            android:launchMode="singleTask">
         </activity>
 
         <activity
@@ -93,13 +96,15 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ViewFriendsActivity">
+        <activity android:name=".ViewFriendsActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.DEFAULT"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".ViewPhotosActivity">
+        <activity android:name=".ViewPhotosActivity"
+            android:launchMode="singleTask">
         </activity>
 
     </application>
