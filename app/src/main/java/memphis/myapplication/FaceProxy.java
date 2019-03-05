@@ -43,7 +43,6 @@ public class FaceProxy {
      * This checks if the corresponding Data to the incoming Interest is in the cache. If so, put
      * it in the face. If not, publish the file, which will result in its placement in the cache.
      * @param interest
-     * @param mainActivity
      */
     public void process(Interest interest) {
         // we should add a Nack or something for when we receive an interest of the wrong format.

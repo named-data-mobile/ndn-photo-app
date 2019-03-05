@@ -24,7 +24,7 @@
         android:layout_width="100dp"
         android:layout_height="50dp"
         android:elevation="2dp"
-        android:text="Send"
+        android:text="@string/send"
         android:textColor="@color/jetBlack"
         android:textSize="20sp"
         android:background="@color/colorAccent"
