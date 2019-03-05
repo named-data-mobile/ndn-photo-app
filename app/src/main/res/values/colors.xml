@@ -8,4 +8,9 @@
     <color name="colorAccentDark">#303F9F</color>
     <color name="colorPrimaryDark">#260441</color>
 
+    <color name="colorGrey"> #c3c3c3</color>
+    <color name="blueWallet">#41a0f4</color>
+    <color name="skyBlue">#00c5ff</color>
+    <color name="primaryLightColor">#40657e</color>
+    <color name="primaryTextColor">#ffffff</color>
 </resources>

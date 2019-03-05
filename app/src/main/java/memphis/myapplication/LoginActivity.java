@@ -44,6 +44,13 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
+        Button button = (Button)findViewById (R.id.login_button);
+        button.setOnClickListener (new View.OnClickListener () {
+            @Override
+            public void onClick(View v) {
+                login (v);
+            }
+        });
         // setBackgroundImage();
     }
 
