@@ -21,4 +21,4 @@ Once NFD is started, launch npChat and register a username and password for that
 For our tests, we have been using two MotoX (2nd Gen) phones running LineageOS version 13 with Android 6.0.1.
 
 ## Contributing
-Please read the [NDN Contributing Guide] (https://github.com/named-data/NFD/blob/master/CONTRIBUTING.md). We are not currently using Gerrit on this project, so that part can be ignored for now. Contributions should follow the [NDN Style Guide] (https://named-data.net/codebase/platform/documentation/ndn-platform-development-guidelines/cpp-code-guidelines/).
+Please read the [NDN Contributing Guide](https://github.com/named-data/NFD/blob/master/CONTRIBUTING.md). We are not currently using Gerrit on this project, so that part can be ignored for now. Contributions should follow the [NDN Style Guide](https://named-data.net/codebase/platform/documentation/ndn-platform-development-guidelines/cpp-code-guidelines/).
