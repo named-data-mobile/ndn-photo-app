@@ -34,7 +34,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         setButtonWidth();
-        EditText pass = (EditText) findViewById(R.id.password_text);
+        EditText pass = (EditText) findViewById(R.id.password);
         pass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
@@ -44,7 +44,7 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
-        Button button = (Button)findViewById (R.id.login_button);
+        Button button = (Button)findViewById (R.id.login);
         button.setOnClickListener (new View.OnClickListener () {
             @Override
             public void onClick(View v) {
@@ -57,7 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setButtonWidth() {
         DisplayMetrics metrics = this.getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
-        Button btn1 = findViewById(R.id.login_button);
+        Button btn1 = findViewById(R.id.login);
         btn1.setWidth(width);
     }
 
@@ -89,8 +89,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        EditText name = (EditText) findViewById(R.id.username_text);
-        EditText pass = (EditText) findViewById(R.id.password_text);
+        EditText name = (EditText) findViewById(R.id.email);
+        EditText pass = (EditText) findViewById(R.id.password);
         String username = name.getText().toString();
         String password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
