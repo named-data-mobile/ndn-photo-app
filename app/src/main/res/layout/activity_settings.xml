@@ -6,11 +6,18 @@
     android:background="@color/colorPrimaryDark"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"
+        android:layout_width="729dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
     <ImageView
         android:id="@+id/profilePhoto"
         android:layout_width="210dp"
         android:layout_height="224dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
         android:scaleType="fitCenter" />
 
     <Button

@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -25,6 +26,7 @@ public class NewContentActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_with_list);
+        setupToolbar();
         linearLayout = findViewById(R.id.listLinearLayout);
         listReceivedContent();
     }
@@ -95,5 +97,10 @@ public class NewContentActivity extends AppCompatActivity {
             finish();
             startActivity(getIntent());
         }
+    }
+    private void setupToolbar() {
+        ToolbarHelper toolbarHelper = new ToolbarHelper(this, "Photos");
+        Toolbar toolbar = toolbarHelper.setupToolbar();
+        setSupportActionBar(toolbar);
     }
 }
