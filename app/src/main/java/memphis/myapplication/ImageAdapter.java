@@ -95,7 +95,7 @@ public class ImageAdapter extends BaseAdapter {
 
         }
         else {
-            grid = (View) convertView;
+            grid = convertView;
         }
 
         return grid;

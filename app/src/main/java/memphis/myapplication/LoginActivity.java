@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         loginProgressBar.setVisibility(View.GONE);
         loginButton = findViewById(R.id.login_button);
         setButtonWidth();
-        EditText pass = (EditText) findViewById(R.id.password_text);
+        EditText pass = findViewById(R.id.password_text);
         pass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
@@ -88,8 +88,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        EditText name = (EditText) findViewById(R.id.username_text);
-        EditText pass = (EditText) findViewById(R.id.password_text);
+        EditText name = findViewById(R.id.username_text);
+        EditText pass = findViewById(R.id.password_text);
         username = name.getText().toString();
         password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
