@@ -29,7 +29,7 @@
     <string name="browse_rcvd">Browse RCVD</string>
 
     <!--login activity-->
-    <string name="login_btn">Login</string>
+    <string name="login_btn">Register</string>
     <string name="username_label">Username:</string>
     <string name="password_label">Password:</string>
 
