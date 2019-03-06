@@ -17,7 +17,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginTop="3dp"
-        android:contentDescription="TODO"
+        android:contentDescription="@string/todo"
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/toolbar" />
