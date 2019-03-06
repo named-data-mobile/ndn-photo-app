@@ -28,7 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_settings);
-        m_imageView = (ImageView) findViewById(R.id.profilePhoto);
+        m_imageView = findViewById(R.id.profilePhoto);
         manager = new FileManager(getApplicationContext());
         File file = manager.getProfilePhoto();
         if(file.length() == 0) {
