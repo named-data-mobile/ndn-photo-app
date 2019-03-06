@@ -49,6 +49,7 @@ public class NewContentActivity extends AppCompatActivity {
             message.setTextColor(white);
             message.setTextSize(34);
             message.setGravity(Gravity.CENTER);
+            linearLayout.setGravity(Gravity.CENTER);
             linearLayout.addView(message);
         }
         // else make an entry for each user whom we have received photos from
