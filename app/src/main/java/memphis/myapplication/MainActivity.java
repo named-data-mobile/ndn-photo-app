@@ -50,6 +50,7 @@ import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
+import net.named_data.jni.psync.PSync;
 
 import org.apache.commons.io.IOUtils;
 
@@ -97,12 +98,24 @@ public class MainActivity extends AppCompatActivity {
     Producer m_producer;
     ArrayList<Consumer> m_consumers = new ArrayList<Consumer>();
 
+    PSync psync;
+    PSync.PartialProducer partialProducer;
+    PSync.FullProducer fullProducer;
+    PSync.Consumer consumer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
         System.out.println("Testing startup");
+
+        //Testing PSync
+        Log.d("MainActivity", "Psync test");
+        psync = PSync.getInstance(getFilesDir().getAbsolutePath());
+        partialProducer = new PSync.PartialProducer(80, "/psync/sync", "/android-1", 1000, 1000);
+        fullProducer = new PSync.FullProducer(80, "/psync/sync", "/android-1", null);
+        consumer = new PSync.Consumer("psync/sync", null, null, 3, 40);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
