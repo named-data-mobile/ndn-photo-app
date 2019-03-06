@@ -528,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == SETTINGS_CODE) {
             Log.d("onActivityResult", "SETTINGS_CODE hit");
             FileManager manager = new FileManager(getApplicationContext());
-            ImageView imageView = (ImageView) findViewById(R.id.toolbar_main_photo);
+            ImageView imageView = findViewById(R.id.toolbar_main_photo);
             File file = manager.getProfilePhoto();
             if(file == null || file.length() == 0) {
                 Picasso.get().load(R.drawable.avatar).fit().centerCrop().into(imageView);
