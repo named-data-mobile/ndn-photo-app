@@ -6,6 +6,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
@@ -28,11 +30,16 @@ import java.io.InputStream;
 public class LoginActivity extends AppCompatActivity {
 
     final private int MISSING_ELEMENT = 1;
-
+    private String username,password;
+    private ProgressBar loginProgressBar;
+    private Button loginButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        loginProgressBar = findViewById(R.id.login_progress_bar);
+        loginProgressBar.setVisibility(View.GONE);
+        loginButton = findViewById(R.id.login_button);
         setButtonWidth();
         EditText pass = (EditText) findViewById(R.id.password_text);
         pass.setOnKeyListener(new View.OnKeyListener() {
@@ -50,8 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     private void setButtonWidth() {
         DisplayMetrics metrics = this.getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
-        Button btn1 = findViewById(R.id.login_button);
-        btn1.setWidth(width);
+        loginButton.setWidth(width);
     }
 
     // The image is rather large, so it sometimes takes a while for it to appear since Picasso must
@@ -84,19 +90,13 @@ public class LoginActivity extends AppCompatActivity {
     public void login(View view) {
         EditText name = (EditText) findViewById(R.id.username_text);
         EditText pass = (EditText) findViewById(R.id.password_text);
-        String username = name.getText().toString();
-        String password = pass.getText().toString();
+        username = name.getText().toString();
+        password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
         if(attempt == 0) {
-            // save username and go to mainpage
-            FileManager manager = new FileManager(getApplicationContext());
-            manager.saveUsername(username);
-            Session session = new Session(getApplicationContext());
-            session.setLoginStatus();
-            // uncomment this later; in manifest, add no history option for LoginActivity
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            // finish();
+            loginButton.setVisibility(View.GONE);
+            loginProgressBar.setVisibility(View.VISIBLE);
+            new LoginTask().execute();
         }
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
@@ -116,5 +116,23 @@ public class LoginActivity extends AppCompatActivity {
             return 0;
         }
     }
+    private class LoginTask extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... voids) {
+            // save username and go to mainpage
+            FileManager manager = new FileManager(getApplicationContext());
+            manager.saveUsername(username);
+            Session session = new Session(getApplicationContext());
+            session.setLoginStatus();
+            return null;
+        }
 
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loginProgressBar.setVisibility(View.GONE);
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }
+    }
 }
