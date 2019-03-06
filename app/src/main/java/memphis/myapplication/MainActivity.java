@@ -644,4 +644,9 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // maybe we need our own onData callback since it is used in expressInterest (which is called by the SegmentFetcher)
+
+    public void exit(View v)
+    {
+        finish();
+    }
 }
