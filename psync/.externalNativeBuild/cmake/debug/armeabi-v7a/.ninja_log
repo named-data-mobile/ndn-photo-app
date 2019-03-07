@@ -1,3 +1,5 @@
 # ninja log v5
 0	3439	1551908570	CMakeFiles/psync.dir/psync-wrapper.cpp.o	c5e4df4350249e5a
 3441	3608	1551908571	/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/build/intermediates/cmake/debug/obj/armeabi-v7a/libpsync.so	56be94d41a2c8e2d
+53	3843	1551909620	CMakeFiles/psync.dir/psync-wrapper.cpp.o	c5e4df4350249e5a
+3843	4006	1551909620	/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/build/intermediates/cmake/debug/obj/armeabi-v7a/libpsync.so	56be94d41a2c8e2d
