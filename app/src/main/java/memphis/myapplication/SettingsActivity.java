@@ -64,6 +64,8 @@ public class SettingsActivity extends AppCompatActivity {
                     Log.d("profilePhoto", "Problem making bitmap from chosen photo");
                 }
                 Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
+                ToolbarHelper toolbarHelper = new ToolbarHelper(this);
+                toolbarHelper.setupToolbarImage(String.valueOf(photoUri));
             }
         }
     }
