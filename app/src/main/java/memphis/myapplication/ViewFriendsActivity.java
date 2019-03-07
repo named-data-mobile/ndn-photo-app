@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -20,6 +21,7 @@ public class ViewFriendsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_with_list);
+        setupToolbar();
         Intent intent = getIntent();
         int count = 0;
         LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
@@ -64,6 +66,10 @@ public class ViewFriendsActivity extends AppCompatActivity {
     // here or link off to a different page where you can view their profile and remove them, if you want?
     public void removeFriend(View view) {
         FileManager manager = new FileManager(getApplicationContext());
-
+    }
+    private void setupToolbar() {
+        ToolbarHelper toolbarHelper = new ToolbarHelper(this, "Friend List");
+        Toolbar toolbar = toolbarHelper.setupToolbar();
+        setSupportActionBar(toolbar);
     }
 }
