@@ -2,16 +2,19 @@ package memphis.myapplication;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -64,6 +67,7 @@ import java.util.Date;
 import java.util.List;
 import static java.lang.Thread.sleep;
 
+import memphis.myapplication.location.LocationUtils;
 import memphis.myapplication.psync.Consumer;
 import memphis.myapplication.psync.Consumer.ReceiveSyncCallback;
 import memphis.myapplication.psync.Producer;
@@ -83,7 +87,15 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+
+    };
+
+    // Location Permission
+    private static final int REQUEST_LOCATION = 2;
+    private  static String[] PERMISSIONS_LOCATION = {
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     private final int CAMERA_REQUEST_CODE = 0;
@@ -117,6 +129,11 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+
+        // check if user has given us permission for location access (one time dialog box)
+        checkForLocationPermission();
+
+
         boolean faceExists = (Globals.face == null);
         Log.d("onCreate", "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
@@ -622,6 +639,16 @@ public class MainActivity extends AppCompatActivity {
             else {
                 runOnUiThread(makeToast("Can't access camera without your permission."));
             }
+
+        }
+        // check for location request
+        if(requestCode == REQUEST_LOCATION){
+            if(grantResults.length >0&& grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                runOnUiThread(makeToast("Location Granted!"));
+                getLocation();
+            }else{
+                runOnUiThread(makeToast("Can't get Location without your permission."));
+            }
         }
     }
 
@@ -644,4 +671,30 @@ public class MainActivity extends AppCompatActivity {
     };
 
     // maybe we need our own onData callback since it is used in expressInterest (which is called by the SegmentFetcher)
+
+
+    private void checkForLocationPermission(){
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_LOCATION,
+                    REQUEST_LOCATION
+            );
+        }else
+            getLocation();
+    }
+
+    private void getLocation(){
+        new LocationUtils(this).getLocation().observe(this, new Observer<Location>() {
+            @Override
+            public void onChanged(@Nullable Location location) {
+                if(location != null){
+                    // Yay! Got user location. Do location related stuff here
+                    runOnUiThread(makeToast("Location: "+location.getLatitude()+" "+location.getLongitude()));
+                }
+            }
+        });
+    }
 }

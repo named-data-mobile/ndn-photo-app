@@ -65,5 +65,6 @@ public class ViewFriendsActivity extends AppCompatActivity {
     public void removeFriend(View view) {
         FileManager manager = new FileManager(getApplicationContext());
 
+
     }
 }
