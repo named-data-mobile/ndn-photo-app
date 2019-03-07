@@ -23,7 +23,8 @@
         android:background="@color/colorPrimaryDark"
         android:clickable="true"
         android:elevation="0dp"
-        android:orientation="vertical">
-
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        android:focusable="true">
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
