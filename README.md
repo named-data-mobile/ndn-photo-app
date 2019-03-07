@@ -18,6 +18,8 @@ npChat can communicate via NFD's Wifi Direct feature or over a network that supp
 
 Once NFD is started, launch npChat and register a username and password for that device. Friends are added under the "Friends" menu by having each device display its QR code and the other device scanning the code in turn.
 
+Click "Camera," take a picture, and follow the on-screen steps to share a picture with friends.
+
 For our tests, we have been using two MotoX (2nd Gen) phones running LineageOS version 13 with Android 6.0.1.
 
 ## Contributing
