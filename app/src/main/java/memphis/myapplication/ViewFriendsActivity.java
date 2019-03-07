@@ -35,7 +35,8 @@ public class ViewFriendsActivity extends AppCompatActivity {
             message.setText(s);
             message.setTextColor(white);
             message.setTextSize(24);
-            message.setGravity(Gravity.LEFT);
+            message.setGravity(Gravity.CENTER);
+            linearLayout.setGravity(Gravity.CENTER);
             linearLayout.addView(message);
         }
         else {
