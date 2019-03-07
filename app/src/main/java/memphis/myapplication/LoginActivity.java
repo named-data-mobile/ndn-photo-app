@@ -37,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        setupToolbar();
         loginProgressBar = findViewById(R.id.login_progress_bar);
         loginProgressBar.setVisibility(View.GONE);
         loginButton = findViewById(R.id.login_button);
@@ -134,5 +135,10 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             startActivity(intent);
         }
+    }
+    private void setupToolbar() {
+        ToolbarHelper toolbarHelper = new ToolbarHelper(this, "LogIn");
+        Toolbar toolbar = toolbarHelper.setupToolbar();
+        setSupportActionBar(toolbar);
     }
 }
