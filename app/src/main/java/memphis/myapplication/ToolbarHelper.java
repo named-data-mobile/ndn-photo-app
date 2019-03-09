@@ -1,14 +1,19 @@
 package memphis.myapplication;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.app.Activity;
+import android.view.View.OnClickListener;
 
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+
+import static android.support.v4.content.ContextCompat.startActivity;
 
 public class ToolbarHelper {
 
@@ -34,6 +39,13 @@ public class ToolbarHelper {
         else {
             Picasso.get().load(file).fit().centerCrop().into(imageView);
         }
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(activity, SettingsActivity.class);
+                startActivity(activity,intent,null);
+            }
+        });
         return toolbar;
     }
 }
