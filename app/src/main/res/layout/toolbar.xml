@@ -14,9 +14,9 @@
 
     <ImageView
         android:id="@+id/toolbar_main_photo"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="3dp"
+        android:layout_width="@dimen/margin_50dp"
+        android:layout_height="@dimen/margin_50dp"
+        android:layout_marginTop="@dimen/margin_3dp"
         android:contentDescription="TODO"
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,8 +26,8 @@
         android:id="@+id/main_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="@dimen/margin_20dp"
+        android:layout_marginTop="@dimen/margin_16dp"
         android:text="@string/app_name"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:textColor="@color/white"

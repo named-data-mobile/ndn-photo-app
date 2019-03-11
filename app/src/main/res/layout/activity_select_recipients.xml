@@ -12,7 +12,7 @@
         android:orientation="vertical"
         android:background="@color/colorPrimary"
         android:clickable="true"
-        android:elevation="0dp"
+        android:elevation="@dimen/margin_0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
@@ -21,12 +21,12 @@
 
     <Button
         android:id="@+id/send_button"
-        android:layout_width="100dp"
-        android:layout_height="50dp"
-        android:elevation="2dp"
+        android:layout_width="@dimen/margin_100dp"
+        android:layout_height="@dimen/margin_50dp"
+        android:elevation="@dimen/margin_2dp"
         android:text="@string/send"
         android:textColor="@color/jetBlack"
-        android:textSize="20sp"
+        android:textSize="@dimen/margin_20sp"
         android:background="@color/colorAccent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

@@ -14,15 +14,15 @@
         app:layout_constraintTop_toTopOf="parent" />
     <LinearLayout
         android:id="@+id/listLinearLayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/margin_0dp"
+        android:layout_height="@dimen/margin_0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
         android:background="@color/colorPrimaryDark"
         android:clickable="true"
-        android:elevation="0dp"
+        android:elevation="@dimen/margin_0dp"
         android:orientation="vertical">
 
     </LinearLayout>
