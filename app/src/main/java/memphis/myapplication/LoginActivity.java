@@ -23,6 +23,8 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.io.output.TaggedOutputStream;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,9 +96,21 @@ public class LoginActivity extends AppCompatActivity {
         password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
         if(attempt == 0) {
-            loginButton.setVisibility(View.GONE);
-            loginProgressBar.setVisibility(View.VISIBLE);
-            new LoginTask().execute();
+
+            if(usernameValidation(username)){
+                if(passwordValidation(username,password)){
+                    try {
+                        loginButton.setVisibility(View.GONE);
+                        loginProgressBar.setVisibility(View.VISIBLE);
+                        new LoginTask().execute();
+                    }catch (Exception e){
+                        Log.d("LoginActivity.login",e.getMessage());
+                    }finally {
+                        Toast.makeText(LoginActivity.this,"username and password is valid",Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
         }
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
@@ -105,6 +119,46 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+
+    private boolean passwordValidation(String userName, String password){
+
+        if (password.length() > 15 || password.length() < 8)
+        {
+            Toast.makeText(LoginActivity.this,"Password should be less than 15 and more than 8 characters in length.",Toast.LENGTH_LONG).show();
+            return false;
+        }
+        if (password.indexOf(userName) > -1)
+        {
+            Toast.makeText(LoginActivity.this,"Password Should not be same as user name",Toast.LENGTH_LONG).show();
+            return false;
+        }
+        String numbers = "(.*[0-9].*)";
+        if (!password.matches(numbers ))
+        {
+            Toast.makeText(LoginActivity.this,"Password should contain atleast one number.",Toast.LENGTH_LONG).show();
+            return false;
+        }
+        String specialChars = "(.*[,~,!,@,#,$,%,^,&,*,(,),-,_,=,+,[,{,],},|,;,:,<,>,/,?].*$)";
+        if (!password.matches(specialChars ))
+        {
+            Toast.makeText(LoginActivity.this,"Password should contain atleast one special character",Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean usernameValidation(String userName){
+        if (userName.length() < 15 && userName.length() > 5) {
+            return true;
+        } else {
+            Toast.makeText(LoginActivity.this,"username should be less than 15 and more than 6 characters in length.",Toast.LENGTH_LONG).show();
+            return false;
+        }
+    }
+
 
     private int loginAttempt(String username, String password) {
         String[] array = {username, password};
