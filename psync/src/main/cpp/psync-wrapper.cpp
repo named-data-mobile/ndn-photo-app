@@ -375,6 +375,7 @@ JNIEXPORT jboolean JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_ad
   (JNIEnv *env, jobject, jobject handle, jstring prefix)
 {
   ConsumerWrapper* consumerWrapper = (ConsumerWrapper*) env->GetDirectBufferAddress(handle);
+  ALOG("%s", "Trying to add subscription for consumer");
   return consumerWrapper->consumer->addSubscription(ndn::Name(env->GetStringUTFChars(prefix, nullptr)));
 }
 

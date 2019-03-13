@@ -184,9 +184,7 @@ public class PSync {
             sendSyncInterest(m_buffer);
         }
 
-        public boolean addSubscription(String prefix) {
-            return addSubscription(m_buffer, prefix);
-        }
+        public boolean addSubscription(String prefix) { return addSubscription(m_buffer, prefix); }
 
         public ArrayList<String> getSubscriptionList() {
             return getSubscriptionList(m_buffer);
