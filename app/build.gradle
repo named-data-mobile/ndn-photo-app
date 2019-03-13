@@ -34,7 +34,6 @@ android {
             exclude 'META-INF/NOTICE.txt'
         }
     }
-
 }
 
 dependencies {
@@ -49,6 +48,8 @@ dependencies {
     implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation 'net.named-data:jndn-android:0.18'
     implementation 'commons-io:commons-io:2.6'
+    implementation 'com.android.support:recyclerview-v7:27.1.0'
+    implementation 'com.android.support:cardview-v7:27.1.0'
     implementation('net.named-data.jndn-extra:jndn-management:1.2.1') {
         exclude group: 'net.named-data', module: 'jndn'
     }
