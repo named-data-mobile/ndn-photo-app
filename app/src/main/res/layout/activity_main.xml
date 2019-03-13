@@ -18,7 +18,7 @@
     <ImageView
         android:id="@+id/camera"
         android:layout_width="@dimen/margin_178dp"
-        android:layout_height="@dimen/margin_195dp"
+        android:layout_height="@dimen/margin_205dp"
         android:layout_marginStart="@dimen/margin_16dp"
         android:layout_marginTop="@dimen/margin_32dp"
         android:contentDescription="@string/camera"
@@ -30,7 +30,7 @@
     <ImageView
         android:id="@+id/files"
         android:layout_width="@dimen/margin_178dp"
-        android:layout_height="@dimen/margin_195dp"
+        android:layout_height="@dimen/margin_205dp"
         android:layout_marginTop="@dimen/margin_32dp"
         android:layout_marginEnd="@dimen/margin_16dp"
         android:contentDescription="@string/files"
@@ -42,7 +42,8 @@
     <ImageView
         android:id="@+id/friends"
         android:layout_width="@dimen/margin_178dp"
-        android:layout_height="@dimen/margin_195dp"
+        android:layout_height="@dimen/margin_205dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
         android:layout_marginStart="@dimen/margin_16dp"
         android:layout_marginTop="@dimen/margin_32dp"
         android:contentDescription="@string/friends"
@@ -54,7 +55,8 @@
     <ImageView
         android:id="@+id/rcvdImages"
         android:layout_width="@dimen/margin_178dp"
-        android:layout_height="@dimen/margin_195dp"
+        android:layout_height="@dimen/margin_205dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
         android:layout_marginTop="@dimen/margin_32dp"
         android:layout_marginEnd="@dimen/margin_16dp"
         android:contentDescription="@string/received_images"
