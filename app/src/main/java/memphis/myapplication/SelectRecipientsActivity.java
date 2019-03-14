@@ -8,19 +8,22 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class SelectRecipientsActivity extends AppCompatActivity {
+public class SelectRecipientsActivity extends AppCompatActivity implements ListDisplayRecyclerView.ItemClickListener {
 
     private ArrayList<String> m_selectedFriends;
     private Button m_sendButton;
+    private ListDisplayRecyclerView adapter;
 
     @Override
     public void onCreate (Bundle savedInstanceState) {
@@ -32,82 +35,23 @@ public class SelectRecipientsActivity extends AppCompatActivity {
 
     private void showFriends() {
         Intent intent = getIntent();
-        LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
+        String path = getIntent().getStringExtra("photo");
+        Toast.makeText(getApplicationContext(),"Path of Chosen File is "+path,Toast.LENGTH_LONG).show();
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
+        m_sendButton = findViewById(R.id.send_button);
 
-        final int primary = ContextCompat.getColor(this, R.color.colorPrimary);
-        final int black = ContextCompat.getColor(this, R.color.jetBlack);
-        final int white = ContextCompat.getColor(this, R.color.white);
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
-            m_sendButton = findViewById(R.id.send_button);
             m_sendButton.setVisibility(View.GONE);
-            TextView message = new TextView(this);
-            String s = "You currently haven't added any friends.";
-            message.setText(s);
-            message.setTextColor(white);
-            message.setTextSize(24);
-            message.setGravity(Gravity.LEFT);
-            linearLayout.addView(message);
+            Toast.makeText(getApplicationContext(),R.string.no_friends,Toast.LENGTH_LONG).show();
         }
         else {
-            // programmatically create TextViews to place in the LinearLayout since we don't know how
-            // many friends a person will have
-            for (String friend : friendsList) {
-                final TextView friendName = new TextView(this);
-                friendName.setText(friend);
-                friendName.setTextColor(white);
-                friendName.setTextSize(34);
-                // create a border for each TextView (friend slot)
-                final GradientDrawable drawable1 = new GradientDrawable();
-                drawable1.setColor(primary);
-                drawable1.setStroke(2, black);
-
-                final GradientDrawable drawable2 = new GradientDrawable();
-                drawable2.setColor(Color.parseColor("#333377"));
-                drawable2.setStroke(2, black);
-
-                // place border around TextView and set background
-                friendName.setBackground(drawable1);
-
-                friendName.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Log.d("SelectRecipients", "We selected " + friendName.getText());
-                        if (friendName.isSelected()) {
-                            friendName.setBackground(drawable1);
-                            friendName.setSelected(false);
-                            m_selectedFriends.remove(friendName.getText().toString());
-                            if(m_selectedFriends.size() < 1) {
-                                // remove button since we have selected 0 friends now
-                                m_sendButton.setVisibility(View.GONE);
-                            }
-                            Log.d("showFriends", "After removed: " + m_selectedFriends.size());
-                        } else {
-                            friendName.setBackground(drawable2);
-                            friendName.setSelected(true);
-                            m_selectedFriends.add(friendName.getText().toString());
-                            if(m_selectedFriends.size() == 1) {
-                                // only need to set visibility for button when we add the first friend
-                                m_sendButton.setVisibility(View.VISIBLE);
-                            }
-                            Log.d("showFriends", "After add: " + m_selectedFriends.size());
-                        }
-                    }
-                });
-                // Add TextView to LinearLayout
-                linearLayout.addView(friendName);
-            }
-
-            m_sendButton = findViewById(R.id.send_button);
-            // make send button invisible and unclickable until we actually select a friend
+            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+            adapter = new ListDisplayRecyclerView(this, friendsList);
+            adapter.setClickListener(this);
+            recyclerView.setAdapter(adapter);
             m_sendButton.setVisibility(View.GONE);
-            m_sendButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    returnList();
-                }
-            });
         }
     }
 
@@ -156,4 +100,37 @@ public class SelectRecipientsActivity extends AppCompatActivity {
 
         question.show();
     }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        // Toast.makeText(this, "Selected Friend Name: " + adapter.getItem(position),Toast.LENGTH_SHORT).show();
+        // Assumes Each Friend Name will be unique.
+        // This condition fails if duplicates exist in friendList
+        if(!m_selectedFriends.contains(adapter.getItem(position))){
+            m_selectedFriends.add(adapter.getItem(position));
+            view.setBackgroundColor(Color.CYAN);
+            Log.d("SelectRecipients", "We selected " + adapter.getItem(position));
+            Log.d("showFriends", "After add: " + m_selectedFriends.size());
+        }else{
+            m_selectedFriends.remove(adapter.getItem(position));
+            view.setBackgroundColor(Color.TRANSPARENT);
+            Log.d("SelectRecipients", "We deselected " + adapter.getItem(position));
+            Log.d("showFriends", "After removed: " + m_selectedFriends.size());
+        }
+
+        if(m_selectedFriends.size() == 0) {
+            // remove button since we have selected 0 friends now
+            m_sendButton.setVisibility(View.GONE);
+        }else{
+            m_sendButton.setVisibility(View.VISIBLE);
+        }
+
+        m_sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                returnList();
+            }
+        });
+    }
 }
+
