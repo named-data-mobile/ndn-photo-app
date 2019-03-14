@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -29,7 +30,7 @@ import com.intel.jndn.management.types.FaceStatus;
 import com.intel.jndn.management.types.RibEntry;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
-
+import com.yalantis.ucrop.UCrop;
 
 
 import net.named_data.jndn.Face;
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     Producer m_producer;
     ArrayList<Consumer> m_consumers = new ArrayList<Consumer>();
+    private Uri sourceUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -426,7 +428,6 @@ public class MainActivity extends AppCompatActivity {
             // check if we even took a picture
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
                 Log.d("onActivityResult", "We have an actual file");
-
                 FileOutputStream out = null;;
                 try {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
@@ -443,17 +444,19 @@ public class MainActivity extends AppCompatActivity {
 
                 builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // Send them to a new page to select friends to send photo to
-                        Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
+                        final Uri destUri = Uri.fromFile(m_curr_photo_file);
+                        MediaScannerConnection.scanFile(MainActivity.this,
+                                new String[] { m_curr_photo_file.getAbsolutePath()}, null,
+                                new MediaScannerConnection.OnScanCompletedListener() {
+                                    public void onScanCompleted(String path, Uri uri) {
+                                        sourceUri = uri;
+                                        UCrop.Options options = new UCrop.Options();
+                                        options.setFreeStyleCropEnabled(true);
+                                        UCrop.of(sourceUri,destUri).withOptions(options)
+                                                .start(MainActivity.this);
+                                    }
+                                });
 
-                        FileManager manager = new FileManager(getApplicationContext());
-                        ArrayList<String> friendsList = manager.getFriendsList();
-                        intent.putStringArrayListExtra("friendsList", friendsList);
-                        // make this startActivityForResult and catch the list of recipients;
-                        intent.putExtra("photo", m_curr_photo_file.toString());
-                        m_curr_photo_file = null;
-                        //startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
-                        startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
                     }
                 });
                 builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -464,6 +467,24 @@ public class MainActivity extends AppCompatActivity {
                 });
 
                 builder.show();
+            }
+        }
+        if (requestCode == UCrop.REQUEST_CROP) {
+            if(resultCode == RESULT_OK){
+                final Uri resultUri = UCrop.getOutput(resultData);
+                // Send them to a new page to select friends to send photo to
+                Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
+                FileManager manager = new FileManager(getApplicationContext());
+                ArrayList<String> friendsList = manager.getFriendsList();
+                intent.putStringArrayListExtra("friendsList", friendsList);
+                // make this startActivityForResult and catch the list of recipients;
+                intent.putExtra("photo", resultUri.getPath());
+                m_curr_photo_file = null;
+                //startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
+                startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
+            }
+            if (resultCode == UCrop.RESULT_ERROR) {
+                final Throwable cropError = UCrop.getError(resultData);
             }
         }
         else if(requestCode == SELECT_RECIPIENTS_CODE) {

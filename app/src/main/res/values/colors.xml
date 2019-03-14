@@ -7,5 +7,7 @@
     <color name="colorAccentBright">#00ffff</color>
     <color name="colorAccentDark">#303F9F</color>
     <color name="colorPrimaryDark">#260441</color>
+    <color name="ucrop_color_toolbar">#66229F</color>
+    <color name="ucrop_color_statusbar">#260441</color>
 
 </resources>
