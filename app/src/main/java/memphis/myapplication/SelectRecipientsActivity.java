@@ -35,6 +35,8 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
 
     private void showFriends() {
         Intent intent = getIntent();
+        String path = getIntent().getStringExtra("photo");
+        Toast.makeText(getApplicationContext(),"Path of Chosen File is "+path,Toast.LENGTH_LONG).show();
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
         m_sendButton = findViewById(R.id.send_button);
 
