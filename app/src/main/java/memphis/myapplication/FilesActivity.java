@@ -3,6 +3,7 @@ package memphis.myapplication;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -114,11 +115,29 @@ public class FilesActivity extends AppCompatActivity {
             if (requestCode == FILE_SELECT_REQUEST_CODE) {
 
                 uri = resultData.getData();
-                String path = getFilePath(uri);
+                final String path = getFilePath(uri);
 
                 if (path != null) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
-                    builder.setTitle("You selected a file").setMessage(path).show();
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+                    builder.setTitle("You selected a file").setMessage(path);
+                    builder.setPositiveButton(R.string.share_files, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            FileManager manager = new FileManager(getApplicationContext());
+                            ArrayList<String> friendsList = manager.getFriendsList();
+                            Intent intent = new Intent(getApplicationContext(),SelectRecipientsActivity.class);
+                            intent.putStringArrayListExtra("friendsList", friendsList);
+                            intent.putExtra("photo", path);
+                            startActivity(intent);
+                        }
+                    }).create();
+                    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    }).create();
+                    builder.show();
                     byte[] bytes;
                     try {
                         InputStream is = this.getContentResolver().openInputStream(uri);
