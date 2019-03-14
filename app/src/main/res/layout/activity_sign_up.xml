@@ -38,7 +38,7 @@
         android:layout_marginTop="48dp"
         android:background="@color/colorPrimary"
         android:onClick="onFormSubmission"
-        android:text="Submit"
+        android:text="@string/submit"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -51,7 +51,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="52dp"
         android:layout_marginTop="88dp"
-        android:text="email:"
+        android:text="@string/email_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -61,7 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="36dp"
-        android:text="username:"
+        android:text="@string/username_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
@@ -71,7 +71,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="44dp"
-        android:text="password:"
+        android:text="@string/password_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
 
@@ -82,7 +82,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:maxLines="2"
-        android:text="confirm\npassword:"
+        android:text="@string/confirm_password_label"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 

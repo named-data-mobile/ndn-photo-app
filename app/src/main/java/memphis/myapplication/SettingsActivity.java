@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -28,7 +29,8 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_settings);
-        m_imageView = (ImageView) findViewById(R.id.profilePhoto);
+        setupToolbar();
+        m_imageView = findViewById(R.id.profilePhoto);
         manager = new FileManager(getApplicationContext());
         File file = manager.getProfilePhoto();
         if(file.length() == 0) {
@@ -64,5 +66,10 @@ public class SettingsActivity extends AppCompatActivity {
                 Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
             }
         }
+    }
+    private void setupToolbar() {
+        ToolbarHelper toolbarHelper = new ToolbarHelper(this, "Settings");
+        Toolbar toolbar = toolbarHelper.setupToolbar();
+        setSupportActionBar(toolbar);
     }
 }

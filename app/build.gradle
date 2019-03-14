@@ -56,4 +56,5 @@ dependencies {
         exclude group: 'org.xerial'
         exclude group: 'com.google.android'
     }
+    implementation 'com.github.yalantis:ucrop:2.2.2'
 }

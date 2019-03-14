@@ -22,9 +22,9 @@ public class ToolbarHelper {
 
     public Toolbar setupToolbar() {
         FileManager m_manager = new FileManager(this.activity.getApplicationContext());
-        Toolbar toolbar = (Toolbar) this.activity.findViewById(R.id.toolbar);
+        Toolbar toolbar = this.activity.findViewById(R.id.toolbar);
         toolbar.setTitle("");
-        ImageView imageView = (ImageView) this.activity.findViewById(R.id.toolbar_main_photo);
+        ImageView imageView = this.activity.findViewById(R.id.toolbar_main_photo);
         TextView textView = this.activity.findViewById(R.id.main_title);
         textView.setText(this.title);
         File file = m_manager.getProfilePhoto();
