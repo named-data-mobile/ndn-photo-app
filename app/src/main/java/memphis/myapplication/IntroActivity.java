@@ -10,10 +10,11 @@ import android.widget.Toast;
 
 public class IntroActivity extends AppCompatActivity {
 
-    final String nfdAppPackageName = "net.named_data.nfd";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        final String nfdAppPackageName = getString(R.string.nfd_package);
         Context context = getApplicationContext();
         Session session = new Session(context);
 
@@ -21,7 +22,7 @@ public class IntroActivity extends AppCompatActivity {
         // If installed -> Continue Regular Onboarding
         // If not installed -> Show a Message and request User to install NDN Forwarding Daemon.
         PackageManager pm = context.getPackageManager();
-        if(isPackageInstalled(nfdAppPackageName,pm))
+        if (isPackageInstalled(nfdAppPackageName,pm))
         {
             // session checks sharedPreferences where we store our login boolean variable
             // if we're not logged in, start LoginActivity
@@ -34,10 +35,9 @@ public class IntroActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, MainActivity.class);
                 startActivity(intent);
             }
-        }else{
+        } else {
 
-            Toast.makeText(context,"Please consider Installing NFD, this is " +
-                            "required for npChat to work. After NFD has started, reopen the app.",
+            Toast.makeText(context, "Please install NFD which is required for npChat to work.",
                     Toast.LENGTH_LONG).show();
 
             try {

@@ -107,16 +107,6 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        // check if user has given us permissions for storage manipulation (one time dialog box)
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
         boolean faceExists = (Globals.face == null);
         Log.d("onCreate", "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
@@ -131,6 +121,26 @@ public class MainActivity extends AppCompatActivity {
         keyChain = Globals.keyChain;
 
         startNetworkThread();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            register_with_NFD(Globals.getDefaultIdName());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        // check if user has given us permissions for storage manipulation (one time dialog box)
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 
     private void setupToolbar() {
@@ -339,6 +349,13 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("OnRegisterFailed", "Registration Failure");
                             String msg = "Registration failed for prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
+                            Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getString(R.string.nfd_package));
+                            if (launchIntent != null) {
+                                Toast.makeText(getApplicationContext(), "Please Start NFD.",
+                                        Toast.LENGTH_LONG).show();
+                                startActivity(launchIntent);//null pointer check in case package name was not found
+                            }
+                            finish();
                         }
                     },
                     new OnRegisterSuccess() {
@@ -427,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
                 Log.d("onActivityResult", "We have an actual file");
 
-                FileOutputStream out = null;;
+                FileOutputStream out = null;
                 try {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
                     out = new FileOutputStream(m_curr_photo_file);
