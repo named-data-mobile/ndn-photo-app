@@ -27,7 +27,7 @@ Please read the [NDN Contributing Guide](https://github.com/named-data/NFD/blob/
 
 ## Communication
 
-Our chat channel is on slack [here](https://named-data.slack.com/messages)
+Our chat channel is on [Slack](https://named-data.slack.com/messages)
 
 Please join our mailing list to discuss questions regarding the project: https://named-data.net/codebase/platform/support/mailing-lists/
 
