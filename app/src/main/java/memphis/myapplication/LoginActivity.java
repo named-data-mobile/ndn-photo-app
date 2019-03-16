@@ -33,15 +33,17 @@ public class LoginActivity extends AppCompatActivity {
     private String username,password;
     private ProgressBar loginProgressBar;
     private Button loginButton;
+    private EditText pass,name;
+    private FileManager manager;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        loginProgressBar = findViewById(R.id.login_progress_bar);
-        loginProgressBar.setVisibility(View.GONE);
-        loginButton = findViewById(R.id.login_button);
-        setButtonWidth();
-        EditText pass = findViewById(R.id.password_text);
+
+        pass = findViewById(R.id.password_text);
         pass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
@@ -52,6 +54,18 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         // setBackgroundImage();
+    }
+
+    @Override
+    protected void onStart() {
+        //declaration of all the UI elements.
+        super.onStart();
+        loginProgressBar = findViewById(R.id.login_progress_bar);
+        loginProgressBar.setVisibility(View.GONE);
+        loginButton = findViewById(R.id.login_button);
+        setButtonWidth();
+        name = findViewById(R.id.username_text);
+        manager = new FileManager(getApplicationContext());
     }
 
     private void setButtonWidth() {
@@ -88,8 +102,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        EditText name = findViewById(R.id.username_text);
-        EditText pass = findViewById(R.id.password_text);
         username = name.getText().toString();
         password = pass.getText().toString();
         int attempt = loginAttempt(username, password);
@@ -120,7 +132,6 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             // save username and go to mainpage
-            FileManager manager = new FileManager(getApplicationContext());
             manager.saveUsername(username);
             Session session = new Session(getApplicationContext());
             session.setLoginStatus();
