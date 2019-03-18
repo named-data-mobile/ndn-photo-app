@@ -1,5 +1,6 @@
 package memphis.myapplication;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import net.named_data.jndn.Data;
@@ -89,7 +90,12 @@ public class FaceProxy {
                 FileManager manager = new FileManager(filesActivity.getApplicationContext());
                 String s = manager.addAppPrefix(temp);
                 Name prefix = new Name(s);
-                filesActivity.publishData(blob, prefix);
+                Common.publishData(blob, prefix);
+
+                String filename = prefix.toUri();
+                Bitmap bitmap = QRExchange.makeQRCode(filename);
+                Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
+                manager.saveFileQR(bitmap, filename);
             }
         }
         // otherwise, we know the name prefix has matched and we know where it is in the cache
