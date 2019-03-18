@@ -113,10 +113,12 @@ public class MemoryCache {
                         Blob blob = new Blob(bytes, true);
                         FileManager manager = new FileManager(m_currContext);
                         String s = manager.addAppPrefix(temp);
-                        Common.publishData(blob, new Name(s));
+                        Name prefixName = new Name(s);
+                        Common.publishData(blob, prefixName);
 
-                        String filename = prefix.toUri();
+                        String filename = prefixName.toUri();
                         Bitmap bitmap = QRExchange.makeQRCode(filename);
+                        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
                         manager.saveFileQR(bitmap, filename);
                     }
                 }
