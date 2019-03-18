@@ -16,7 +16,7 @@ import net.named_data.jndn.util.Blob;
 
 public class Globals extends Application {
     public static Face face;
-    public static FaceProxy faceProxy;
+    public static MemoryCache memoryCache;
     //v2 changes
     public static AndroidSqlite3Pib pib;
     public static TpmBackEndFile tpm;
@@ -28,7 +28,7 @@ public class Globals extends Application {
     public static boolean has_setup_security;
 
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
-    // if they are present. Face and FaceProxy can be new, but face will need to set things with keychain again.
+    // if they are present. Face can be new, but face will need to set things with keychain again.
     public Globals() {
     }
 
@@ -60,8 +60,8 @@ public class Globals extends Application {
         face = f;
     }
 
-    public static void setFaceProxy(FaceProxy fp) {
-        faceProxy = fp;
+    public static void setMemoryCache(MemoryCache memoryCache) {
+        Globals.memoryCache = memoryCache;
     }
 
     public static void setKeyChain(KeyChain kc) {
