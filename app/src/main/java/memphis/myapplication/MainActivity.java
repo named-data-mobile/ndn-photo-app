@@ -254,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
-        Globals.setFaceProxy(new FaceProxy());
+        Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
 
