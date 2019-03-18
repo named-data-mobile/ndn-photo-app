@@ -22,6 +22,14 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+/**
+ * MemoryCache is a class that works with MemoryContentCache class from jndn library that caches
+ * data to be served by the face upon future requests. If the data is no longer present in the
+ * cache, MemoryContentCache will call the onInterest callback to initialize publishing of the
+ * requested data if present. See the API docs for more detail at
+ * http://named-data.net/doc/ndn-ccl-api/memory-content-cache.html .
+ */
+
 public class MemoryCache {
 
     private MemoryContentCache mCache;
@@ -41,10 +49,14 @@ public class MemoryCache {
         return mCache;
     }
 
+    /**
+     * This checks if the corresponding Data to the incoming Interest is in the cache. If so, put
+     * it in the face. If not, publish the file, which will result in its placement in the cache.
+     * @param interest
+     */
     void process(Interest interest) {
 
         Log.d("process", "Called process in FaceProxy");
-
         mCache.setInterestFilter(interest.getName(), new OnInterestCallback() {
             @Override
             public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
@@ -111,19 +123,23 @@ public class MemoryCache {
             }
         });
 
+        // Forward the interest to MemoryContentCache class to send corresponding data if cached.
         mCache.onInterest(interest.getName(), interest, face, INTENT_FILTER, new InterestFilter(interest.getName()));
     }
 
+    // need to put the newly published data segment in the cache
     void putInCache(ArrayList<Data> fileData) {
         for (Data data : fileData) {
             mCache.add(data);
         }
     }
 
+    // Return the minimum lifetime before removing stale content from the cache.
     double time() {
         return mCache.getMinimumCacheLifetime();
     }
 
+    // Call this to “shut down” the MemoryContentCache while the application is still running.
     void destroy(){
         mCache.unregisterAll();
     }
