@@ -1,7 +1,5 @@
 package memphis.myapplication;
 
-import android.app.Application;
-import android.graphics.Bitmap;
 import android.util.Log;
 
 import net.named_data.jndn.ContentType;
@@ -44,8 +42,7 @@ public class Common {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
-
-                        Globals.faceProxy.putInCache(fileData);
+                        Globals.memoryCache.putInCache(fileData);
                     }
                     else {
                         Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
@@ -68,55 +65,50 @@ public class Common {
      * @return returns an ArrayList of all the data packets
      */
     private static ArrayList<Data> packetize(Blob raw_blob, Name prefix) {
-        if(!Globals.faceProxy.hasKey(prefix)) {
-            final int VERSION_NUMBER = 0;
-            final int DEFAULT_PACKET_SIZE = 8000;
-            int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
-            ArrayList<Data> datas = new ArrayList<>();
-            int segment_number = 0;
-            ByteBuffer byteBuffer = raw_blob.buf();
-            do {
-                // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
-                // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
-                if (byteBuffer.remaining() < PACKET_SIZE) {
-                    PACKET_SIZE = byteBuffer.remaining();
-                }
-                Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
-                byte[] segment_buffer = new byte[PACKET_SIZE];
-                Data data = new Data();
-                Name segment_name = new Name(prefix);
-                segment_name.appendVersion(VERSION_NUMBER);
-                segment_name.appendSegment(segment_number);
-                data.setName(segment_name);
-                try {
-                    Log.d("packetize things", "full data name: " + data.getFullName().toString());
-                } catch (EncodingException e) {
-                    Log.d("packetize things", "unable to print full name");
-                }
-                try {
-                    Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
-                    byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
-                } catch (IndexOutOfBoundsException e) {
-                    e.printStackTrace();
-                }
-                data.setContent(new Blob(segment_buffer));
-                MetaInfo meta_info = new MetaInfo();
-                meta_info.setType(ContentType.BLOB);
-                // not sure what is a good freshness period
-                meta_info.setFreshnessPeriod(30000);
-                if (!byteBuffer.hasRemaining()) {
-                    // Set the final component to have a final block id.
-                    Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
-                    meta_info.setFinalBlockId(finalBlockId);
-                }
-                data.setMetaInfo(meta_info);
-                datas.add(data);
-                segment_number++;
-            } while (byteBuffer.hasRemaining());
-            return datas;
-        }
-        else {
-            return null;
-        }
+        final int VERSION_NUMBER = 0;
+        final int DEFAULT_PACKET_SIZE = 8000;
+        int PACKET_SIZE = (DEFAULT_PACKET_SIZE > raw_blob.size()) ? raw_blob.size() : DEFAULT_PACKET_SIZE;
+        ArrayList<Data> datas = new ArrayList<>();
+        int segment_number = 0;
+        ByteBuffer byteBuffer = raw_blob.buf();
+        do {
+            // need to check for the size of the last segment; if lastSeg < PACKET_SIZE, then we
+            // should not send an unnecessarily large packet. Also, if smaller, we need to prevent BufferUnderFlow error
+            if (byteBuffer.remaining() < PACKET_SIZE) {
+                PACKET_SIZE = byteBuffer.remaining();
+            }
+            Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
+            byte[] segment_buffer = new byte[PACKET_SIZE];
+            Data data = new Data();
+            Name segment_name = new Name(prefix);
+            segment_name.appendVersion(VERSION_NUMBER);
+            segment_name.appendSegment(segment_number);
+            data.setName(segment_name);
+            try {
+                Log.d("packetize things", "full data name: " + data.getFullName().toString());
+            } catch (EncodingException e) {
+                Log.d("packetize things", "unable to print full name");
+            }
+            try {
+                Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
+                byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+            data.setContent(new Blob(segment_buffer));
+            MetaInfo meta_info = new MetaInfo();
+            meta_info.setType(ContentType.BLOB);
+            // not sure what is a good freshness period
+            meta_info.setFreshnessPeriod(90000);
+            if (!byteBuffer.hasRemaining()) {
+                // Set the final component to have a final block id.
+                Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
+                meta_info.setFinalBlockId(finalBlockId);
+            }
+            data.setMetaInfo(meta_info);
+            datas.add(data);
+            segment_number++;
+        } while (byteBuffer.hasRemaining());
+        return datas;
     }
 }

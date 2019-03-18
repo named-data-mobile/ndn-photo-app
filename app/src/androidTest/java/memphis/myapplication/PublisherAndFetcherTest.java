@@ -89,7 +89,6 @@ public class PublisherAndFetcherTest {
         onView(withId(R.id.button3)).perform(click());
 
         mActivityRule.getActivity().publishData(blob, prefix);
-        FaceProxy faceProxy = mActivityRule.getActivity().faceProxy;
         Data[] cache = faceProxy.getCache();
         for(int i = 0; i < cache.length; i++) {
             if(cache[i] != null) {
