@@ -31,11 +31,11 @@ public class ViewFriendsActivity extends AppCompatActivity {
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
             TextView message = new TextView(this);
-            String s = "You currently haven't added any friends.";
-            message.setText(s);
+            message.setText(R.string.no_friends);
             message.setTextColor(white);
             message.setTextSize(24);
-            message.setGravity(Gravity.LEFT);
+            message.setGravity(Gravity.CENTER);
+            linearLayout.setGravity(Gravity.CENTER);
             linearLayout.addView(message);
         }
         else {

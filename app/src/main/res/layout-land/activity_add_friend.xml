@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
+
+    <Button
+        android:id="@+id/showYourCode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button"
+        android:onClick="displayMyQR"
+        android:padding="10dp"
+        android:text="@string/display_qr"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/scanFriendButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.33" />
+
+    <Button
+        android:id="@+id/scanFriendButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button"
+        android:onClick="scanFriendQR"
+        android:padding="10dp"
+        android:text="@string/scan_qr"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/viewFriendsButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/showYourCode"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <Button
+        android:id="@+id/viewFriendsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button"
+        android:onClick="viewFriendsList"
+        android:padding="10dp"
+        android:text="@string/view_friends"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scanFriendButton"
+        app:layout_constraintVertical_bias="0.66" />
+
+
+</android.support.constraint.ConstraintLayout>

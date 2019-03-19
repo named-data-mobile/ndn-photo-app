@@ -77,7 +77,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private void fetch(Interest interest) {
         m_shouldReturn = false;
 
-        interest.setInterestLifetimeMilliseconds(1500);
+        interest.setInterestLifetimeMilliseconds(35000);
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(m_baseInterest);

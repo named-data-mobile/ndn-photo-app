@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.app.Activity;
 import android.view.View.OnClickListener;
 
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -23,6 +24,9 @@ public class ToolbarHelper {
     public ToolbarHelper(Activity _activity, String title) {
         this.activity = _activity;
         this.title = title;
+    }
+    public ToolbarHelper(Activity _activity) {
+        this.activity = _activity;
     }
 
     public Toolbar setupToolbar() {
@@ -47,5 +51,10 @@ public class ToolbarHelper {
             }
         });
         return toolbar;
+    }
+
+    public void setupToolbarImage(String photoUri) {
+        ImageView imageView = this.activity.findViewById(R.id.toolbar_main_photo);
+        Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(imageView);
     }
 }

@@ -15,8 +15,8 @@
         app:layout_constraintTop_toTopOf="parent" />
     <ImageView
         android:id="@+id/profilePhoto"
-        android:layout_width="210dp"
-        android:layout_height="224dp"
+        android:layout_width="@dimen/margin_210dp"
+        android:layout_height="@dimen/margin_224dp"
         android:scaleType="fitCenter"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -31,9 +31,9 @@
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
         android:onClick="changePhoto"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/margin_10dp"
         android:text="@string/change_photo"
-        android:padding="10dp"
+        android:padding="@dimen/margin_10dp"
         android:textColor="@color/white"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

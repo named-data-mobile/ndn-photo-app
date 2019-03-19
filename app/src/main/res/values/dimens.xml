@@ -1,3 +1,32 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="width_imageview_camera">125dp</dimen>
+    <dimen name="height_imageview_camera">195dp</dimen>
+
+    <!--dimensions for margin-->
+    <dimen name="margin_16dp">16dp</dimen>
+    <dimen name="margin_8dp">8dp</dimen>
+    <dimen name="margin_50dp">50dp</dimen>
+    <dimen name="margin_3dp">3dp</dimen>
+    <dimen name="margin_20dp">20dp</dimen>
+    <dimen name="margin_18dp">18dp</dimen>
+    <dimen name="margin_1dp">1dp</dimen>
+    <dimen name="margin_2dp">2dp</dimen>
+    <dimen name="margin_250dp">250dp</dimen>
+    <dimen name="margin_4dp">4dp</dimen>
+    <dimen name="margin_0dp">0dp</dimen>
+    <dimen name="margin_210dp">210dp</dimen>
+    <dimen name="margin_224dp">224dp</dimen>
+    <dimen name="margin_10dp">10dp</dimen>
+    <dimen name="margin_100dp">100dp</dimen>
+    <dimen name="margin_158dp">158dp</dimen>
+    <dimen name="margin_32dp">32dp</dimen>
+    <dimen name="margin_178dp">178dp</dimen>
+    <dimen name="margin_205dp">205dp</dimen>
+    <dimen name="margin_5dp">5dp</dimen>
+
+    <!--dimensions for textsize-->
+    <dimen name="margin_24sp">24sp</dimen>
+    <dimen name="margin_36sp">36sp</dimen>
+    <dimen name="margin_20sp">20sp</dimen>
 </resources>
