@@ -74,4 +74,6 @@ public class Globals extends Application {
         has_setup_security = yesNo;
     }
 
+    public static Name getDefaultIdName() { return defaultIdName; }
+
 }
