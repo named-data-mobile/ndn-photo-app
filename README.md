@@ -16,6 +16,8 @@ Launch NFD and check "NFD is started."
 
 npChat can communicate via NFD's Wifi Direct feature or over a network that supports UDP multicast.
 
+Note: To connect devices, use Wifi Direct Feature available within NFD app rather than the Wifi Direct available in Wifi-Settings. After connecting, look for instances of /localhop/wifidirect in Routes tab of NFD app. This step ensures proper connection between devices. 
+
 Once NFD is started, launch npChat and register a username and password for that device. Friends are added under the "Friends" menu by having each device display its QR code and the other device scanning the code in turn.
 
 Click "Camera," take a picture, and follow the on-screen steps to share a picture with friends.
