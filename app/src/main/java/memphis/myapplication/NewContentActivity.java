@@ -31,18 +31,18 @@ public class NewContentActivity extends AppCompatActivity implements ListDisplay
     private void listReceivedContent() {
         FileManager manager = new FileManager(getApplicationContext());
         userContent = manager.getReceivedPhotos();
+        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         // if empty, tell the user there are "No new photos"
         if (userContent.isEmpty()) {
-            Toast.makeText(getApplicationContext(),"No Photos",Toast.LENGTH_SHORT).show();
+            recyclerView.setVisibility(View.GONE);
+            Toast.makeText(getApplicationContext(),R.string.no_photos,Toast.LENGTH_LONG).show();
         }
         // else make an entry for each user whom we have received photos from
         else {
             // add in the user's profile photo here too; to do: get profile photos when making friends
             ArrayList<String> friendsList = new ArrayList<>();
             friendsList.addAll(userContent.keySet());
-
-            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
             adapter = new ListDisplayRecyclerView(getApplicationContext(), friendsList);
             adapter.setClickListener(this);
             recyclerView.setAdapter(adapter);
@@ -71,7 +71,6 @@ public class NewContentActivity extends AppCompatActivity implements ListDisplay
         Intent intent = new Intent(view.getContext(), ViewPhotosActivity.class);
         intent.putStringArrayListExtra("photos", userContent.get(adapter.getItem(position)));
         Log.d("newContentActivity", "content: " + userContent.get(adapter.getItem(position)));
-        Toast.makeText(getApplicationContext(),userContent.get(adapter.getItem(position)).toString(),Toast.LENGTH_LONG).show();
         startActivityForResult(intent, VIEW_PHOTOS);
     }
 }

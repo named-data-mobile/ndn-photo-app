@@ -35,19 +35,18 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
 
     private void showFriends() {
         Intent intent = getIntent();
-        String path = getIntent().getStringExtra("photo");
-        Toast.makeText(getApplicationContext(),"Path of Chosen File is "+path,Toast.LENGTH_LONG).show();
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
         m_sendButton = findViewById(R.id.send_button);
 
+        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         // if we don't have any saved friends, we have nothing to display; tell user
         if(friendsList.isEmpty()) {
             m_sendButton.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(),R.string.no_friends,Toast.LENGTH_LONG).show();
         }
         else {
-            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
             adapter = new ListDisplayRecyclerView(this, friendsList);
             adapter.setClickListener(this);
             recyclerView.setAdapter(adapter);

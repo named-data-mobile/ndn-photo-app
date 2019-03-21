@@ -24,13 +24,14 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
         Intent intent = getIntent();
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
         // if we don't have any saved friends, we have nothing to display; tell user
+        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         if(friendsList.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
             Toast.makeText(getApplicationContext(),R.string.no_friends,Toast.LENGTH_LONG).show();
         }
         else {
             // set up the ListDisplayRecyclerView, and display the list of friend in ListDisplayRecyclerView
-            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
-            recyclerView.setLayoutManager(new LinearLayoutManager(this));
             adapter = new ListDisplayRecyclerView(this, friendsList);
             adapter.setClickListener(this);
             recyclerView.setAdapter(adapter);
@@ -47,7 +48,6 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
     public void onItemClick(View view, int position) {
         // The Functionality to Link off to a different page can be handled here.
         // OnClick of an Item in the recyclerView.
-        Toast.makeText(this, "Friend Name: " + adapter.getItem(position)
-                + " Count: " + position, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Friend Name: " + adapter.getItem(position), Toast.LENGTH_SHORT).show();
     }
 }
