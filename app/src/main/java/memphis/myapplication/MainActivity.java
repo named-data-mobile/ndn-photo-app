@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     Globals globals = (Globals) getApplication();
     public KeyChain keyChain;
     public Face face;
-    public FaceProxy faceProxy;
+    public MemoryCache memoryCache;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -107,16 +107,6 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        // check if user has given us permissions for storage manipulation (one time dialog box)
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
         boolean faceExists = (Globals.face == null);
         Log.d("onCreate", "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
@@ -127,10 +117,30 @@ public class MainActivity extends AppCompatActivity {
         }
 
         face = Globals.face;
-        faceProxy = Globals.faceProxy;
+        memoryCache = Globals.memoryCache;
         keyChain = Globals.keyChain;
 
         startNetworkThread();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            register_with_NFD(Globals.getDefaultIdName());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        // check if user has given us permissions for storage manipulation (one time dialog box)
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 
     private void setupToolbar() {
@@ -244,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
-        Globals.setFaceProxy(new FaceProxy());
+        Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
 
@@ -330,25 +340,32 @@ public class MainActivity extends AppCompatActivity {
                 }
         }
         try {
-            Log.d("register_with_nfd", "Starting registration process.");
-            face.registerPrefix(name,
-                    onDataInterest,
-                    new OnRegisterFailed() {
-                        @Override
-                        public void onRegisterFailed(Name prefix) {
-                            Log.d("OnRegisterFailed", "Registration Failure");
-                            String msg = "Registration failed for prefix: " + prefix.toUri();
-                            runOnUiThread(makeToast(msg));
+            Log.d("register_with_nfd","Starting registration process.");
+            Globals.memoryCache.getmCache().registerPrefix(name,
+                new OnRegisterFailed() {
+                    @Override
+                    public void onRegisterFailed(Name prefix) {
+                        Log.d("OnRegisterFailed", "Registration Failure");
+                        String msg = "Registration failed for prefix: " + prefix.toUri();
+                        runOnUiThread(makeToast(msg));
+                        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getString(R.string.nfd_package));
+                        if (launchIntent != null) {
+                            Toast.makeText(getApplicationContext(), "Please Start NFD.",
+                                    Toast.LENGTH_LONG).show();
+                            startActivity(launchIntent);//null pointer check in case package name was not found
                         }
-                    },
-                    new OnRegisterSuccess() {
-                        @Override
-                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
-                            String msg = "Successfully registered prefix: " + prefix.toUri();
-                            runOnUiThread(makeToast(msg));
-                        }
-                    });
+                        finish();
+                    }
+                },
+                new OnRegisterSuccess() {
+                    @Override
+                    public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                        Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                        String msg = "Successfully registered prefix: " + prefix.toUri();
+                        runOnUiThread(makeToast(msg));
+                    }
+                }, onDataInterest
+                );
         }
         catch (IOException | SecurityException e) {
             e.printStackTrace();
@@ -639,9 +656,13 @@ public class MainActivity extends AppCompatActivity {
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
             Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            faceProxy.process(interest);
+            memoryCache.process(interest);
         }
     };
 
-    // maybe we need our own onData callback since it is used in expressInterest (which is called by the SegmentFetcher)
+    @Override
+    protected void onDestroy() {
+        memoryCache.destroy();
+        super.onDestroy();
+    }
 }

@@ -50,24 +50,26 @@ public class ViewPhotosActivity extends AppCompatActivity {
         // would be called. We may need to update this in the future so it adapts to more photos. For
         // instance, it might not be enough for 10 photos because I think the transition from photo
         // to photo is where some of our time is lost; maybe do 5050*photos.size() to get that extra time window per photo
-        new CountDownTimer(5050*photos.size(), 5000) { // 5000 = 5 sec
+        new CountDownTimer(5050*photos.size(),5000) { // 5000 = 5 sec
 
             public void onTick(long tick) {
-                String photo = photos.get(m_index);
-                File photoFile = new File(photo);
-                Picasso.get().load(photoFile).fit().centerCrop().into(m_imgView);
-                // check that we are not deleting the first one otherwise it would be 0 - 1 and we
-                // would delete the last one. So we don't want to delete it while viewing
-                if(m_index - 1 >= 0) {
-                    // unless we just set the first photo, delete the previously set photo using
-                    // the path in our photos arrayList
-                    String photoToDelete = photos.get(m_index-1);
-                    File fileToDelete = new File(photoToDelete);
-                    boolean wasDeleted = fileToDelete.delete();
-                    Log.d("viewPhotos", "file with path: " + photoToDelete + " was deleted? " + wasDeleted);
+                if(tick/5000>=1) {
+                    String photo = photos.get(m_index);
+                    File photoFile = new File(photo);
+                    Picasso.get().load(photoFile).fit().centerCrop().into(m_imgView);
+                    // check that we are not deleting the first one otherwise it would be 0 - 1 and we
+                    // would delete the last one. So we don't want to delete it while viewing
+                    if (m_index - 1 >= 0) {
+                        // unless we just set the first photo, delete the previously set photo using
+                        // the path in our photos arrayList
+                        String photoToDelete = photos.get(m_index - 1);
+                        File fileToDelete = new File(photoToDelete);
+                        boolean wasDeleted = fileToDelete.delete();
+                        Log.d("viewPhotos", "file with path: " + photoToDelete + " was deleted? " + wasDeleted);
+                    }
+                    Log.d("viewPhotos", "We set the imageURI with index number: " + m_index);
+                    m_index++;
                 }
-                Log.d("viewPhotos", "We set the imageURI with index number: " + m_index);
-                m_index++;
             }
 
             public void onFinish() {
