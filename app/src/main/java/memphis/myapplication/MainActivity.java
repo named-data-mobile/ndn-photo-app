@@ -427,12 +427,17 @@ public class MainActivity extends AppCompatActivity {
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
                 Log.d("onActivityResult", "We have an actual file");
 
-                FileOutputStream out = null;;
+                FileOutputStream out = null;
                 try {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
                     out = new FileOutputStream(m_curr_photo_file);
                     Log.d("bitmapOnActivity", "bitmap is null?: " + (bitmap == null));
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+                    if(bitmap != null && bitmap.getByteCount() > 0) {
+
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
+                    }
+                    else
+                        Log.d("bitmapCompress", "bitmap is null");
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
