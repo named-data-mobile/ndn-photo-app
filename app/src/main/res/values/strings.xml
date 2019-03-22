@@ -47,5 +47,4 @@
     <string name="email_label">Email:</string>
     <string name="confirm_password_label">Confirm\nPassword:</string>
     <string name="submit">Submit</string>
-    <string name="nfd_package">net.named_data.nfd</string>
 </resources>
