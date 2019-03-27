@@ -50,6 +50,13 @@ public class SettingsActivity extends AppCompatActivity {
         startActivityForResult(intent, PICK_PHOTO);
     }
 
+    // register
+    public void register(View view) {
+        // open up photos directory
+        Intent i = new Intent(this,LoginActivity.class);
+        startActivity(i);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
