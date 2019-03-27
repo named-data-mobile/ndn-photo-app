@@ -1,0 +1,52 @@
+<resources>
+
+    <string name="app_name">npChat</string>
+    <string name="scan">Scan</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="publish">Publish</string>
+    <string name="advertise">Advertise</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="share_photo">Share Photo?</string>
+    <string name="send_photo">Send Photo</string>
+    <string name="camera">Camera</string>
+    <string name="received_images">See Photos</string>
+    <string name="friends">Friends</string>
+    <string name="files">Files</string>
+    <string name="friends_title">Friends</string>
+    <string name="no_friends">You currently haven\'t added any friends.</string>
+
+    <!--add friend activity-->
+    <string name="display_qr">Display QR</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="view_friends">View Friends</string>
+
+    <!--file activity-->
+    <string name="share_files">Share Files</string>
+    <string name="scan_file_qr">Scan File QR</string>
+    <string name="display_file_qr">Display File QR</string>
+    <string name="browse_rcvd">Browse RCVD</string>
+
+    <!--login activity-->
+    <string name="login_btn">Register</string>
+    <string name="username_label">Username:</string>
+    <string name="password_label">Password:</string>
+
+    <!--qr exchange activity-->
+    <string name="qr_me">QR Me</string>
+
+    <!--select recepient activity-->
+    <string name="send">Send</string>
+
+    <!--settings activity-->
+    <string name="change_photo">Change Photo</string>
+    <string name="register">Register</string>
+
+    <!--sign up activity-->
+    <string name="email_label">Email:</string>
+    <string name="confirm_password_label">Confirm\nPassword:</string>
+    <string name="submit">Submit</string>
+    <string name="no_photos">No Photos</string>
+</resources>
