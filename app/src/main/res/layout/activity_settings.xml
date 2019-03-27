@@ -40,4 +40,19 @@
         app:layout_constraintTop_toBottomOf="@id/profilePhoto"
         />
 
+    <Button
+        android:id="@+id/register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_button"
+        android:onClick="register"
+        android:layout_marginTop="@dimen/margin_10dp"
+        android:text="@string/register"
+        android:padding="@dimen/margin_10dp"
+        android:textColor="@color/white"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/changePhotoButton"
+        />
+
 </android.support.constraint.ConstraintLayout>
