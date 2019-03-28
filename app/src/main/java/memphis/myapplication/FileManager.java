@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -431,7 +433,7 @@ public class FileManager {
      * @param fullname : "npChat/<username>/path/to/file"
      * @return String of file path
      */
-    public static String removeAppPrefix(String fullname) {
+    public static String removeAppPrefix(String fullname) throws UnsupportedEncodingException {
         int fileIndex = 0;
         String temp = fullname.substring(fileIndex);
         // name is of the form /npChat/username/full-file-path; find third instance of "/"
@@ -439,6 +441,7 @@ public class FileManager {
             fileIndex = temp.indexOf("/");
             temp = temp.substring(fileIndex + 1);
         }
+        temp = URLDecoder.decode(temp, "UTF-8");
         return temp;
     }
 
