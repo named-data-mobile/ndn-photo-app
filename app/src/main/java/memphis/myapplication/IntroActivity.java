@@ -9,10 +9,9 @@ public class IntroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Session session = new Session(getApplicationContext());
         // session checks sharedPreferences where we store our login boolean variable
         // if we're not logged in, start LoginActivity
-        if (!session.getLoginStatus()) {
+        if (!SharedPrefsManager.getInstance(this).getLogInStatus()) {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }

@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
     Producer m_producer;
     ArrayList<Consumer> m_consumers = new ArrayList<Consumer>();
 
+    SharedPrefsManager sharedPrefsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         System.out.println("Testing startup");
 
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -167,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setup_security", "Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         Context context = getApplicationContext();
         String rootPath = getApplicationContext().getFilesDir().toString();
@@ -367,7 +369,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void startConsumer(String friend) {
         FileManager manager = new FileManager(getApplicationContext());
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
         Name friendsUserName = new Name(friend);
         Consumer consumer = new Consumer(new Name(getString(R.string.app_name)), appAndUsername, friendsUserName, face, onSyncData);
         m_consumers.add(consumer);

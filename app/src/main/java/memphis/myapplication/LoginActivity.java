@@ -1,31 +1,16 @@
 package memphis.myapplication;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
-import com.squareup.picasso.Picasso;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -120,10 +105,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             // save username and go to mainpage
-            FileManager manager = new FileManager(getApplicationContext());
-            manager.saveUsername(username);
-            Session session = new Session(getApplicationContext());
-            session.setLoginStatus();
+            SharedPrefsManager.getInstance(LoginActivity.this).setCredentials(username, password);
             return null;
         }
 
