@@ -1,0 +1,18 @@
+{
+  "buildFiles": [
+    "/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/build/cmake/platforms.cmake",
+    "/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/src/main/cpp/CMakeLists.txt",
+    "/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/build/cmake/android.toolchain.cmake"
+  ],
+  "cleanCommands": [
+    "/home/jeremy/Android/Sdk/cmake/3.10.2.4988404/bin/cmake --build /home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/debug/armeabi-v7a --target clean"
+  ],
+  "libraries": {
+    "psync-Debug-armeabi-v7a": {
+      "artifactName": "psync",
+      "buildCommand": "/home/jeremy/Android/Sdk/cmake/3.10.2.4988404/bin/cmake --build /home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/debug/armeabi-v7a --target psync",
+      "abi": "armeabi-v7a",
+      "output": "/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/build/intermediates/cmake/debug/obj/armeabi-v7a/libpsync.so"
+    }
+  }
+}

@@ -1,0 +1,3 @@
+/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/psync.dir

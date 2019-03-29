@@ -51,6 +51,10 @@ import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
 
+import net.named_data.jni.psync.MissingDataInfo;
+import net.named_data.jni.psync.PSync;
+
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
@@ -64,9 +68,10 @@ import java.util.Date;
 import java.util.List;
 import static java.lang.Thread.sleep;
 
-import memphis.myapplication.psync.Consumer;
-import memphis.myapplication.psync.Consumer.ReceiveSyncCallback;
-import memphis.myapplication.psync.Producer;
+//import memphis.myapplication.psync.Consumer;
+//import memphis.myapplication.psync.Consumer.ReceiveSyncCallback;
+import memphis.myapplication.psync.PSyncHelper;
+//import memphis.myapplication.psync.Producer;
 import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
@@ -94,8 +99,14 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean netThreadShouldStop = true;
 
-    Producer m_producer;
-    ArrayList<Consumer> m_consumers = new ArrayList<Consumer>();
+    //Producer m_producer;
+    ArrayList<PSync.Consumer> m_consumers = new ArrayList<PSync.Consumer>();
+
+
+    PSync psync;
+    public PSync.PartialProducer m_producer;
+    PSync.Consumer consumer;
+    PSyncHelper pSyncHelper = new PSyncHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         setupToolbar();
         System.out.println("Testing startup");
+
+        //Testing PSync
+
+        Log.d("MainActivity", "Psync test");
+        psync = PSync.getInstance(getFilesDir().getAbsolutePath());
+
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -357,22 +374,23 @@ public class MainActivity extends AppCompatActivity {
         registerRouteToAp();
 
         Log.d("MainActivity", "Creating producer");
-        m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
-
         FileManager manager = new FileManager(getApplicationContext());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        //m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
+        m_producer = new PSync.PartialProducer(80, getString(R.string.app_name), name.toString(), 1000, 1000);
+        m_producer.addUserNode(appAndUsername.toString());
+
+
+        //FileManager manager = new FileManager(getApplicationContext());
+
         for (String friend : manager.getFriendsList()) {
-            startConsumer(friend);
+            pSyncHelper.startConsumer(friend, m_consumers);
+        }
+        for (PSync.Consumer consumer : m_consumers) {
+            Log.d("Consumers", consumer.toString());
         }
     }
 
-    public void startConsumer(String friend) {
-        FileManager manager = new FileManager(getApplicationContext());
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
-        Name friendsUserName = new Name(friend);
-        Consumer consumer = new Consumer(new Name(getString(R.string.app_name)), appAndUsername, friendsUserName, face, onSyncData);
-        m_consumers.add(consumer);
-        Log.d("Consumer", "Added consumer for friend for " + friend);
-    }
 
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));
@@ -510,7 +528,7 @@ public class MainActivity extends AppCompatActivity {
                         recipients = resultData.getStringArrayListExtra("recipients");
                         final FileManager manager = new FileManager(getApplicationContext());
                         final String prefix = manager.addAppPrefix(path);
-                        m_producer.publishName(new Name(prefix), recipients);
+                        //m_producer.publishName(recipients);
                     }
                     catch(Exception e) {
                         e.printStackTrace();
@@ -527,7 +545,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
-                startConsumer(resultData.getStringExtra("username"));
+                pSyncHelper.startConsumer(resultData.getStringExtra("username"), m_consumers);
             }
         }
         else if (requestCode == SETTINGS_CODE) {
@@ -549,13 +567,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private final ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
-        public void onReceivedSyncData(Name fileName) {
-            Log.d("Consumer", "Will fetch file: " + fileName);
-            runOnUiThread(makeToast("Fetching: " + fileName));
-            fetch_data(new Interest(fileName));
-        }
-    };
+//    private final ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
+//        public void onReceivedSyncData(Name fileName) {
+//            Log.d("Consumer", "Will fetch file: " + fileName);
+//            runOnUiThread(makeToast("Fetching: " + fileName));
+//            fetch_data(new Interest(fileName));
+//        }
+//    };
 
     private void fetch_data(final Interest interest) {
         // /tasks/FetchingTask

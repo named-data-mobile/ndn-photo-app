@@ -1,0 +1,113 @@
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+CMake Warning at /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:801 (message):
+  New Boost version may have incorrect or missing dependencies and imported
+  targets
+Call Stack (most recent call first):
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:907 (_Boost_COMPONENT_DEPENDENCIES)
+  /home/jeremy/Android/Sdk/cmake/3.10.2.4988404/share/cmake-3.10/Modules/FindBoost.cmake:1542 (_Boost_MISSING_DEPENDENCIES)
+  CMakeLists.txt:36 (find_package)
+
+
+Boost version: 1.68.0
+Found the following Boost libraries:
+  system
+  atomic
+  regex
+  filesystem
+  date_time
+  iostreams
+  program_options
+  chrono
+  thread
+  log
+  log_setup
+Configuring done
