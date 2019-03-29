@@ -2,6 +2,7 @@ package memphis.myapplication;
 
 import android.app.Application;
 
+import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.security.KeyChain;
@@ -13,6 +14,10 @@ import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
+import net.named_data.jni.psync.PSync;
+
+import memphis.myapplication.psync.ConsumerManager;
+import memphis.myapplication.psync.ProducerManager;
 
 public class Globals extends Application {
     public static Face face;
@@ -26,6 +31,9 @@ public class Globals extends Application {
     public static Blob pubKeyBlob;
     public static Name pubKeyName;
     public static boolean has_setup_security;
+    public static PSync psync;
+    public static ProducerManager producerManager;
+    public static ConsumerManager consumerManager;
 
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
     // if they are present. Face can be new, but face will need to set things with keychain again.
@@ -68,10 +76,19 @@ public class Globals extends Application {
         keyChain = kc;
     }
 
-    public static void setPubKeyName(Name pk) {pubKeyName = pk; }
+    public static void setPubKeyName(Name pk) { pubKeyName = pk; }
 
     public static void setHasSecurity(boolean yesNo) {
         has_setup_security = yesNo;
     }
+
+    public static void setPSync(PSync ps) { psync = ps; }
+
+    public static Name getDefaultIdName() { return defaultIdName; }
+
+    public static void setProducerManager(ProducerManager pm) {producerManager = pm;}
+
+    public static void setConsumerManager(ConsumerManager cm) { consumerManager = cm; }
+
 
 }

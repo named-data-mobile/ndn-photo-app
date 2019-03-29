@@ -30,8 +30,6 @@ import com.intel.jndn.management.types.RibEntry;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
-
-
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
@@ -67,11 +65,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static java.lang.Thread.sleep;
-
-//import memphis.myapplication.psync.Consumer;
-//import memphis.myapplication.psync.Consumer.ReceiveSyncCallback;
+import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.PSyncHelper;
-//import memphis.myapplication.psync.Producer;
+import memphis.myapplication.psync.ProducerManager;
 import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
@@ -99,41 +95,25 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean netThreadShouldStop = true;
 
-    //Producer m_producer;
-    ArrayList<PSync.Consumer> m_consumers = new ArrayList<PSync.Consumer>();
-
-
-    PSync psync;
-    public PSync.PartialProducer m_producer;
-    PSync.Consumer consumer;
-    PSyncHelper pSyncHelper = new PSyncHelper(this);
+    private PSync psync;
+    private ProducerManager producerManager;
+    private ConsumerManager consumerManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        System.out.println("Testing startup");
+        FileManager manager = new FileManager(getApplicationContext());
 
-        //Testing PSync
-
-        Log.d("MainActivity", "Psync test");
         psync = PSync.getInstance(getFilesDir().getAbsolutePath());
+        Globals.setPSync(psync);
+
 
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        // check if user has given us permissions for storage manipulation (one time dialog box)
-        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    this,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
         boolean faceExists = (Globals.face == null);
         Log.d("onCreate", "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
@@ -147,7 +127,26 @@ public class MainActivity extends AppCompatActivity {
         memoryCache = Globals.memoryCache;
         keyChain = Globals.keyChain;
 
-        startNetworkThread();
+        if (!appThreadIsRunning()) {
+            Log.d("Main Activity", "Starting network thread");
+            startNetworkThread();
+        }
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // check if user has given us permissions for storage manipulation (one time dialog box)
+        int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    this,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
     }
 
     private void setupToolbar() {
@@ -185,6 +184,21 @@ public class MainActivity extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+
+        // Creating producer
+        Log.d("MainActivity", "Creating producer" + "/npChat/" + manager.getUsername() + "/data");
+        String producerPrefix = "/npChat/" + manager.getUsername();
+        Globals.setProducerManager(new ProducerManager(producerPrefix));
+
+
+        // Creating consumers
+        Log.d("MainActivity", "Creating consumer");
+        Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
+        for (String friend : manager.getFriendsList()) {
+            String friendPrefix = "/npChat/" + friend;
+            Globals.consumerManager.createConsumer(friendPrefix);
+            Log.d("Consumer", "Added consumer for friend for " + friend);
+        }
 
         Context context = getApplicationContext();
         String rootPath = getApplicationContext().getFilesDir().toString();
@@ -347,48 +361,54 @@ public class MainActivity extends AppCompatActivity {
                 }
         }
         try {
-            Log.d("register_with_nfd","Starting registration process.");
-            Globals.memoryCache.getmCache().registerPrefix(name,
-                new OnRegisterFailed() {
-                    @Override
-                    public void onRegisterFailed(Name prefix) {
-                        Log.d("OnRegisterFailed", "Registration Failure");
-                        String msg = "Registration failed for prefix: " + prefix.toUri();
-                        runOnUiThread(makeToast(msg));
+            Name dataName = new Name(name);
+            Name fileName = new Name(name);
+            dataName.append("data");
+            fileName.append("file");
+            Log.d("register_with_nfd", "Starting registration process.");
+            Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Log.d("OnRegisterFailed", "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
                     }
-                },
-                new OnRegisterSuccess() {
-                    @Override
-                    public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                        Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
-                        String msg = "Successfully registered prefix: " + prefix.toUri();
-                        runOnUiThread(makeToast(msg));
-                    }
-                }, onDataInterest
-                );
-        }
-        catch (IOException | SecurityException e) {
+            );
+
+            Globals.memoryCache.getmCache().registerPrefix(fileName,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Log.d("OnRegisterFailed", "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    }, producerManager.onNoDataInterest
+            );
+        } catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
 
         registerRouteToAp();
 
-        Log.d("MainActivity", "Creating producer");
-        FileManager manager = new FileManager(getApplicationContext());
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
-        //m_producer = new Producer(face, new Name(getString(R.string.app_name)), name, 10000, 10000, keyChain);
-        m_producer = new PSync.PartialProducer(80, getString(R.string.app_name), name.toString(), 1000, 1000);
-        m_producer.addUserNode(appAndUsername.toString());
-
-
-        //FileManager manager = new FileManager(getApplicationContext());
-
-        for (String friend : manager.getFriendsList()) {
-            pSyncHelper.startConsumer(friend, m_consumers);
-        }
-        for (PSync.Consumer consumer : m_consumers) {
-            Log.d("Consumers", consumer.toString());
-        }
     }
 
 
@@ -450,12 +470,7 @@ public class MainActivity extends AppCompatActivity {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
                     out = new FileOutputStream(m_curr_photo_file);
                     Log.d("bitmapOnActivity", "bitmap is null?: " + (bitmap == null));
-                    if(bitmap != null && bitmap.getByteCount() > 0) {
-
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
-                    }
-                    else
-                        Log.d("bitmapCompress", "bitmap is null");
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
 
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -514,7 +529,9 @@ public class MainActivity extends AppCompatActivity {
                             Log.d("file selection result", "file path: " + path);
                             final Blob blob = new Blob(bytes, true);
                             final FileManager manager = new FileManager(getApplicationContext());
-                            final String prefix = manager.addAppPrefix(path);
+                            String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                            final String prefix = prefixApp + path;
+                            Log.d("Publishing data", prefix);
 
                             Common.publishData(blob, new Name(prefix));
                             Bitmap bitmap = QRExchange.makeQRCode(prefix);
@@ -527,8 +544,14 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         recipients = resultData.getStringArrayListExtra("recipients");
                         final FileManager manager = new FileManager(getApplicationContext());
-                        final String prefix = manager.addAppPrefix(path);
-                        //m_producer.publishName(recipients);
+                        String name = "/npChat/" + manager.getUsername() + "/data";
+                        String filename =  "/npChat/" + manager.getUsername() + "/file" + path;
+                        Log.d("Publishing file", filename);
+
+                        System.out.println("Publish name");
+                        Globals.producerManager.m_producer.publishName(name);
+                        Globals.producerManager.setSeqMap(filename);
+
                     }
                     catch(Exception e) {
                         e.printStackTrace();
@@ -545,7 +568,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
-                pSyncHelper.startConsumer(resultData.getStringExtra("username"), m_consumers);
+                Globals.consumerManager.createConsumer(resultData.getStringExtra("username"));
             }
         }
         else if (requestCode == SETTINGS_CODE) {
@@ -567,18 +590,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    private final ReceiveSyncCallback onSyncData = new ReceiveSyncCallback() {
-//        public void onReceivedSyncData(Name fileName) {
-//            Log.d("Consumer", "Will fetch file: " + fileName);
-//            runOnUiThread(makeToast("Fetching: " + fileName));
-//            fetch_data(new Interest(fileName));
-//        }
-//    };
-
-    private void fetch_data(final Interest interest) {
-        // /tasks/FetchingTask
-        new FetchingTask(this).execute(interest);
-    }
 
     // start activity for add friends
     public void startMakingFriends(View view) {
@@ -653,22 +664,11 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    /**
-     * This is registered with our prefix. Any interest sent with prefix /npChat/<username>
-     * will be caught by this callback. We send it to the faceProxy to deal with it.
-     */
-    private final OnInterestCallback onDataInterest = new OnInterestCallback() {
-        @Override
-        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
-                               InterestFilter filterData) {
-            Log.d("OnInterestCallback", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            memoryCache.process(interest);
-        }
-    };
 
     @Override
     protected void onDestroy() {
-        memoryCache.destroy();
+        Log.d("onDestroy", "Destroying memory cache");
+        //memoryCache.destroy();
         super.onDestroy();
     }
 }

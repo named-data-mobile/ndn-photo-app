@@ -7,5 +7,5 @@ local.properties
 *.iml
 app/app.iml
 .idea
-# .so files
-*.so
+psync/.externalNativeBuild/
+psync/src/main/libs/

@@ -67,6 +67,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     @Override
     protected Boolean doInBackground(Interest... interests) {
         m_baseInterest = interests[0];
+        Log.d("Fetching task", m_baseInterest.toUri());
         fetch(m_baseInterest);
         // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
@@ -76,7 +77,6 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
 
     private void fetch(Interest interest) {
         m_shouldReturn = false;
-
         interest.setInterestLifetimeMilliseconds(35000);
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
@@ -90,6 +90,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     @Override
                     public boolean verifySegment(Data data) {
                         //m_data = data;
+                        Log.d("verifySegement", "verifying segment");
                         SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
                         boolean isVerified = verifySignature
                                 (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
@@ -143,21 +144,18 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
      * @param interest
      */
     private void getUserInfo(Interest interest) {
-        String s = interest.getName().getPrefix(2).toUri();
-        s = s.substring(1);
-        int index = s.indexOf("/");
-        if(s.substring(0, index).equals(m_appPrefix.substring(1))) {
-            m_user = s.substring(index+1, s.length());
-            // we have the user, check if we're friends. If so, retrieve their key from file.
-            ArrayList<String> friendsList = m_manager.getFriendsList();
-            Log.d("username&PubKey", "user: " + m_user);
-            if(friendsList.contains(m_user)) {
-                try {
-                    m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
-                }
-                catch(UnrecognizedKeyFormatException e) {
-                    e.printStackTrace();
-                }
+        Name n = interest.getName().getSubName(1);
+        System.out.println(n.toUri());
+        m_user = (n.getPrefix(1).toUri()).substring(1);
+        // we have the user, check if we're friends. If so, retrieve their key from file.
+        ArrayList<String> friendsList = m_manager.getFriendsList();
+        Log.d("username&PubKey", "user: " + m_user);
+        if(friendsList.contains(m_user)) {
+            try {
+                m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
+            }
+            catch(UnrecognizedKeyFormatException e) {
+                e.printStackTrace();
             }
         }
     }
