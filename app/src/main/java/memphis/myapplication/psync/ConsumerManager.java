@@ -17,6 +17,8 @@ import net.named_data.jni.psync.PSync;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
@@ -54,10 +56,18 @@ public class ConsumerManager {
         @Override
         public void onData(Interest interest, Data data) {
             FileManager manager = new FileManager(context);
-            String filename = data.getContent().toString();
-            Log.d("onData", interest.toUri());
-            Log.d("onData", filename);
-            new FetchingTask(activity).execute(new Interest(new Name(filename)));
+            String interestData = data.getContent().toString();
+            Log.d("onData", interestData);
+            String[] recipientList = interestData.split("%7C");
+            for (String friend : recipientList) {
+                if (friend.equals(manager.getUsername())) {
+                    new FetchingTask(activity).execute(new Interest(new Name(recipientList[0])));
+                }
+                else {
+                    Log.d("OnData", "Not for me, for " + friend);
+                }
+            }
+
         }
     };
 

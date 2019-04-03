@@ -15,7 +15,7 @@ public class PSync {
     }
 
     public interface OnHelloDataCallBack {
-        void onHelloDataCallBack(ArrayList<String> names);
+        void onHelloDataCallBack(ArrayList<String> names, Consumer consumer);
     }
 
     // Singleton pattern
@@ -79,8 +79,8 @@ public class PSync {
             removeUserNode(m_buffer, prefix);
         }
 
-        public void getSeqNo(String prefix) {
-            getSeqNo(m_buffer, prefix);
+        public long getSeqNo(String prefix) {
+            return getSeqNo(m_buffer, prefix);
         }
 
         public void publishName(String prefix) {
@@ -129,8 +129,8 @@ public class PSync {
             removeUserNode(m_buffer, prefix);
         }
 
-        public void getSeqNo(String prefix) {
-            getSeqNo(m_buffer, prefix);
+        public long getSeqNo(String prefix) {
+            return getSeqNo(m_buffer, prefix);
         }
 
         public void publishName(String prefix) {
@@ -219,7 +219,7 @@ public class PSync {
         }
 
         public void onHelloData(ArrayList<String> names) {
-            m_onHelloDataCallback.onHelloDataCallBack(names);
+            m_onHelloDataCallback.onHelloDataCallBack(names, this);
         }
     }
 }

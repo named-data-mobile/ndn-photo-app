@@ -66,7 +66,6 @@ import java.util.Date;
 import java.util.List;
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
-import memphis.myapplication.psync.PSyncHelper;
 import memphis.myapplication.psync.ProducerManager;
 import memphis.myapplication.tasks.FetchingTask;
 
@@ -546,6 +545,9 @@ public class MainActivity extends AppCompatActivity {
                         final FileManager manager = new FileManager(getApplicationContext());
                         String name = "/npChat/" + manager.getUsername() + "/data";
                         String filename =  "/npChat/" + manager.getUsername() + "/file" + path;
+                        for (String friend : recipients) {
+                            filename = filename + "|" + friend;
+                        }
                         Log.d("Publishing file", filename);
 
                         System.out.println("Publish name");

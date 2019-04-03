@@ -277,7 +277,7 @@ public:
 };
 
 void
-processHelloDataUpdate(const std::vector<ndn::Name>& names)
+processHelloDataUpdate(const std::vector<ndn::Name>& names, jobject consumerObject)
 {
   JNIEnv *env;
   jint res = g_jvm->AttachCurrentThread(&env, nullptr);
@@ -297,13 +297,13 @@ processHelloDataUpdate(const std::vector<ndn::Name>& names)
     env->DeleteLocalRef(jstr);
   }
 
-  env->CallVoidMethod(g_consumerObject, g_onHelloDataUpdate, result);
+  env->CallVoidMethod(consumerObject, g_onHelloDataUpdate, result);
   env->DeleteLocalRef(result);
   g_jvm->DetachCurrentThread();
 }
 
 void
-processConsumerSyncUpdate(const std::vector<psync::MissingDataInfo>& updates)
+processConsumerSyncUpdate(const std::vector<psync::MissingDataInfo>& updates, jobject consumerObject)
 {
   JNIEnv *env;
   jint res = g_jvm->AttachCurrentThread(&env, nullptr);
@@ -336,18 +336,18 @@ JNIEXPORT jobject JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_ini
   (JNIEnv *env, jobject thisObject, jstring syncPrefix, jint count, jdouble falsePositive,
     jlong helloInterestLifetimeMillis, jlong syncInterestLifetimeMillis)
 {
-  if (g_consumerObject == nullptr) {
-    g_consumerObject = env->NewGlobalRef(thisObject);
-  }
+
+  jobject consumerObject = env->NewGlobalRef(thisObject);
+
   g_consumerObject = env->NewGlobalRef(thisObject);
   ConsumerWrapper* consumerWrapper = new ConsumerWrapper();
   ndn::Name syncPrefixName(env->GetStringUTFChars(syncPrefix, nullptr));
   consumerWrapper->consumer = std::make_unique<psync::Consumer>(syncPrefixName, *g_facePtr,
-    [](const std::vector<ndn::Name>& updates) {
-      processHelloDataUpdate(updates);
+    [consumerObject](const std::vector<ndn::Name>& updates) {
+      processHelloDataUpdate(updates, consumerObject);
     },
-    [](const std::vector<psync::MissingDataInfo>& updates) {
-      processConsumerSyncUpdate(updates);
+    [consumerObject](const std::vector<psync::MissingDataInfo>& updates) {
+      processConsumerSyncUpdate(updates, consumerObject);
     },
     count,
     falsePositive,
