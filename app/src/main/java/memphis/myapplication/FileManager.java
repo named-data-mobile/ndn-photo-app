@@ -260,6 +260,28 @@ public class FileManager {
         return null;
     }
 
+    public byte[] getFriendKeyBytes(String friend) {
+        try {
+            File friendFile = new File(m_friendsDir + "/" + friend);
+            if(friendFile.exists()) {
+                BufferedReader br = new BufferedReader(new FileReader(friendFile));
+                StringBuffer strBuff = new StringBuffer();
+                String line;
+                while((line = br.readLine()) != null) {
+                    strBuff.append(line);
+                }
+                // The string we have saved to format is the DER bytes in Base64. We need to revert
+                // back to the original format
+                byte[] keyBytes = Base64.decode(strBuff.toString(), Base64.DEFAULT);
+                return keyBytes;
+            }
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     /**
      * Saves data we retrieved from SegmentFetcher to file. This handles photos and other file types
      * slightly differently. Photos are saved to their own special directory, so we can query them

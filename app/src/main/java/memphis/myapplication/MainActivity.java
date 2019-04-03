@@ -15,6 +15,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,8 +38,11 @@ import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
+import net.named_data.jndn.encoding.der.DerDecodingException;
 import net.named_data.jndn.security.KeyChain;
+import net.named_data.jndn.security.SafeBag;
 import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.certificate.Certificate;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
@@ -47,6 +51,7 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 
 import net.named_data.jni.psync.MissingDataInfo;
@@ -60,10 +65,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
@@ -130,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d("Main Activity", "Starting network thread");
             startNetworkThread();
         }
+
+
 
     }
 
@@ -277,6 +294,20 @@ public class MainActivity extends AppCompatActivity {
         Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
+
+
+        try {
+            System.out.println("Checking key");
+            if (m_tpm.hasKey(identity)) {
+                System.out.println("Has key");
+            }
+            else {
+                System.out.println("No key");
+            }
+
+        } catch (TpmBackEnd.Error error) {
+            error.printStackTrace();
+        }
 
         try {
             // since everyone is a potential producer, register your prefix
@@ -550,7 +581,46 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Log.d("Publishing file", filename);
 
+                        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+                        int keyBitSize = 256;
+
+
+                        keyGenerator.init(keyBitSize, new SecureRandom());
+
+
+                        SecretKey secretKey = keyGenerator.generateKey();
+                        byte[] secretKeyBytes = secretKey.getEncoded();
+
+
+                        byte[] friendKey =  manager.getFriendKeyBytes(recipients.get(0));
+                        PublicKey publicKey =
+                                KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(friendKey));
+                        System.out.println(publicKey);
+                        System.out.println("Got friend key");
+
+                        Cipher cipher = Cipher.getInstance("RSA");
+                        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+                        byte[] cipherKey = cipher.doFinal("test string".getBytes("UTF-8"));
+
+                        filename = filename + ":" + new String(cipherKey, "UTF-8");
+                        System.out.println("Final filename " + filename);
+
+//                        //Decrypt
+//
+//                        Blob keyBlob = Globals.pubKeyBlob;
+//                        byte[] blobAsBytes = keyBlob.getImmutableArray();
+//                        PublicKey otherPublicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(blobAsBytes));
+//                        Cipher decipher = Cipher.getInstance("RSA");
+//                        cipher.init(Cipher.DECRYPT_MODE, publicKey);
+//
+//                        byte[] decryptedText = cipher.doFinal(cipherKey);
+//                        String text = new String(decryptedText, "UTF-8");
+//                        System.out.println("String " + text);
+
+
+
                         System.out.println("Publish name");
+
                         Globals.producerManager.m_producer.publishName(name);
                         Globals.producerManager.setSeqMap(filename);
 

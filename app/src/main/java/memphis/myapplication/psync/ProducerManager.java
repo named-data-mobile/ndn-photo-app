@@ -20,7 +20,7 @@ import memphis.myapplication.MemoryCache;
 
 public class ProducerManager {
     public static PSync.PartialProducer m_producer;
-    private static Map<Long, Name> m_seqToFileName = new HashMap<Long, Name>();
+    private static Map<Long, String> m_seqToFileName = new HashMap<Long, String>();
     private static String producerPrefix;
 
     public ProducerManager(String p) {
@@ -28,10 +28,10 @@ public class ProducerManager {
         m_producer = new PSync.PartialProducer(80, producerPrefix,producerPrefix + "/data", 1000, 1000); }
 
     public void setSeqMap(String filename) {
-        m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data"), new Name(filename));
+        m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data"), filename);
     }
 
-    public Name getSeqMap(long seq) {
+    public String getSeqMap(long seq) {
         return m_seqToFileName.get(seq);
     }
 
