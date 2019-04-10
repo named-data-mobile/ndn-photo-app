@@ -38,50 +38,29 @@ public class Common {
      * Starts a new thread to publish the file/photo data.
      * @param blob Blob of content
      * @param prefix Name of the file (currently absolute path)
-     * @param secretKey Symmetric key to encrypt data
-     * @param iv Initialization vector for the key
      */
-    public static void publishData(final Blob blob, final Name prefix, final SecretKey secretKey, final byte[] iv) {
+    public static void publishData(final Blob blob, final Name prefix) {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
                 try {
-                    IvParameterSpec ivspec = new IvParameterSpec(iv);
-                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
-                    byte[] encryptedData = cipher.doFinal(blob.getImmutableArray());
-                    Blob encryptedBlob = new Blob(encryptedData, false);
 
                     ArrayList<Data> fileData = new ArrayList<>();
-                    ArrayList<Data> packets = packetize(encryptedBlob, prefix);
+                    ArrayList<Data> packets = packetize(blob, prefix);
                     // it would be null if this file is already in our cache so we do not packetize
-                    if(packets != null) {
+                    if (packets != null) {
                         Log.d("publishData", "Publishing with prefix: " + prefix);
-                        for (Data data : packetize(encryptedBlob, prefix)) {
+                        for (Data data : packetize(blob, prefix)) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
                         Globals.memoryCache.putInCache(fileData);
-                    }
-                    else {
+                    } else {
                         Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
                     }
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
-                        KeyChain.Error e)
+                        KeyChain.Error e) {
+                    e.printStackTrace();
 
-                {
-                    e.printStackTrace();
-                } catch (NoSuchPaddingException e) {
-                    e.printStackTrace();
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
-                    e.printStackTrace();
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                } catch (BadPaddingException e) {
-                    e.printStackTrace();
-                } catch (IllegalBlockSizeException e) {
-                    e.printStackTrace();
                 }
             }
         });

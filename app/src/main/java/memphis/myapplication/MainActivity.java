@@ -61,14 +61,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
@@ -588,16 +596,36 @@ public class MainActivity extends AppCompatActivity {
                                     bytes = new byte[0];
                                 }
                                 Log.d("file selection result", "file path: " + path);
-                                final Blob blob = new Blob(bytes, true);
-                                final FileManager manager = new FileManager(getApplicationContext());
-                                String prefixApp = "/npChat/" + manager.getUsername() + "/file";
-                                final String prefix = prefixApp + path;
-                                Log.d("Publishing data", prefix);
+//                                final Blob blob = new Blob(bytes, true);
+                                try {
+                                    IvParameterSpec ivspec = new IvParameterSpec(iv);
+                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+                                    byte[] encryptedData = cipher.doFinal(bytes);
+                                    Blob encryptedBlob = new Blob(encryptedData, false);
+                                    final FileManager manager = new FileManager(getApplicationContext());
+                                    String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                                    final String prefix = prefixApp + path;
+                                    Log.d("Publishing data", prefix);
 
-                                Common.publishData(blob, new Name(prefix), secretKey, iv);
-                                Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                                manager.saveFileQR(bitmap, prefix);
-                                runOnUiThread(makeToast("Sending photo"));
+                                    Common.publishData(encryptedBlob, new Name(prefix));
+                                    Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                                    manager.saveFileQR(bitmap, prefix);
+                                    runOnUiThread(makeToast("Sending photo"));
+                                } catch (NoSuchAlgorithmException e) {
+                                    e.printStackTrace();
+                                } catch (NoSuchPaddingException e) {
+                                    e.printStackTrace();
+                                } catch (BadPaddingException e) {
+                                    e.printStackTrace();
+                                } catch (InvalidKeyException e) {
+                                    e.printStackTrace();
+                                } catch (IllegalBlockSizeException e) {
+                                    e.printStackTrace();
+                                } catch (InvalidAlgorithmParameterException e) {
+                                    e.printStackTrace();
+                                }
+
                             }
                         });
 
