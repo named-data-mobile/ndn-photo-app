@@ -250,7 +250,6 @@ public class FileManager {
                 // back to the original format
                 byte[] keyBytes = Base64.decode(strBuff.toString(), Base64.DEFAULT);
                 Blob key = new Blob(keyBytes);
-                Log.d("getFriendKey", key.toString());
                 return key;
             }
         }
@@ -259,6 +258,7 @@ public class FileManager {
         }
         return null;
     }
+
 
     /**
      * Saves data we retrieved from SegmentFetcher to file. This handles photos and other file types

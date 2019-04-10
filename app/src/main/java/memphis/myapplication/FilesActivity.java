@@ -43,8 +43,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import memphis.myapplication.tasks.FetchingTask;
-
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
 public class FilesActivity extends AppCompatActivity {
@@ -393,7 +391,7 @@ public class FilesActivity extends AppCompatActivity {
      */
     public void fetch_data(final Interest interest) {
         // /tasks/FetchingTask
-        new FetchingTask(this).execute(interest);
+//        new FetchingTask(this).execute(interest);
     }
 
     /**
