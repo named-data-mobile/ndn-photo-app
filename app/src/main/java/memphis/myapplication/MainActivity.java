@@ -15,7 +15,6 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,17 +31,15 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import net.named_data.jndn.Face;
-import net.named_data.jndn.Interest;
-import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.Name;
-import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
-import net.named_data.jndn.encoding.der.DerDecodingException;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
+import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
+import net.named_data.jndn.encrypt.algo.EncryptParams;
+import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SafeBag;
 import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.certificate.Certificate;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
@@ -51,10 +48,8 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
-import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 
-import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
 
@@ -65,24 +60,19 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyFactory;
-import java.security.PublicKey;
+import java.nio.ByteBuffer;
 import java.security.SecureRandom;
-import java.security.spec.X509EncodedKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
-import memphis.myapplication.tasks.FetchingTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -106,6 +96,13 @@ public class MainActivity extends AppCompatActivity {
     private final int ADD_FRIEND_CODE = 2;
     private final int SETTINGS_CODE = 3;
     private File m_curr_photo_file;
+
+    private int filenameType = 100;
+    private int friendNameType = 101;
+    private int keyType = 102;
+    private int syncDataType = 999;
+    private int nameAndKeyType = 104;
+    private int ivType = 105;
 
     private boolean netThreadShouldStop = true;
 
@@ -261,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
             Globals.setPubKeyName(key.getName());
             Globals.setPublicKey(key.getPublicKey());
             Globals.setDefaultPibId(pibId);
+
         }
         catch(PibImpl.Error | Pib.Error e) {
             try {
@@ -296,18 +294,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setup_security", "Security was setup successfully");
 
 
-        try {
-            System.out.println("Checking key");
-            if (m_tpm.hasKey(identity)) {
-                System.out.println("Has key");
-            }
-            else {
-                System.out.println("No key");
-            }
-
-        } catch (TpmBackEnd.Error error) {
-            error.printStackTrace();
-        }
 
         try {
             // since everyone is a potential producer, register your prefix
@@ -543,86 +529,82 @@ public class MainActivity extends AppCompatActivity {
                             getApplicationContext().getPackageName() +
                                     ".UriFileProvider", photo);
 
-                    Thread publishingThread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            byte[] bytes;
-                            try {
-                                InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
-                                bytes = IOUtils.toByteArray(is);
-                                Log.d("select file activity", "file byte array size: " + bytes.length);
-                            } catch (IOException e) {
-                                Log.d("onItemClick", "failed to byte");
-                                e.printStackTrace();
-                                bytes = new byte[0];
-                            }
-                            Log.d("file selection result", "file path: " + path);
-                            final Blob blob = new Blob(bytes, true);
-                            final FileManager manager = new FileManager(getApplicationContext());
-                            String prefixApp = "/npChat/" + manager.getUsername() + "/file";
-                            final String prefix = prefixApp + path;
-                            Log.d("Publishing data", prefix);
-
-                            Common.publishData(blob, new Name(prefix));
-                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                            manager.saveFileQR(bitmap, prefix);
-                            runOnUiThread(makeToast("Sending photo"));
-                        }
-                    });
-                    publishingThread.run();
                     ArrayList<String> recipients;
                     try {
                         recipients = resultData.getStringArrayListExtra("recipients");
                         final FileManager manager = new FileManager(getApplicationContext());
                         String name = "/npChat/" + manager.getUsername() + "/data";
-                        String filename =  "/npChat/" + manager.getUsername() + "/file" + path;
+                        String filename = "/npChat/" + manager.getUsername() + "/file" + path;
+
+                        TlvEncoder encoder = new TlvEncoder();
+                        int saveLength;
+
+                        // Encode filename
+                        encoder.writeBlobTlv(filenameType, ByteBuffer.wrap(filename.getBytes()));
+                        saveLength = encoder.getLength();
+
+                        // Generate symmetric key
+                        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+                        int keyBitSize = 256;
+                        keyGenerator.init(keyBitSize, new SecureRandom());
+                        final SecretKey secretKey = keyGenerator.generateKey();
+                        final byte[] iv = new byte[16];
+                        SecureRandom secureRandom = new SecureRandom();
+                        System.out.println(iv);
+                        secureRandom.nextBytes(iv);
+
                         for (String friend : recipients) {
-                            filename = filename + "|" + friend;
+
+                            // Get friend's public key
+                            Blob friendKey = manager.getFriendKey(friend);
+
+                            // Encrypt secret key with friend's public key
+                            Blob encryptedKey = RsaAlgorithm.encrypt
+                                    (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep));
+
+                            // Encode the symmetric key, iv, and friend's name
+                            encoder.writeBlobTlv(keyType, encryptedKey.buf());
+                            encoder.writeBlobTlv(ivType, ByteBuffer.wrap(iv));
+                            encoder.writeBlobTlv(friendNameType, ByteBuffer.wrap(friend.getBytes()));
+                            encoder.writeTypeAndLength(nameAndKeyType, encoder.getLength() - saveLength);
+                            saveLength = encoder.getLength();
                         }
                         Log.d("Publishing file", filename);
 
-                        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-                        int keyBitSize = 256;
+                        encoder.writeTypeAndLength(syncDataType, encoder.getLength());
+                        Blob syncData = new Blob(encoder.getOutput(), true);
 
+                        Thread publishingThread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                byte[] bytes;
+                                try {
+                                    InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                                    bytes = IOUtils.toByteArray(is);
+                                    Log.d("select file activity", "file byte array size: " + bytes.length);
+                                } catch (IOException e) {
+                                    Log.d("onItemClick", "failed to byte");
+                                    e.printStackTrace();
+                                    bytes = new byte[0];
+                                }
+                                Log.d("file selection result", "file path: " + path);
+                                final Blob blob = new Blob(bytes, true);
+                                final FileManager manager = new FileManager(getApplicationContext());
+                                String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                                final String prefix = prefixApp + path;
+                                Log.d("Publishing data", prefix);
 
-                        keyGenerator.init(keyBitSize, new SecureRandom());
+                                Common.publishData(blob, new Name(prefix), secretKey, iv);
+                                Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                                manager.saveFileQR(bitmap, prefix);
+                                runOnUiThread(makeToast("Sending photo"));
+                            }
+                        });
 
-
-                        SecretKey secretKey = keyGenerator.generateKey();
-                        byte[] secretKeyBytes = secretKey.getEncoded();
-
-
-                        byte[] friendKey =  manager.getFriendKeyBytes(recipients.get(0));
-                        PublicKey publicKey =
-                                KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(friendKey));
-                        System.out.println(publicKey);
-                        System.out.println("Got friend key");
-
-                        Cipher cipher = Cipher.getInstance("RSA");
-                        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-                        byte[] cipherKey = cipher.doFinal("test string".getBytes("UTF-8"));
-
-                        filename = filename + ":" + new String(cipherKey, "UTF-8");
-                        System.out.println("Final filename " + filename);
-
-//                        //Decrypt
-//
-//                        Blob keyBlob = Globals.pubKeyBlob;
-//                        byte[] blobAsBytes = keyBlob.getImmutableArray();
-//                        PublicKey otherPublicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(blobAsBytes));
-//                        Cipher decipher = Cipher.getInstance("RSA");
-//                        cipher.init(Cipher.DECRYPT_MODE, publicKey);
-//
-//                        byte[] decryptedText = cipher.doFinal(cipherKey);
-//                        String text = new String(decryptedText, "UTF-8");
-//                        System.out.println("String " + text);
-
-
-
-                        System.out.println("Publish name");
+                        publishingThread.run();
 
                         Globals.producerManager.m_producer.publishName(name);
-                        Globals.producerManager.setSeqMap(filename);
+                        Globals.producerManager.setSeqMap(syncData);
 
                     }
                     catch(Exception e) {

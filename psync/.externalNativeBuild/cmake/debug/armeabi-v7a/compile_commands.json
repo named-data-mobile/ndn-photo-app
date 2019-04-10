@@ -1,7 +1,0 @@
-[
-{
-  "directory": "/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/.externalNativeBuild/cmake/debug/armeabi-v7a",
-  "command": "/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi23 --gcc-toolchain=/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64  -Dpsync_EXPORTS -I/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/packages/ndn_cxx/0.6.5/include -I/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/packages/boost/1.68.0/include -I/home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/packages/psync/0.1.0/include  --sysroot /home/jeremy/Documents/Work/NFD-android-new/android-sdk-linux/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -mfpu=vfpv3-d16 -fno-addrsig -mthumb -mfpu=neon -Wa,--noexecstack -Wformat -Werror=format-security -stdlib=libc++  -std=c++14 -frtti -fexceptions -Wall -Werror -DBOOST_LOG_DYN_LINK -O0 -fno-limit-debug-info  -fPIC   -o CMakeFiles/psync.dir/psync-wrapper.cpp.o -c /home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/src/main/cpp/psync-wrapper.cpp",
-  "file": "/home/jeremy/AndroidStudioProjects/ndn-photo-app/psync/src/main/cpp/psync-wrapper.cpp"
-}
-]

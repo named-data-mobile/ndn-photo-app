@@ -14,7 +14,17 @@ import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 public class Common {
 
@@ -28,17 +38,25 @@ public class Common {
      * Starts a new thread to publish the file/photo data.
      * @param blob Blob of content
      * @param prefix Name of the file (currently absolute path)
+     * @param secretKey Symmetric key to encrypt data
+     * @param iv Initialization vector for the key
      */
-    public static void publishData(final Blob blob, final Name prefix) {
+    public static void publishData(final Blob blob, final Name prefix, final SecretKey secretKey, final byte[] iv) {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
                 try {
+                    IvParameterSpec ivspec = new IvParameterSpec(iv);
+                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+                    byte[] encryptedData = cipher.doFinal(blob.getImmutableArray());
+                    Blob encryptedBlob = new Blob(encryptedData, false);
+
                     ArrayList<Data> fileData = new ArrayList<>();
-                    ArrayList<Data> packets = packetize(blob, prefix);
+                    ArrayList<Data> packets = packetize(encryptedBlob, prefix);
                     // it would be null if this file is already in our cache so we do not packetize
                     if(packets != null) {
                         Log.d("publishData", "Publishing with prefix: " + prefix);
-                        for (Data data : packetize(blob, prefix)) {
+                        for (Data data : packetize(encryptedBlob, prefix)) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
@@ -51,6 +69,18 @@ public class Common {
                         KeyChain.Error e)
 
                 {
+                    e.printStackTrace();
+                } catch (NoSuchPaddingException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (InvalidAlgorithmParameterException e) {
+                    e.printStackTrace();
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                } catch (BadPaddingException e) {
+                    e.printStackTrace();
+                } catch (IllegalBlockSizeException e) {
                     e.printStackTrace();
                 }
             }

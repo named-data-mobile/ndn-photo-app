@@ -7,39 +7,27 @@ import android.util.Log;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
-import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
-import net.named_data.jndn.OnInterestCallback;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.tlv.TlvDecoder;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.tpm.TpmKeyHandle;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
-import memphis.myapplication.MainActivity;
-import memphis.myapplication.R;
 import memphis.myapplication.tasks.FetchingTask;
+import memphis.myapplication.tasks.FetchingTaskParams;
 
 public class ConsumerManager {
 
@@ -48,6 +36,13 @@ public class ConsumerManager {
     static Activity activity;
     static Context context;
     static Face face;
+    final static int filenameType = 100;
+    final static int friendNameType = 101;
+    final static int keyType = 102;
+    final static int syncDataType = 999;
+    final static int nameAndKeyType = 104;
+    final static int ivType = 105;
+
 
     public ConsumerManager(Activity _activity, Context _context) {
         this.activity = _activity;
@@ -71,51 +66,59 @@ public class ConsumerManager {
         @Override
         public void onData(Interest interest, Data data) {
             FileManager manager = new FileManager(context);
-            String interestData = data.getContent().toString();
-            Log.d("onData", interestData);
-            String[] recipientList = interestData.split(":");
-            System.out.print(recipientList[1]);
-//            for (String friend : recipientList) {
-//                if (friend.equals(manager.getUsername())) {
-//                    new FetchingTask(activity).execute(new Interest(new Name(recipientList[0])));
-//                }
-//                else {
-//                    Log.d("OnData", "Not for me, for " + friend);
-//                }
-//            }
-            // /npChat/<username>
-            Name appAndUsername = new Name("/npChat/" + manager.getUsername());
+            Blob interestData = data.getContent();
+            Blob filename = null;
+            Blob recipient = null;
+            Blob symmetricKey = null;
+            byte[] iv = null;
 
+            TlvDecoder decoder = new TlvDecoder(interestData.buf());
+            int endOffset = 0;
             try {
-                Blob keyBlob = Globals.tpm.exportKey(new Name(appAndUsername), null);
-                byte[] blobAsBytes = keyBlob.getImmutableArray();
-                PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(new X509EncodedKeySpec(blobAsBytes));
-                Cipher cipher = Cipher.getInstance("RSA");
-                cipher.init(Cipher.DECRYPT_MODE, privateKey);
+                endOffset = decoder.readNestedTlvsStart(syncDataType);
+                while (decoder.getOffset() < endOffset) {
+                    if (decoder.peekType(filenameType, endOffset)) {
+                        filename = new Blob(decoder.readBlobTlv(filenameType), true);
+                    }
+                    else if (decoder.peekType(nameAndKeyType, endOffset)) {
+                        int friendOffsetEnd = decoder.readNestedTlvsStart(nameAndKeyType);
+                        while (decoder.getOffset() < friendOffsetEnd) {
+                            if (decoder.peekType(keyType, friendOffsetEnd)) {
+                            }
+                            if (decoder.peekType(friendNameType, friendOffsetEnd)) {
+                                recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
+                                if (recipient.toString().equals(manager.getUsername())) {
+                                    iv = new Blob(decoder.readBlobTlv(ivType), true).getImmutableArray();
+                                    symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
+                                    decoder.finishNestedTlvs(friendOffsetEnd);
+                                }
+                                else {
+                                    decoder.skipTlv(ivType);
+                                    decoder.skipTlv(keyType);
+                                }
+                            }
+                        }
+                        decoder.finishNestedTlvs(friendOffsetEnd);
+                    }
+                }
 
-                byte[] decryptedText = cipher.doFinal(recipientList[1].getBytes("UTF-8"));
-                System.out.println("Decrypted text " + decryptedText);
-                String text = new String(decryptedText, "UTF-8");
-                System.out.println("String " + text);
-            } catch (InvalidKeySpecException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (NoSuchPaddingException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            } catch (BadPaddingException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            } catch (IllegalBlockSizeException e) {
+                if (recipient.toString().equals(manager.getUsername())) {
+                    // Decrypt symmetric key
+                    TpmBackEndFile m_tpm = Globals.tpm;
+                    TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
+                    Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
+                    byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
+                    SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+
+                    new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey, iv));
+                }
+
+                decoder.finishNestedTlvs(endOffset);
+            } catch (EncodingException e) {
                 e.printStackTrace();
             } catch (TpmBackEnd.Error error) {
                 error.printStackTrace();
             }
-
-
         }
     };
 

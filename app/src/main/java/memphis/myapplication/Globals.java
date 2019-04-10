@@ -2,14 +2,9 @@ package memphis.myapplication;
 
 import android.app.Application;
 
-import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.certificate.PublicKey;
-import net.named_data.jndn.security.identity.AndroidSqlite3IdentityStorage;
-import net.named_data.jndn.security.identity.FilePrivateKeyStorage;
-import net.named_data.jndn.security.identity.IdentityManager;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
