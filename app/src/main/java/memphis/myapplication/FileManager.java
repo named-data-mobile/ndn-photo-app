@@ -31,7 +31,7 @@ public class FileManager {
 
     private String m_appName;
     private String m_appRootPath;
-    private File m_friendsDir;
+    private static File m_friendsDir;
     private File m_selfDir;
     private File m_photosDir;
     private File m_profilePhoto;

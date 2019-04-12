@@ -9,22 +9,14 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
-import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.encoding.tlv.TlvDecoder;
-import net.named_data.jndn.security.tpm.TpmBackEnd;
-import net.named_data.jndn.security.tpm.TpmBackEndFile;
-import net.named_data.jndn.security.tpm.TpmKeyHandle;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
-import memphis.myapplication.FileManager;
+import memphis.myapplication.Decrypter;
 import memphis.myapplication.Globals;
 import memphis.myapplication.tasks.FetchingTask;
 import memphis.myapplication.tasks.FetchingTaskParams;
@@ -36,12 +28,7 @@ public class ConsumerManager {
     static Activity activity;
     static Context context;
     static Face face;
-    final static int filenameType = 100;
-    final static int friendNameType = 101;
-    final static int keyType = 102;
-    final static int syncDataType = 999;
-    final static int nameAndKeyType = 104;
-    final static int ivType = 105;
+
 
 
     public ConsumerManager(Activity _activity, Context _context) {
@@ -65,59 +52,12 @@ public class ConsumerManager {
 
         @Override
         public void onData(Interest interest, Data data) {
-            FileManager manager = new FileManager(context);
             Blob interestData = data.getContent();
-            Blob filename = null;
-            Blob recipient = null;
-            Blob symmetricKey = null;
-            byte[] iv = null;
-
-            TlvDecoder decoder = new TlvDecoder(interestData.buf());
-            int endOffset = 0;
-            try {
-                endOffset = decoder.readNestedTlvsStart(syncDataType);
-                while (decoder.getOffset() < endOffset) {
-                    if (decoder.peekType(filenameType, endOffset)) {
-                        filename = new Blob(decoder.readBlobTlv(filenameType), true);
-                    }
-                    else if (decoder.peekType(nameAndKeyType, endOffset)) {
-                        int friendOffsetEnd = decoder.readNestedTlvsStart(nameAndKeyType);
-                        while (decoder.getOffset() < friendOffsetEnd) {
-                            if (decoder.peekType(keyType, friendOffsetEnd)) {
-                            }
-                            if (decoder.peekType(friendNameType, friendOffsetEnd)) {
-                                recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
-                                if (recipient.toString().equals(manager.getUsername())) {
-                                    iv = new Blob(decoder.readBlobTlv(ivType), true).getImmutableArray();
-                                    symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
-                                    decoder.finishNestedTlvs(friendOffsetEnd);
-                                }
-                                else {
-                                    decoder.skipTlv(ivType);
-                                    decoder.skipTlv(keyType);
-                                }
-                            }
-                        }
-                        decoder.finishNestedTlvs(friendOffsetEnd);
-                    }
-                }
-
-                if (recipient.toString().equals(manager.getUsername())) {
-                    // Decrypt symmetric key
-                    TpmBackEndFile m_tpm = Globals.tpm;
-                    TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
-                    Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
-                    byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
-                    SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
-
-                    new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey, iv));
-                }
-
-                decoder.finishNestedTlvs(endOffset);
-            } catch (EncodingException e) {
-                e.printStackTrace();
-            } catch (TpmBackEnd.Error error) {
-                error.printStackTrace();
+            System.out.println("interest: " + interest);
+            Decrypter decrypter = new Decrypter(context);
+            FetchingTaskParams fetchingTaskParams = decrypter.decodeSyncData(interestData);
+            if (fetchingTaskParams != null) {
+                new FetchingTask(activity).execute(fetchingTaskParams);
             }
         }
     };
@@ -145,6 +85,10 @@ public class ConsumerManager {
         }
     };
 
+    /**
+     * Creates a new consumer for each friend and adds it to the ArrayList of consumers.
+     * @param prefix is the String "/npChat/friendName"
+     */
     public static void createConsumer(String prefix) {
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);

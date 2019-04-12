@@ -22,20 +22,13 @@ import net.named_data.jndn.util.SignedBlob;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 
+import memphis.myapplication.Decrypter;
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
@@ -58,7 +51,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private FileManager m_manager;
     private Data m_data;
     private String m_appPrefix;
-    private int m_numRetries = 10;
+    private int m_numRetries = 100;
     private SecretKey m_secretKey;
     private byte[] m_iv;
 
@@ -88,7 +81,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private void fetch(Interest interest, SecretKey secretKey, byte[] iv) {
         m_shouldReturn = false;
-        interest.setInterestLifetimeMilliseconds(35000);
+        interest.setInterestLifetimeMilliseconds(3500);
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(m_baseInterest);
@@ -207,26 +200,9 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             Log.d("onPostExecute", "m_content size; " + m_content.size());
 
             // Decrypt content
-            Blob decryptedContent = null;
-            try {
-                IvParameterSpec ivspec = new IvParameterSpec(m_iv);
-                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                cipher.init(Cipher.DECRYPT_MODE, m_secretKey, ivspec);
-                decryptedContent = new Blob(cipher.doFinal(m_content.getImmutableArray()), true);
+            Decrypter decrypter = new Decrypter(m_currContext);
+            Blob decryptedContent = decrypter.decrypt(m_secretKey, m_iv, m_content);
 
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (NoSuchPaddingException e) {
-                e.printStackTrace();
-            } catch (InvalidAlgorithmParameterException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            } catch (BadPaddingException e) {
-                e.printStackTrace();
-            } catch (IllegalBlockSizeException e) {
-                e.printStackTrace();
-            }
 
             boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
             if (wasSaved) {

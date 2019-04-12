@@ -34,10 +34,6 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
-import net.named_data.jndn.encoding.tlv.TlvEncoder;
-import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
-import net.named_data.jndn.encrypt.algo.EncryptParams;
-import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -60,11 +56,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -73,7 +67,6 @@ import java.util.List;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -105,12 +98,6 @@ public class MainActivity extends AppCompatActivity {
     private final int SETTINGS_CODE = 3;
     private File m_curr_photo_file;
 
-    private int filenameType = 100;
-    private int friendNameType = 101;
-    private int keyType = 102;
-    private int syncDataType = 999;
-    private int nameAndKeyType = 104;
-    private int ivType = 105;
 
     private boolean netThreadShouldStop = true;
 
@@ -300,9 +287,7 @@ public class MainActivity extends AppCompatActivity {
         Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
         Log.d("setup_security", "Security was setup successfully");
-
-
-
+        
         try {
             // since everyone is a potential producer, register your prefix
             register_with_NFD(appAndUsername);
@@ -530,119 +515,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if(requestCode == SELECT_RECIPIENTS_CODE) {
             if(resultCode == RESULT_OK) {
-                try {
-                    final String path = resultData.getStringExtra("photo");
-                    final File photo = new File(path);
-                    final Uri uri = UriFileProvider.getUriForFile(this,
-                            getApplicationContext().getPackageName() +
-                                    ".UriFileProvider", photo);
-
-                    ArrayList<String> recipients;
-                    try {
-                        recipients = resultData.getStringArrayListExtra("recipients");
-                        final FileManager manager = new FileManager(getApplicationContext());
-                        String name = "/npChat/" + manager.getUsername() + "/data";
-                        String filename = "/npChat/" + manager.getUsername() + "/file" + path;
-
-                        TlvEncoder encoder = new TlvEncoder();
-                        int saveLength;
-
-                        // Encode filename
-                        encoder.writeBlobTlv(filenameType, ByteBuffer.wrap(filename.getBytes()));
-                        saveLength = encoder.getLength();
-
-                        // Generate symmetric key
-                        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-                        int keyBitSize = 256;
-                        keyGenerator.init(keyBitSize, new SecureRandom());
-                        final SecretKey secretKey = keyGenerator.generateKey();
-                        final byte[] iv = new byte[16];
-                        SecureRandom secureRandom = new SecureRandom();
-                        System.out.println(iv);
-                        secureRandom.nextBytes(iv);
-
-                        for (String friend : recipients) {
-
-                            // Get friend's public key
-                            Blob friendKey = manager.getFriendKey(friend);
-
-                            // Encrypt secret key with friend's public key
-                            Blob encryptedKey = RsaAlgorithm.encrypt
-                                    (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep));
-
-                            // Encode the symmetric key, iv, and friend's name
-                            encoder.writeBlobTlv(keyType, encryptedKey.buf());
-                            encoder.writeBlobTlv(ivType, ByteBuffer.wrap(iv));
-                            encoder.writeBlobTlv(friendNameType, ByteBuffer.wrap(friend.getBytes()));
-                            encoder.writeTypeAndLength(nameAndKeyType, encoder.getLength() - saveLength);
-                            saveLength = encoder.getLength();
-                        }
-                        Log.d("Publishing file", filename);
-
-                        encoder.writeTypeAndLength(syncDataType, encoder.getLength());
-                        Blob syncData = new Blob(encoder.getOutput(), true);
-
-                        Thread publishingThread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                byte[] bytes;
-                                try {
-                                    InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
-                                    bytes = IOUtils.toByteArray(is);
-                                    Log.d("select file activity", "file byte array size: " + bytes.length);
-                                } catch (IOException e) {
-                                    Log.d("onItemClick", "failed to byte");
-                                    e.printStackTrace();
-                                    bytes = new byte[0];
-                                }
-                                Log.d("file selection result", "file path: " + path);
-//                                final Blob blob = new Blob(bytes, true);
-                                try {
-                                    IvParameterSpec ivspec = new IvParameterSpec(iv);
-                                    Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-                                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
-                                    byte[] encryptedData = cipher.doFinal(bytes);
-                                    Blob encryptedBlob = new Blob(encryptedData, false);
-                                    final FileManager manager = new FileManager(getApplicationContext());
-                                    String prefixApp = "/npChat/" + manager.getUsername() + "/file";
-                                    final String prefix = prefixApp + path;
-                                    Log.d("Publishing data", prefix);
-
-                                    Common.publishData(encryptedBlob, new Name(prefix));
-                                    Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                                    manager.saveFileQR(bitmap, prefix);
-                                    runOnUiThread(makeToast("Sending photo"));
-                                } catch (NoSuchAlgorithmException e) {
-                                    e.printStackTrace();
-                                } catch (NoSuchPaddingException e) {
-                                    e.printStackTrace();
-                                } catch (BadPaddingException e) {
-                                    e.printStackTrace();
-                                } catch (InvalidKeyException e) {
-                                    e.printStackTrace();
-                                } catch (IllegalBlockSizeException e) {
-                                    e.printStackTrace();
-                                } catch (InvalidAlgorithmParameterException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        });
-
-                        publishingThread.run();
-
-                        Globals.producerManager.m_producer.publishName(name);
-                        Globals.producerManager.setSeqMap(syncData);
-
-                    }
-                    catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                    runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
-                }
+                encryptAndPublish(resultData);
             }
             else {
                 runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
@@ -683,6 +556,87 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NewContentActivity.class);
         startActivity(intent);
     }
+
+    public void encryptAndPublish(Intent resultData) {
+        try {
+            final String path = resultData.getStringExtra("photo");
+            final File photo = new File(path);
+            final Uri uri = UriFileProvider.getUriForFile(this,
+                    getApplicationContext().getPackageName() +
+                            ".UriFileProvider", photo);
+            final Encrypter encrypter = new Encrypter(getApplicationContext());
+
+
+            ArrayList<String> recipients;
+            try {
+                recipients = resultData.getStringArrayListExtra("recipients");
+                final FileManager manager = new FileManager(getApplicationContext());
+                String name = "/npChat/" + manager.getUsername() + "/data";
+                final String filename = "/npChat/" + manager.getUsername() + "/file" + path;
+
+                // Generate symmetric key
+                final SecretKey secretKey = encrypter.generateKey();
+                final byte[] iv = encrypter.generateIV();
+
+                // Encode sync data
+                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey, iv);
+
+
+                Log.d("Publishing file", filename);
+
+
+                Thread publishingThread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        byte[] bytes;
+                        try {
+                            InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                            bytes = IOUtils.toByteArray(is);
+                            Log.d("select file activity", "file byte array size: " + bytes.length);
+                        } catch (IOException e) {
+                            Log.d("onItemClick", "failed to byte");
+                            e.printStackTrace();
+                            bytes = new byte[0];
+                        }
+                        Log.d("file selection result", "file path: " + path);
+//                                final Blob blob = new Blob(bytes, true);
+                        try {
+                            Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                            encrypter.saveKey(secretKey, iv, filename);
+                            final FileManager manager = new FileManager(getApplicationContext());
+                            String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                            final String prefix = prefixApp + path;
+                            Log.d("Publishing data", prefix);
+
+                            Common.publishData(encryptedBlob, new Name(prefix));
+                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                            manager.saveFileQR(bitmap, prefix);
+                            runOnUiThread(makeToast("Sending photo"));
+                        } catch (NoSuchAlgorithmException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchPaddingException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+
+                publishingThread.run();
+
+                Globals.producerManager.m_producer.publishName(name);
+                Globals.producerManager.setSeqMap(syncData);
+
+            }
+            catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
+        }
+    }
+
 
     /**
      * Triggered by button press. This acts as a helper function to first ask for permission to

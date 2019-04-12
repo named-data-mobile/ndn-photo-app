@@ -7,6 +7,10 @@ import net.named_data.jndn.Data;
 import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
+import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
+import net.named_data.jndn.encrypt.algo.EncryptParams;
+import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.PibImpl;
@@ -17,22 +21,21 @@ import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class Common {
 
-    /* This currently contains duplicate functions from FilesActivity except that FilesActivity
-     * contains saveFileQR method in its publishData method. I needed access to publishData but from
-     * MainActivity (and other places), if I tried creating a FilesActivity and calling publishData,
-     * it would crash because of the FileManager being null. Fix this duplication later.
-     */
+
 
     /**
      * Starts a new thread to publish the file/photo data.
@@ -120,4 +123,6 @@ public class Common {
         } while (byteBuffer.hasRemaining());
         return datas;
     }
+
+
 }

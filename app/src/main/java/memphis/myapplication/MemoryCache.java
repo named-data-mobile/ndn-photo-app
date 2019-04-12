@@ -41,6 +41,7 @@ public class MemoryCache {
 
     MemoryCache(Face face, Context context) {
         mCache = new MemoryContentCache(face, 8000);
+        mCache.setMinimumCacheLifetime(600000);
         this.face = face;
         m_currContext = context;
     }

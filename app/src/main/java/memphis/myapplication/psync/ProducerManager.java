@@ -40,6 +40,7 @@ public class ProducerManager {
             Log.d("onDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
             try {
                 Data data = new Data(interest.getName());
+                System.out.print(data.getContent());
                 Blob content = m_seqToFileName.get(m_producer.getSeqNo(producerPrefix + "/data"));
                 data.setContent(new Blob(content));
                 face.putData(data);
@@ -53,7 +54,7 @@ public class ProducerManager {
     public static final OnInterestCallback onNoDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            Log.d("onFileInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
         }
     };
 
