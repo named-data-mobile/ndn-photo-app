@@ -74,7 +74,7 @@ public class AddFriendActivity extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         File file = new File(manager.getMyQRPath());
         if(!file.exists()) {
-            manager.saveMyQRCode(QRExchange.makeQRFriendCode(manager));
+            manager.saveMyQRCode(QRExchange.makeQRFriendCode(AddFriendActivity.this, manager));
         }
         Intent display = new Intent(this, DisplayQRActivity.class);
         display.setData(Uri.fromFile(file));

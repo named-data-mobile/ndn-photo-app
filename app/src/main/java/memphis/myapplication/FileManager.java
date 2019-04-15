@@ -5,9 +5,6 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
 
-import net.named_data.jndn.Interest;
-import net.named_data.jndn.Name;
-import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.util.Blob;
 
 //import org.apache.commons.io.FileUtils;
@@ -19,12 +16,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -38,6 +32,7 @@ public class FileManager {
     private File m_filesDir;
     private File m_rcvdFilesDir;
     private File m_rcvdPhotosDir;
+    private Context mContext;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
@@ -49,6 +44,7 @@ public class FileManager {
            of destroying content after viewing.
          */
         // m_appRootPath = context.getFilesDir().toString();
+        mContext = context;
         m_appRootPath = context.getExternalFilesDir(null).toString();
         m_friendsDir = new File(m_appRootPath, "/friends");
         m_selfDir = new File(m_appRootPath, "/self");
@@ -413,7 +409,7 @@ public class FileManager {
     public String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
         // /npChat/<username>/
-        String username = this.getUsername();
+        String username = SharedPrefsManager.getInstance(mContext).getUsername();
         if (username != null) {
             // check that path already comes with "/" prepended
             if(path.charAt(0) == '/') {

@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     private ProducerManager producerManager;
     private ConsumerManager consumerManager;
 
+    SharedPrefsManager sharedPrefsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -204,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setup_security", "Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
         Log.d("MainActivity", "Creating producer" + "/npChat/" + manager.getUsername() + "/data");
@@ -434,7 +436,6 @@ public class MainActivity extends AppCompatActivity {
         registerRouteToAp();
 
     }
-
 
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));

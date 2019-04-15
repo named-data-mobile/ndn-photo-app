@@ -11,12 +11,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import net.named_data.jndn.encoding.der.DerNode;
 import net.named_data.jndn.util.Blob;
-
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 
 public class QRExchange {
 
@@ -54,8 +49,8 @@ public class QRExchange {
      */
     // consider changing this to send an interest for the key since it's in DER format. It does not
     // seem to play nice with strings.
-    public static Bitmap makeQRFriendCode(FileManager manager) {
-        String name = manager.getUsername();
+    public static Bitmap makeQRFriendCode(Context context, FileManager manager) {
+        String name = SharedPrefsManager.getInstance(context).getUsername();
         Blob publicKey = Globals.pubKeyBlob;
         Log.d("makeFriendCode", "Pubkey: " + publicKey.toString());
         if(publicKey != null) {
