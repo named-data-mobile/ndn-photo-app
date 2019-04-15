@@ -75,7 +75,8 @@ public class Decrypter {
      * @return FetchingTaskParams object containing the interest for the file, the symmetric key, and the initialization vector
      */
     public FetchingTaskParams decodeSyncData(Blob interestData) {
-        FileManager manager = new FileManager(context);
+        SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(context);
+
 
         Blob filename = null;
         Blob recipient = null;
@@ -97,7 +98,7 @@ public class Decrypter {
                         }
                         if (decoder.peekType(friendNameType, friendOffsetEnd)) {
                             recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
-                            if (recipient.toString().equals(manager.getUsername())) {
+                            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
                                 iv = new Blob(decoder.readBlobTlv(ivType), true).getImmutableArray();
                                 symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
                                 decoder.finishNestedTlvs(friendOffsetEnd);
@@ -112,7 +113,7 @@ public class Decrypter {
                 }
             }
 
-            if (recipient.toString().equals(manager.getUsername())) {
+            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
                 // Decrypt symmetric key
                 TpmBackEndFile m_tpm = Globals.tpm;
                 TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);

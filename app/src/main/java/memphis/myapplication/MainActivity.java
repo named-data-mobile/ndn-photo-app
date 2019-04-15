@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
     private ProducerManager producerManager;
     private ConsumerManager consumerManager;
 
+    SharedPrefsManager sharedPrefsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -191,18 +193,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setup_security", "Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Log.d("MainActivity", "Creating producer" + "/npChat/" + manager.getUsername() + "/data");
-        String producerPrefix = "/npChat/" + manager.getUsername();
+        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername() + "/data");
+        String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
         Globals.setProducerManager(new ProducerManager(producerPrefix));
 
 
         // Creating consumers
         Log.d("MainActivity", "Creating consumer");
         Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
-        for (String friend : manager.getFriendsList()) {
+        for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
             Globals.consumerManager.createConsumer(friendPrefix);
             Log.d("Consumer", "Added consumer for friend for " + friend);
@@ -420,7 +422,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));
         int myFace = 0;
@@ -442,7 +443,6 @@ public class MainActivity extends AppCompatActivity {
                 for (FaceStatus f : faceList) {
                     if (f.getRemoteUri().contains("udp4://224")) {
                         Log.d("registerRouteToAp", "Using multicast face: " + f.getRemoteUri());
-                        System.out.println("Testing this");
                         myFace = f.getFaceId();
 
                     }
@@ -494,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
                         Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
 
                         FileManager manager = new FileManager(getApplicationContext());
-                        ArrayList<String> friendsList = manager.getFriendsList();
+                        ArrayList<String> friendsList = sharedPrefsManager.getFriendsList();
                         intent.putStringArrayListExtra("friendsList", friendsList);
                         // make this startActivityForResult and catch the list of recipients;
                         intent.putExtra("photo", m_curr_photo_file.toString());
@@ -571,8 +571,8 @@ public class MainActivity extends AppCompatActivity {
             try {
                 recipients = resultData.getStringArrayListExtra("recipients");
                 final FileManager manager = new FileManager(getApplicationContext());
-                String name = "/npChat/" + manager.getUsername() + "/data";
-                final String filename = "/npChat/" + manager.getUsername() + "/file" + path;
+                String name = "/npChat/" + sharedPrefsManager.getUsername() + "/data";
+                final String filename = "/npChat/" + sharedPrefsManager.getUsername() + "/file" + path;
 
                 // Generate symmetric key
                 final SecretKey secretKey = encrypter.generateKey();
@@ -602,9 +602,9 @@ public class MainActivity extends AppCompatActivity {
 //                                final Blob blob = new Blob(bytes, true);
                         try {
                             Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                            encrypter.saveKey(secretKey, iv, filename);
+//                            encrypter.saveKey(secretKey, iv, filename);
                             final FileManager manager = new FileManager(getApplicationContext());
-                            String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                            String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;
                             Log.d("Publishing data", prefix);
 

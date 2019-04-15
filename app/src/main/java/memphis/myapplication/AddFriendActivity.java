@@ -74,7 +74,7 @@ public class AddFriendActivity extends AppCompatActivity {
         FileManager manager = new FileManager(getApplicationContext());
         File file = new File(manager.getMyQRPath());
         if(!file.exists()) {
-            manager.saveMyQRCode(QRExchange.makeQRFriendCode(manager));
+            manager.saveMyQRCode(QRExchange.makeQRFriendCode(AddFriendActivity.this, manager));
         }
         Intent display = new Intent(this, DisplayQRActivity.class);
         display.setData(Uri.fromFile(file));
@@ -83,7 +83,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
     public void viewFriendsList(View view) {
         FileManager manager = new FileManager(getApplicationContext());
-        ArrayList<String> friendsList = manager.getFriendsList();
+        ArrayList<String> friendsList = SharedPrefsManager.getInstance(this).getFriendsList();
         Intent intent = new Intent(this, ViewFriendsActivity.class);
         intent.putStringArrayListExtra("friendsList", friendsList);
         startActivity(intent);
