@@ -15,28 +15,35 @@ import net.named_data.jndn.encoding.WireFormat;
 import net.named_data.jndn.security.DigestAlgorithm;
 import net.named_data.jndn.security.KeyType;
 import net.named_data.jndn.security.UnrecognizedKeyFormatException;
-import net.named_data.jndn.security.VerificationHelpers;
 import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 import net.named_data.jndn.util.SignedBlob;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+
 import memphis.myapplication.FileManager;
-import memphis.myapplication.FilesActivity;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
 
 import static java.lang.Thread.sleep;
 
 // revisit params
-public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
+public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private Activity m_parentActivity;
     private Context m_currContext;
@@ -52,6 +59,8 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
     private Data m_data;
     private String m_appPrefix;
     private int m_numRetries = 10;
+    private SecretKey m_secretKey;
+    private byte[] m_iv;
 
     public FetchingTask(Activity activity) {
         m_parentActivity = activity;
@@ -65,18 +74,20 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
 
     // actual process; we are using the SegmentFetcher to retrieve data
     @Override
-    protected Boolean doInBackground(Interest... interests) {
-        m_baseInterest = interests[0];
-        fetch(m_baseInterest);
+    protected Boolean doInBackground(FetchingTaskParams... params) {
+        m_baseInterest = params[0].interest;
+        m_secretKey = params[0].secretKey;
+        m_iv = params[0].iv;
+        Log.d("Fetching task", m_baseInterest.toUri());
+        fetch(m_baseInterest, m_secretKey, m_iv);
         // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
 
         return m_received;
     }
 
-    private void fetch(Interest interest) {
+    private void fetch(Interest interest, SecretKey secretKey, byte[] iv) {
         m_shouldReturn = false;
-
         interest.setInterestLifetimeMilliseconds(35000);
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
@@ -90,6 +101,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                     @Override
                     public boolean verifySegment(Data data) {
                         //m_data = data;
+                        Log.d("verifySegement", "verifying segment");
                         SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
                         boolean isVerified = verifySignature
                                 (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
@@ -116,7 +128,7 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
                                 Interest interest = new Interest(new Name(message.substring(index)));
                                 if(m_numRetries > 0) {
                                     m_numRetries--;
-                                    fetch(interest);
+                                    fetch(interest, m_secretKey, m_iv);
 
                                 }
                             }
@@ -143,21 +155,18 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
      * @param interest
      */
     private void getUserInfo(Interest interest) {
-        String s = interest.getName().getPrefix(2).toUri();
-        s = s.substring(1);
-        int index = s.indexOf("/");
-        if(s.substring(0, index).equals(m_appPrefix.substring(1))) {
-            m_user = s.substring(index+1, s.length());
-            // we have the user, check if we're friends. If so, retrieve their key from file.
-            ArrayList<String> friendsList = m_manager.getFriendsList();
-            Log.d("username&PubKey", "user: " + m_user);
-            if(friendsList.contains(m_user)) {
-                try {
-                    m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
-                }
-                catch(UnrecognizedKeyFormatException e) {
-                    e.printStackTrace();
-                }
+        Name n = interest.getName().getSubName(1);
+        System.out.println(n.toUri());
+        m_user = (n.getPrefix(1).toUri()).substring(1);
+        // we have the user, check if we're friends. If so, retrieve their key from file.
+        ArrayList<String> friendsList = m_manager.getFriendsList();
+        Log.d("username&PubKey", "user: " + m_user);
+        if(friendsList.contains(m_user)) {
+            try {
+                m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
+            }
+            catch(UnrecognizedKeyFormatException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -196,7 +205,30 @@ public class FetchingTask extends AsyncTask<Interest, Void, Boolean> {
         if (m_received) {
             // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
             Log.d("onPostExecute", "m_content size; " + m_content.size());
-            boolean wasSaved = m_manager.saveContentToFile(m_content, m_baseInterest.getName().toUri());
+
+            // Decrypt content
+            Blob decryptedContent = null;
+            try {
+                IvParameterSpec ivspec = new IvParameterSpec(m_iv);
+                Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+                cipher.init(Cipher.DECRYPT_MODE, m_secretKey, ivspec);
+                decryptedContent = new Blob(cipher.doFinal(m_content.getImmutableArray()), true);
+
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            }
+
+            boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
             if (wasSaved) {
                 m_resultMsg = "We got content.";
                 Log.d("FetchingTask: ", "Data saved");

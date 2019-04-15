@@ -14,7 +14,17 @@ import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 public class Common {
 
@@ -33,25 +43,24 @@ public class Common {
         Thread publishingThread = new Thread(new Runnable() {
             public void run() {
                 try {
+
                     ArrayList<Data> fileData = new ArrayList<>();
                     ArrayList<Data> packets = packetize(blob, prefix);
                     // it would be null if this file is already in our cache so we do not packetize
-                    if(packets != null) {
+                    if (packets != null) {
                         Log.d("publishData", "Publishing with prefix: " + prefix);
                         for (Data data : packetize(blob, prefix)) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
                         Globals.memoryCache.putInCache(fileData);
-                    }
-                    else {
+                    } else {
                         Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
                     }
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
-                        KeyChain.Error e)
-
-                {
+                        KeyChain.Error e) {
                     e.printStackTrace();
+
                 }
             }
         });
