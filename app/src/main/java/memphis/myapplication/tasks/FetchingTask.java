@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.security.KeyFactory;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
@@ -32,6 +33,7 @@ import memphis.myapplication.Decrypter;
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
+import memphis.myapplication.SharedPrefsManager;
 
 import static java.lang.Thread.sleep;
 
@@ -51,9 +53,8 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private FileManager m_manager;
     private Data m_data;
     private String m_appPrefix;
-    private int m_numRetries = 100;
+    private int m_numRetries = 50;
     private SecretKey m_secretKey;
-    private byte[] m_iv;
 
     public FetchingTask(Activity activity) {
         m_parentActivity = activity;
@@ -70,18 +71,18 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
         m_secretKey = params[0].secretKey;
-        m_iv = params[0].iv;
         Log.d("Fetching task", m_baseInterest.toUri());
-        fetch(m_baseInterest, m_secretKey, m_iv);
+        fetch(m_baseInterest, m_secretKey);
         // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
 
         return m_received;
     }
 
-    private void fetch(Interest interest, SecretKey secretKey, byte[] iv) {
+    private void fetch(Interest interest, SecretKey secretKey) {
         m_shouldReturn = false;
-        interest.setInterestLifetimeMilliseconds(3500);
+//        interest.setInterestLifetimeMilliseconds(3500);
+        interest.setInterestLifetimeMilliseconds(15000);
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(m_baseInterest);
@@ -121,7 +122,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                                 Interest interest = new Interest(new Name(message.substring(index)));
                                 if(m_numRetries > 0) {
                                     m_numRetries--;
-                                    fetch(interest, m_secretKey, m_iv);
+                                    fetch(interest, m_secretKey);
 
                                 }
                             }
@@ -152,7 +153,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         System.out.println(n.toUri());
         m_user = (n.getPrefix(1).toUri()).substring(1);
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        ArrayList<String> friendsList = m_manager.getFriendsList();
+        ArrayList<String> friendsList = SharedPrefsManager.getInstance(m_currContext).getFriendsList();
         Log.d("username&PubKey", "user: " + m_user);
         if(friendsList.contains(m_user)) {
             try {
@@ -199,9 +200,14 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
             Log.d("onPostExecute", "m_content size; " + m_content.size());
 
+            // Get IV
+            byte[] content = m_content.getImmutableArray();
+            byte[] iv = Arrays.copyOfRange(content, 0, 16);
+            byte[] data = Arrays.copyOfRange(content, iv.length, content.length);
+
             // Decrypt content
             Decrypter decrypter = new Decrypter(m_currContext);
-            Blob decryptedContent = decrypter.decrypt(m_secretKey, m_iv, m_content);
+            Blob decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
 
 
             boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());

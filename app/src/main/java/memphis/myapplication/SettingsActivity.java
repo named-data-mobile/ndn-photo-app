@@ -50,6 +50,7 @@ public class SettingsActivity extends AppCompatActivity {
         startActivityForResult(intent, PICK_PHOTO);
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {

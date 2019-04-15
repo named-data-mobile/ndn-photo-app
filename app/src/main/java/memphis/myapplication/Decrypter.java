@@ -75,12 +75,12 @@ public class Decrypter {
      * @return FetchingTaskParams object containing the interest for the file, the symmetric key, and the initialization vector
      */
     public FetchingTaskParams decodeSyncData(Blob interestData) {
-        FileManager manager = new FileManager(context);
+        SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(context);
+
 
         Blob filename = null;
         Blob recipient = null;
         Blob symmetricKey = null;
-        byte[] iv = null;
 
         TlvDecoder decoder = new TlvDecoder(interestData.buf());
         int endOffset = 0;
@@ -97,8 +97,7 @@ public class Decrypter {
                         }
                         if (decoder.peekType(friendNameType, friendOffsetEnd)) {
                             recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
-                            if (recipient.toString().equals(manager.getUsername())) {
-                                iv = new Blob(decoder.readBlobTlv(ivType), true).getImmutableArray();
+                            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
                                 symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
                                 decoder.finishNestedTlvs(friendOffsetEnd);
                             }
@@ -112,7 +111,7 @@ public class Decrypter {
                 }
             }
 
-            if (recipient.toString().equals(manager.getUsername())) {
+            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
                 // Decrypt symmetric key
                 TpmBackEndFile m_tpm = Globals.tpm;
                 TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
@@ -120,7 +119,7 @@ public class Decrypter {
                 byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                 SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
                 System.out.println("Filename : " + filename);
-                return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey, iv);
+                return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey);
             }
 
             decoder.finishNestedTlvs(endOffset);

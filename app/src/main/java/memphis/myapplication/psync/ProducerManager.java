@@ -51,11 +51,6 @@ public class ProducerManager {
         }
     };
 
-    public static final OnInterestCallback onNoDataInterest = new OnInterestCallback() {
-        @Override
-        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-        }
-    };
+
 
 }

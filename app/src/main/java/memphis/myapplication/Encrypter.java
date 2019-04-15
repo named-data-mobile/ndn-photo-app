@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -72,10 +73,9 @@ public class Encrypter {
      * @param recipients the list of recipients
      * @param filename the uri of the file being shared
      * @param secretKey the encrypted symmetric key
-     * @param iv the random iv used with the symmetric key to encrypt the file data
      * @return Blob of TLV encoded data
      */
-    public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey, byte[] iv){
+    public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey){
         TlvEncoder encoder = new TlvEncoder();
         int saveLength;
         FileManager manager = new FileManager(context);
@@ -110,7 +110,6 @@ public class Encrypter {
 
             // Encode the symmetric key, iv, and friend's name
             encoder.writeBlobTlv(keyType, encryptedKey.buf());
-            encoder.writeBlobTlv(ivType, ByteBuffer.wrap(iv));
             encoder.writeBlobTlv(friendNameType, ByteBuffer.wrap(friend.getBytes()));
             encoder.writeTypeAndLength(nameAndKeyType, encoder.getLength() - saveLength);
             saveLength = encoder.getLength();
@@ -133,7 +132,11 @@ public class Encrypter {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
             byte[] encryptedData = cipher.doFinal(data);
-            return new Blob(encryptedData, false);
+            byte[] dataPlusIV = new byte[iv.length + encryptedData.length];
+            System.arraycopy(iv, 0, dataPlusIV, 0, iv.length);
+            System.arraycopy(encryptedData, 0, dataPlusIV, iv.length, encryptedData.length);
+
+            return new Blob(dataPlusIV, false);
 
         } catch (InvalidAlgorithmParameterException e) {
             e.printStackTrace();

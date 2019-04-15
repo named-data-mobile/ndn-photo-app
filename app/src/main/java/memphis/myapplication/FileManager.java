@@ -5,9 +5,6 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
 
-import net.named_data.jndn.Interest;
-import net.named_data.jndn.Name;
-import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.util.Blob;
 
 //import org.apache.commons.io.FileUtils;
@@ -19,12 +16,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -38,6 +32,7 @@ public class FileManager {
     private File m_filesDir;
     private File m_rcvdFilesDir;
     private File m_rcvdPhotosDir;
+    private Context mContext;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
@@ -49,6 +44,7 @@ public class FileManager {
            of destroying content after viewing.
          */
         // m_appRootPath = context.getFilesDir().toString();
+        mContext = context;
         m_appRootPath = context.getExternalFilesDir(null).toString();
         m_friendsDir = new File(m_appRootPath, "/friends");
         m_selfDir = new File(m_appRootPath, "/self");
@@ -127,50 +123,6 @@ public class FileManager {
         dirsCreated = true;
     }
 
-    /**
-     * Saves your username to file so we can retrieve it later.
-     * @param username is the chosen name of the user
-     * @return whether the file operation was successful or not.
-     */
-    protected boolean saveUsername(String username) {
-        File user = new File(m_selfDir + "/username");
-        if (!user.exists()) {
-            try {
-                user.createNewFile();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        try {
-            FileWriter writer = new FileWriter(user);
-            writer.write(username);
-            writer.close();
-            return true;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    /**
-     * Retrieves your username from file. Needed for namespacing.
-     * @return String of username
-     */
-    public String getUsername() {
-        File user = new File(m_selfDir + "/username");
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(user));
-            String username = reader.readLine();
-            reader.close();
-            return username;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     /**
      * Saves your personal QR code to a png file.
@@ -197,66 +149,53 @@ public class FileManager {
         return (m_selfDir + "/myQR.png");
     }
 
+
+
+
     // save friends
     public int saveFriend(String friendContent) {
+        Log.d("Saving friend", friendContent);
         if (friendContent.length() > 0) {
             int index = friendContent.indexOf(" ");
             String username = friendContent.substring(0, index);
             // A friend's filename will be their username. Another reason why we must ensure uniqueness
-            File friendFile = new File(m_friendsDir + "/" + username);
-            if (friendFile.exists()) {
+
+//            File friendFile = new File(m_friendsDir + "/" + username);
+            if (!SharedPrefsManager.getInstance(mContext).addFriend(username)) {
                 return 1;
             }
             String pubKey = friendContent.substring(index + 1);
             Log.d("pubKey", "This is what we're writing: " + pubKey);
-            try {
-                boolean wasCreated = friendFile.createNewFile();
-                if(wasCreated) {
-                    // consider changing to byte content
-                    FileOutputStream fostream = new FileOutputStream(friendFile);
-                    // writer.write(username);
-                    fostream.write(pubKey.getBytes());
-                    fostream.close();
-                    return 0;
-                }
+
+            SharedPrefsManager.getInstance(mContext).storeFriendKey(username, pubKey);
+                return 0;
             }
-            catch(IOException e) {
-                e.printStackTrace();
-            }
-        }
         return -1;
     }
 
-    public ArrayList<String> getFriendsList() {
-        ArrayList<String> friendsList = new ArrayList<>();
-        File[] files = m_friendsDir.listFiles();
-        for(File file : files) {
-            friendsList.add(file.getName());
-        }
-        return friendsList;
-    }
+//    public ArrayList<String> getFriendsList() {
+//        ArrayList<String> friendsList = new ArrayList<>();
+//        File[] files = m_friendsDir.listFiles();
+//        for(File file : files) {
+//            friendsList.add(file.getName());
+//        }
+//        return friendsList;
+//    }
 
     public Blob getFriendKey(String friend) {
-        try {
-            File friendFile = new File(m_friendsDir + "/" + friend);
-            if(friendFile.exists()) {
-                BufferedReader br = new BufferedReader(new FileReader(friendFile));
-                StringBuffer strBuff = new StringBuffer();
-                String line;
-                while((line = br.readLine()) != null) {
-                    strBuff.append(line);
-                }
-                // The string we have saved to format is the DER bytes in Base64. We need to revert
-                // back to the original format
-                byte[] keyBytes = Base64.decode(strBuff.toString(), Base64.DEFAULT);
-                Blob key = new Blob(keyBytes);
-                return key;
-            }
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+//            File friendFile = new File(m_friendsDir + "/" + friend);
+//            if(friendFile.exists()) {
+//                BufferedReader br = new BufferedReader(new FileReader(friendFile));
+//                StringBuffer strBuff = new StringBuffer();
+//                String line;
+//                while((line = br.readLine()) != null) {
+//                    strBuff.append(line);
+//                }
+//                // The string we have saved to format is the DER bytes in Base64. We need to revert
+//                // back to the original format
+            byte[] keyBytes = Base64.decode(SharedPrefsManager.getInstance(mContext).getFriendKey(friend), Base64.DEFAULT);
+            Blob key = new Blob(keyBytes);
+            return key;
     }
 
 
@@ -413,7 +352,7 @@ public class FileManager {
     public String addAppPrefix(String path) {
         // we could also allow the user to state their own name which will attach to the end of
         // /npChat/<username>/
-        String username = this.getUsername();
+        String username = SharedPrefsManager.getInstance(mContext).getUsername();
         if (username != null) {
             // check that path already comes with "/" prepended
             if(path.charAt(0) == '/') {

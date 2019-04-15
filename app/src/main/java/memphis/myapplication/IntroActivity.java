@@ -14,19 +14,18 @@ public class IntroActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        final String nfdAppPackageName = getString(R.string.nfd_package);
-        Context context = getApplicationContext();
-        Session session = new Session(context);
 
         // Check if NDN Forwarding Daemon is installed.
         // If installed -> Continue Regular Onboarding
         // If not installed -> Show a Message and request User to install NDN Forwarding Daemon.
+        final String nfdAppPackageName = getString(R.string.nfd_package);
+        Context context = getApplicationContext();
         PackageManager pm = context.getPackageManager();
-        if (isPackageInstalled(nfdAppPackageName,pm))
-        {
+        if (isPackageInstalled(nfdAppPackageName, pm)) {
             // session checks sharedPreferences where we store our login boolean variable
             // if we're not logged in, start LoginActivity
-            if (!session.getLoginStatus()) {
+            System.out.println("Logged in? " + SharedPrefsManager.getInstance(this).getLogInStatus());
+            if (!SharedPrefsManager.getInstance(this).getLogInStatus()) {
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
             }
@@ -46,8 +45,9 @@ public class IntroActivity extends AppCompatActivity {
                 startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + nfdAppPackageName)));
             }
         }
-
     }
+
+
 
     private boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         boolean found = true;

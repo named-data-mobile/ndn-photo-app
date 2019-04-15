@@ -56,20 +56,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
@@ -105,18 +99,18 @@ public class MainActivity extends AppCompatActivity {
     private ProducerManager producerManager;
     private ConsumerManager consumerManager;
 
+    SharedPrefsManager sharedPrefsManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        FileManager manager = new FileManager(getApplicationContext());
-
         psync = PSync.getInstance(getFilesDir().getAbsolutePath());
         Globals.setPSync(psync);
 
 
 
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -155,6 +149,9 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
+
+
     }
 
     private void setupToolbar() {
@@ -191,18 +188,19 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setup_security", "Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + manager.getUsername());
+        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Log.d("MainActivity", "Creating producer" + "/npChat/" + manager.getUsername() + "/data");
-        String producerPrefix = "/npChat/" + manager.getUsername();
+        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername() + "/data");
+        String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
         Globals.setProducerManager(new ProducerManager(producerPrefix));
 
 
         // Creating consumers
         Log.d("MainActivity", "Creating consumer");
         Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
-        for (String friend : manager.getFriendsList()) {
+
+        for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
             Globals.consumerManager.createConsumer(friendPrefix);
             Log.d("Consumer", "Added consumer for friend for " + friend);
@@ -410,7 +408,7 @@ public class MainActivity extends AppCompatActivity {
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
-                    }, producerManager.onNoDataInterest
+                    }, Globals.memoryCache.onNoDataInterest
             );
         } catch (IOException | SecurityException e) {
             e.printStackTrace();
@@ -419,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
         registerRouteToAp();
 
     }
-
 
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));
@@ -442,7 +439,6 @@ public class MainActivity extends AppCompatActivity {
                 for (FaceStatus f : faceList) {
                     if (f.getRemoteUri().contains("udp4://224")) {
                         Log.d("registerRouteToAp", "Using multicast face: " + f.getRemoteUri());
-                        System.out.println("Testing this");
                         myFace = f.getFaceId();
 
                     }
@@ -494,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
                         Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
 
                         FileManager manager = new FileManager(getApplicationContext());
-                        ArrayList<String> friendsList = manager.getFriendsList();
+                        ArrayList<String> friendsList = sharedPrefsManager.getFriendsList();
                         intent.putStringArrayListExtra("friendsList", friendsList);
                         // make this startActivityForResult and catch the list of recipients;
                         intent.putExtra("photo", m_curr_photo_file.toString());
@@ -570,20 +566,17 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> recipients;
             try {
                 recipients = resultData.getStringArrayListExtra("recipients");
-                final FileManager manager = new FileManager(getApplicationContext());
-                String name = "/npChat/" + manager.getUsername() + "/data";
-                final String filename = "/npChat/" + manager.getUsername() + "/file" + path;
+                String name = "/npChat/" + sharedPrefsManager.getUsername() + "/data";
+                final String filename = "/npChat/" + sharedPrefsManager.getUsername() + "/file" + path;
 
                 // Generate symmetric key
                 final SecretKey secretKey = encrypter.generateKey();
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
-                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey, iv);
-
+                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
 
                 Log.d("Publishing file", filename);
-
 
                 Thread publishingThread = new Thread(new Runnable() {
                     @Override
@@ -599,12 +592,11 @@ public class MainActivity extends AppCompatActivity {
                             bytes = new byte[0];
                         }
                         Log.d("file selection result", "file path: " + path);
-//                                final Blob blob = new Blob(bytes, true);
                         try {
                             Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                            encrypter.saveKey(secretKey, iv, filename);
+                            sharedPrefsManager.saveSymKey(secretKey, filename);
                             final FileManager manager = new FileManager(getApplicationContext());
-                            String prefixApp = "/npChat/" + manager.getUsername() + "/file";
+                            String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;
                             Log.d("Publishing data", prefix);
 
@@ -625,6 +617,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Globals.producerManager.m_producer.publishName(name);
                 Globals.producerManager.setSeqMap(syncData);
+
+                // Test
+                System.out.println("Testing sym key saving");
+                String keyString = sharedPrefsManager.getSymKey(filename);
+                System.out.println("Just returned " + keyString);
 
             }
             catch(Exception e) {
