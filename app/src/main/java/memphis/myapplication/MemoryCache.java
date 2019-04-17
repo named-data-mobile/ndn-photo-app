@@ -41,6 +41,7 @@ public class MemoryCache {
 
     MemoryCache(Face face, Context context) {
         mCache = new MemoryContentCache(face, 8000);
+        mCache.setMinimumCacheLifetime(600000);
         this.face = face;
         m_currContext = context;
     }
@@ -54,7 +55,7 @@ public class MemoryCache {
      * it in the face. If not, publish the file, which will result in its placement in the cache.
      * @param interest
      */
-    void process(Interest interest) {
+    public void process(Interest interest) {
 
         Log.d("process", "Called process in FaceProxy");
         mCache.setInterestFilter(interest.getName(), new OnInterestCallback() {
@@ -114,7 +115,7 @@ public class MemoryCache {
                         FileManager manager = new FileManager(m_currContext);
                         String s = manager.addAppPrefix(temp);
                         Name prefixName = new Name(s);
-                        Common.publishData(blob, prefixName);
+//                        Common.publishData(blob, prefixName);
 
                         String filename = prefixName.toUri();
                         Bitmap bitmap = QRExchange.makeQRCode(filename);

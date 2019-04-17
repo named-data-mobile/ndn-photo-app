@@ -1,5 +1,5 @@
 package memphis.myapplication;
-
+/*
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
@@ -43,7 +43,7 @@ import static net.named_data.jndn.encoding.tlv.Tlv.Interest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/*class LooperThread extends Thread {
+class LooperThread extends Thread {
     public Handler mHandler;
 
     public void run() {
@@ -68,7 +68,7 @@ import java.nio.charset.StandardCharsets;
         }
     }
 }*/
-
+/*
 @RunWith(AndroidJUnit4.class)
 public class PublisherAndFetcherTest {
     @Rule
@@ -95,7 +95,7 @@ public class PublisherAndFetcherTest {
                 Log.d("checkCacheContentTest", "Index " + i + ": " + cache[i].getContent().toString());
             }
         }
-    }*/
+    }
 
     @Test
     public void pubfetchSimpleString() {
@@ -150,3 +150,4 @@ public class PublisherAndFetcherTest {
     // given we are working with such small data packets.
 
 }
+*/

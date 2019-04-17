@@ -1,10 +1,11 @@
 package memphis.myapplication;
 
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -14,9 +15,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class ViewFriendsActivity extends AppCompatActivity implements ListDisplayRecyclerView.ItemClickListener {
+public class ViewFriendsActivity extends AppCompatActivity {
 
-    ListDisplayRecyclerView adapter;
+    // add border around each friend; increase font size; change colors
     @Override
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
@@ -24,19 +25,42 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
         setToolbar();
       
         Intent intent = getIntent();
+        int count = 0;
+        LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
         ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
+
+        int accent = ContextCompat.getColor(this, R.color.colorPrimary);
+        int black = ContextCompat.getColor(this, R.color.jetBlack);
+        int white = ContextCompat.getColor(this, R.color.white);
         // if we don't have any saved friends, we have nothing to display; tell user
-        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
         if(friendsList.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            Toast.makeText(getApplicationContext(),R.string.no_friends,Toast.LENGTH_LONG).show();
+            TextView message = new TextView(this);
+            message.setText(R.string.no_friends);
+            message.setTextColor(white);
+            message.setTextSize(24);
+            message.setGravity(Gravity.CENTER);
+            linearLayout.setGravity(Gravity.CENTER);
+            linearLayout.addView(message);
         }
         else {
-            // set up the ListDisplayRecyclerView, and display the list of friend in ListDisplayRecyclerView
-            adapter = new ListDisplayRecyclerView(this, friendsList);
-            adapter.setClickListener(this);
-            recyclerView.setAdapter(adapter);
+            // programmatically create TextViews to place in the LinearLayout since we don't know how
+            // many friends a person will have
+            for (String friend : friendsList) {
+                Log.d("ViewFriends", "Friend" + count + " " + friend);
+                TextView friendName = new TextView(this);
+                friendName.setText(friend);
+                friendName.setTextColor(white);
+                friendName.setTextSize(34);
+                // create a border for each TextView (friend slot)
+                GradientDrawable drawable = new GradientDrawable();
+                drawable.setColor(accent);
+                drawable.setStroke(2, black);
+                // place border around TextView
+                friendName.setBackground(drawable);
+                // Add TextView to LinearLayout
+                linearLayout.addView(friendName);
+                count++;
+            }
         }
     }
 
@@ -44,13 +68,7 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
     // here or link off to a different page where you can view their profile and remove them, if you want?
     public void removeFriend(View view) {
         FileManager manager = new FileManager(getApplicationContext());
-    }
 
-    @Override
-    public void onItemClick(View view, int position) {
-        // The Functionality to Link off to a different page can be handled here.
-        // OnClick of an Item in the recyclerView.
-        Toast.makeText(this, "Friend Name: " + adapter.getItem(position), Toast.LENGTH_SHORT).show();
     }
 
     private void setToolbar() {

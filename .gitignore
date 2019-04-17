@@ -7,3 +7,6 @@ local.properties
 *.iml
 app/app.iml
 .idea
+psync/.externalNativeBuild/
+psync/src/main/libs/
+.externalNativeBuild/

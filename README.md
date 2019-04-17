@@ -8,8 +8,9 @@ a partial sync protocol, and utilize a Web-Of-Trust like model instead of the tr
 npChat requires the NDN Forwarding Daemon be run alongside it. NFD can be installed via [Google Play](https://play.google.com/store/apps/details?id=net.named_data.nfd) or directly from the [source](https://github.com/named-data-mobile/NFD-android).
 
 ## Building
+This build currently includes [PSync JNI for Android](https://github.com/agawande/psync-android). Please follow the initial two steps of its build instructions first. 
 
-To build the application, it is recommended that one uses Android Studio. Simply pull this repository and allow the project to build itself. No other installations are required at this point of time. All dependencies are pulled from external sources when the build file executes. This application only works on Android OS 6.0 and above.
+After, it is recommended that one uses Android Studio. Simply pull this repository and allow the project to build itself. No other installations are required at this point of time. All other dependencies are pulled from external sources when the build file executes. This application only works on Android OS 6.0 and above.
 
 ## Testing
 Launch NFD and check "NFD is started." 
