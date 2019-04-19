@@ -10,8 +10,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.support.v7.widget.Toolbar;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -22,8 +20,6 @@ public class ViewFriendsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceBundle) {
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_with_list);
-        setToolbar();
-      
         Intent intent = getIntent();
         int count = 0;
         LinearLayout linearLayout = findViewById(R.id.listLinearLayout);
@@ -69,12 +65,5 @@ public class ViewFriendsActivity extends AppCompatActivity {
     public void removeFriend(View view) {
         FileManager manager = new FileManager(getApplicationContext());
 
-    }
-
-    private void setToolbar() {
-        String str = getApplicationContext().getResources().getString(R.string.friend_list);
-        ToolbarHelper toolbarHelper = new ToolbarHelper(this, str );
-        Toolbar toolbar = toolbarHelper.setupToolbar();
-        setSupportActionBar(toolbar);
     }
 }
