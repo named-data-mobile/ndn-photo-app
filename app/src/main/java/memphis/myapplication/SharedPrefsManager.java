@@ -38,6 +38,7 @@ public class SharedPrefsManager {
         mPassword = mSharedPreferences.getString(KEY_PASSWORD, null);
         mLogInStatus = mSharedPreferences.getBoolean(KEY_LOGIN_STATUS, false);
         mFriendsList = mSharedPreferences.getStringSet(KEY_FRIENDS_LIST, new HashSet<String>());
+
     }
 
     public String getUsername() {
@@ -58,11 +59,11 @@ public class SharedPrefsManager {
 
     public boolean addFriend(String friend) {
         Set<String> friendsList = mFriendsList;
+
         if (friendsList.contains(friend)) {
             return false;
         }
         friendsList.add(friend);
-        System.out.println("List of current friends:");
 
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
         editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
