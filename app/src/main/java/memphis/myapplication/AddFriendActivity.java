@@ -82,7 +82,6 @@ public class AddFriendActivity extends AppCompatActivity {
     }
 
     public void viewFriendsList(View view) {
-        FileManager manager = new FileManager(getApplicationContext());
         ArrayList<String> friendsList = SharedPrefsManager.getInstance(this).getFriendsList();
         Intent intent = new Intent(this, ViewFriendsActivity.class);
         intent.putStringArrayListExtra("friendsList", friendsList);

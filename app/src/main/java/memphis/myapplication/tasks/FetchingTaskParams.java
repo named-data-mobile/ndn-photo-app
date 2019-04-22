@@ -8,11 +8,9 @@ public class FetchingTaskParams
 {
     Interest interest;
     SecretKey secretKey;
-    byte[] iv;
 
-    public FetchingTaskParams(Interest interest, SecretKey secretKey, byte[] iv) {
+    public FetchingTaskParams(Interest interest, SecretKey secretKey) {
         this.interest = interest;
         this.secretKey = secretKey;
-        this.iv  = iv;
     }
 }

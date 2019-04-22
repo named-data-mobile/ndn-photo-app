@@ -154,6 +154,7 @@ public class FileManager {
 
     // save friends
     public int saveFriend(String friendContent) {
+        Log.d("Saving friend", friendContent);
         if (friendContent.length() > 0) {
             int index = friendContent.indexOf(" ");
             String username = friendContent.substring(0, index);

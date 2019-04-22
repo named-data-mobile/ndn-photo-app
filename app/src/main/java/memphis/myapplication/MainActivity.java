@@ -56,20 +56,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
+
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
@@ -111,8 +107,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setupToolbar();
-        FileManager manager = new FileManager(getApplicationContext());
-
         psync = PSync.getInstance(getFilesDir().getAbsolutePath());
         Globals.setPSync(psync);
 
@@ -157,6 +151,9 @@ public class MainActivity extends AppCompatActivity {
                     REQUEST_EXTERNAL_STORAGE
             );
         }
+        sharedPrefsManager = SharedPrefsManager.getInstance(this);
+
+
     }
 
     private void setupToolbar() {
@@ -204,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
         // Creating consumers
         Log.d("MainActivity", "Creating consumer");
         Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
+
         for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
             Globals.consumerManager.createConsumer(friendPrefix);
@@ -412,7 +410,7 @@ public class MainActivity extends AppCompatActivity {
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
-                    }, producerManager.onNoDataInterest
+                    }, Globals.memoryCache.onNoDataInterest
             );
         } catch (IOException | SecurityException e) {
             e.printStackTrace();
@@ -570,7 +568,6 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> recipients;
             try {
                 recipients = resultData.getStringArrayListExtra("recipients");
-                final FileManager manager = new FileManager(getApplicationContext());
                 String name = "/npChat/" + sharedPrefsManager.getUsername() + "/data";
                 final String filename = "/npChat/" + sharedPrefsManager.getUsername() + "/file" + path;
 
@@ -579,12 +576,9 @@ public class MainActivity extends AppCompatActivity {
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
-                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey, iv);
-
+                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
 
                 Log.d("Publishing file", filename);
-
-
                 Thread publishingThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -599,10 +593,10 @@ public class MainActivity extends AppCompatActivity {
                             bytes = new byte[0];
                         }
                         Log.d("file selection result", "file path: " + path);
-//                                final Blob blob = new Blob(bytes, true);
                         try {
                             Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-//                            encrypter.saveKey(secretKey, iv, filename);
+                            sharedPrefsManager.saveSymKey(secretKey, filename);
+
                             final FileManager manager = new FileManager(getApplicationContext());
                             String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;

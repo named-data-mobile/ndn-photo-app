@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.util.Base64;
+
+import javax.crypto.SecretKey;
+
 public class SharedPrefsManager {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";
@@ -33,7 +37,8 @@ public class SharedPrefsManager {
         mUsername = mSharedPreferences.getString(KEY_USERNAME, null);
         mPassword = mSharedPreferences.getString(KEY_PASSWORD, null);
         mLogInStatus = mSharedPreferences.getBoolean(KEY_LOGIN_STATUS, false);
-        mFriendsList = mSharedPreferences.getStringSet(KEY_FRIENDS_LIST, null);
+        mFriendsList = mSharedPreferences.getStringSet(KEY_FRIENDS_LIST, new HashSet<String>());
+
     }
 
     public String getUsername() {
@@ -53,11 +58,13 @@ public class SharedPrefsManager {
     }
 
     public boolean addFriend(String friend) {
-        Set<String> friendsList = new HashSet<String>(mFriendsList);
+        Set<String> friendsList = mFriendsList;
+
         if (friendsList.contains(friend)) {
             return false;
         }
         friendsList.add(friend);
+
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
         editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
         editor.apply();
@@ -72,6 +79,22 @@ public class SharedPrefsManager {
 
     public String getFriendKey(String friend) {
         return mSharedPreferences.getString(friend, null);
+    }
+
+    public void saveSymKey(SecretKey secretKey, String filename) {
+        byte[] keyBytes = secretKey.getEncoded();
+        String keyString = Base64.encodeToString(keyBytes, Base64.NO_WRAP);
+        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+        editor.putString(filename, keyString);
+        System.out.println("Saving symkey: " + keyString);
+        editor.apply();
+    }
+
+    public String getSymKey(String filename) {
+        if (mSharedPreferences.contains(filename)) {
+            return  mSharedPreferences.getString(filename, null);
+        }
+        else return null;
     }
 
     public Boolean getLogInStatus() {
@@ -89,13 +112,16 @@ public class SharedPrefsManager {
         editor.apply();
     }
 
+    public boolean contains(String key) {
+        if (mSharedPreferences.contains(key)) {
+            return true;
+        }
+        return false;
+    }
+
     public void removeCredentials(){
-        mLogInStatus = false;
-        mPassword = null;
-        mUsername = null;
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        editor.remove(KEY_USERNAME);
-        editor.remove(KEY_PASSWORD);
+        editor.clear();
         editor.apply();
     }
 
