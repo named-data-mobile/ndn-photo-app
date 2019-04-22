@@ -83,10 +83,6 @@ public class AddFriendActivity extends AppCompatActivity {
 
     public void viewFriendsList(View view) {
         ArrayList<String> friendsList = SharedPrefsManager.getInstance(this).getFriendsList();
-        System.out.println("Printing list of friends");
-        for (String friend : friendsList) {
-            System.out.println(friend);
-        }
         Intent intent = new Intent(this, ViewFriendsActivity.class);
         intent.putStringArrayListExtra("friendsList", friendsList);
         startActivity(intent);

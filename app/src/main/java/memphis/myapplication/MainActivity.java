@@ -618,10 +618,6 @@ public class MainActivity extends AppCompatActivity {
                 Globals.producerManager.m_producer.publishName(name);
                 Globals.producerManager.setSeqMap(syncData);
 
-                // Test
-                System.out.println("Testing sym key saving");
-                String keyString = sharedPrefsManager.getSymKey(filename);
-                System.out.println("Just returned " + keyString);
 
             }
             catch(Exception e) {

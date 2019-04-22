@@ -62,7 +62,6 @@ public class SharedPrefsManager {
             return false;
         }
         friendsList.add(friend);
-        System.out.println("List of current friends:");
 
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
         editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
