@@ -56,11 +56,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -577,7 +579,6 @@ public class MainActivity extends AppCompatActivity {
                 Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
 
                 Log.d("Publishing file", filename);
-
                 Thread publishingThread = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -595,6 +596,7 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                             sharedPrefsManager.saveSymKey(secretKey, filename);
+
                             final FileManager manager = new FileManager(getApplicationContext());
                             String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;
@@ -617,8 +619,6 @@ public class MainActivity extends AppCompatActivity {
 
                 Globals.producerManager.m_producer.publishName(name);
                 Globals.producerManager.setSeqMap(syncData);
-
-
             }
             catch(Exception e) {
                 e.printStackTrace();

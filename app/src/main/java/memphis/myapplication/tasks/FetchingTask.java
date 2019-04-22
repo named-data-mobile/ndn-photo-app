@@ -54,6 +54,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private Data m_data;
     private String m_appPrefix;
     private int m_numRetries = 50;
+
     private SecretKey m_secretKey;
 
     public FetchingTask(Activity activity) {
@@ -81,8 +82,8 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private void fetch(Interest interest, SecretKey secretKey) {
         m_shouldReturn = false;
-//        interest.setInterestLifetimeMilliseconds(3500);
         interest.setInterestLifetimeMilliseconds(15000);
+
         final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
         Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(m_baseInterest);
@@ -208,6 +209,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             // Decrypt content
             Decrypter decrypter = new Decrypter(m_currContext);
             Blob decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
+
 
 
             boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
