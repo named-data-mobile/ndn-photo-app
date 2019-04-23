@@ -14,6 +14,8 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import net.named_data.jndn.security.v2.CertificateV2;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -112,7 +114,19 @@ public class AddFriendActivity extends AppCompatActivity {
                             int index = content.indexOf(" ");
                             String username = content.substring(0, index);
                             intent.putExtra("username", username);
+
+                            // Serve new friend's signed cert back to them
+                            Log.d("AddFriendActivity", "Serving cert back");
+                            String name = "/npChat/" + SharedPrefsManager.getInstance(this).getUsername() + "/cert";
+                            Log.d("AddFriendActivity", "Publishing name: " + name);
+                            Globals.producerManager.m_producer.publishName(name);
+                            Log.d("AddFriendActivity", "Getting cert");
+                            CertificateV2 cert = SharedPrefsManager.getInstance(this).getFriendCert(username);
+                            Log.d("AddFriendActivity", "Adding cert to map");
+                            Globals.producerManager.setCertSeqMap(cert);
                             setResult(RESULT_OK, intent);
+
+
                         }
                         else {
                             setResult(RESULT_CANCELED, intent);

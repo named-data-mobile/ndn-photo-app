@@ -34,6 +34,7 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
+import net.named_data.jndn.encoding.der.DerDecodingException;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -44,6 +45,7 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 
 import net.named_data.jni.psync.PSync;
@@ -111,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
         Globals.setPSync(psync);
 
 
-
         sharedPrefsManager = SharedPrefsManager.getInstance(this);
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -152,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             );
         }
         sharedPrefsManager = SharedPrefsManager.getInstance(this);
-
+        psync = PSync.getInstance(getFilesDir().getAbsolutePath());
 
     }
 
@@ -193,18 +194,20 @@ public class MainActivity extends AppCompatActivity {
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername() + "/data");
+        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername());
         String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
-        Globals.setProducerManager(new ProducerManager(producerPrefix));
+        producerManager = new ProducerManager(producerPrefix);
+        Globals.setProducerManager(producerManager);
 
 
         // Creating consumers
         Log.d("MainActivity", "Creating consumer");
-        Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
+        consumerManager = new ConsumerManager(this, getApplicationContext());
+        Globals.setConsumerManager(consumerManager);
 
         for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
-            Globals.consumerManager.createConsumer(friendPrefix);
+            consumerManager.createConsumer(friendPrefix);
             Log.d("Consumer", "Added consumer for friend for " + friend);
         }
 
@@ -240,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
 
         Name identity = new Name(appAndUsername);
         Name defaultCertificateName;
-        PibIdentity pibId;
+        PibIdentity pibId = null;
         PibKey key;
 
         try {
@@ -280,12 +283,12 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             defaultCertificateName = new Name("/bogus/certificate/name");
         }
-
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
         Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
+
         Log.d("setup_security", "Security was setup successfully");
         
         try {
@@ -372,8 +375,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             Name dataName = new Name(name);
             Name fileName = new Name(name);
+            Name certName = new Name(name);
             dataName.append("data");
             fileName.append("file");
+            certName.append("cert");
             Log.d("register_with_nfd", "Starting registration process.");
             Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
                     new OnRegisterFailed() {
@@ -411,6 +416,25 @@ public class MainActivity extends AppCompatActivity {
                             runOnUiThread(makeToast(msg));
                         }
                     }, Globals.memoryCache.onNoDataInterest
+            );
+
+            Globals.face.registerPrefix(certName, FileManager.onCertInterest,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Log.d("OnRegisterFailed", "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    }
             );
         } catch (IOException | SecurityException e) {
             e.printStackTrace();
@@ -521,7 +545,7 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
-                Globals.consumerManager.createConsumer(resultData.getStringExtra("username"));
+
             }
         }
         else if (requestCode == SETTINGS_CODE) {
@@ -618,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
                 publishingThread.run();
 
                 Globals.producerManager.m_producer.publishName(name);
-                Globals.producerManager.setSeqMap(syncData);
+                Globals.producerManager.setDataSeqMap(syncData);
             }
             catch(Exception e) {
                 e.printStackTrace();

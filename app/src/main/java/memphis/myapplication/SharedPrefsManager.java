@@ -4,11 +4,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 import android.util.Base64;
+
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
+import net.named_data.jndn.security.KeyChain;
+import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.v2.CertificateV2;
 
 import javax.crypto.SecretKey;
 
@@ -73,12 +82,38 @@ public class SharedPrefsManager {
 
     public void storeFriendKey(String friend, String key) {
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        editor.putString(friend, key);
+        editor.putString(friend + "key", key);
         editor.apply();
     }
 
     public String getFriendKey(String friend) {
-        return mSharedPreferences.getString(friend, null);
+        return mSharedPreferences.getString(friend+"key", null);
+    }
+
+    public void storeFriendCert(String friend, CertificateV2 cert) {
+        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+        TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+        tlvEncodedDataContent.writeBuffer(cert.wireEncode().buf());
+        byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+        String certString = Base64.encodeToString(finalDataContentByteArray, 0);
+        editor.putString(friend, certString);
+        editor.apply();
+
+    }
+
+    public CertificateV2 getFriendCert(String friend) {
+        String certString = mSharedPreferences.getString(friend, null);
+        byte[] certBytes = Base64.decode(certString, 0);
+        CertificateV2 certificateV2 = null;
+        try {
+            certificateV2 = new CertificateV2();
+            certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+            return certificateV2;
+        } catch (EncodingException e) {
+            e.printStackTrace();
+        }
+        return null;
+
     }
 
     public void saveSymKey(SecretKey secretKey, String filename) {

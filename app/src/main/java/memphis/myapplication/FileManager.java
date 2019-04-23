@@ -5,7 +5,20 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
 
+import net.named_data.jndn.Data;
+import net.named_data.jndn.Face;
+import net.named_data.jndn.Interest;
+import net.named_data.jndn.InterestFilter;
+import net.named_data.jndn.Name;
+import net.named_data.jndn.OnInterestCallback;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.security.KeyChain;
+import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
+import net.named_data.jni.psync.PSync;
 
 //import org.apache.commons.io.FileUtils;
 
@@ -18,6 +31,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,29 +172,45 @@ public class FileManager {
         if (friendContent.length() > 0) {
             int index = friendContent.indexOf(" ");
             String username = friendContent.substring(0, index);
-            // A friend's filename will be their username. Another reason why we must ensure uniqueness
 
-//            File friendFile = new File(m_friendsDir + "/" + username);
+            // A friend's filename will be their username. Another reason why we must ensure uniqueness
             if (!SharedPrefsManager.getInstance(mContext).addFriend(username)) {
                 return 1;
             }
-            String pubKey = friendContent.substring(index + 1);
-            Log.d("pubKey", "This is what we're writing: " + pubKey);
+            Log.d("MainActivity", "Adding consumer for " + username);
+            Globals.consumerManager.createConsumer(username);
+            String cert = friendContent.substring(index + 1);
+            Log.d("pubKey", "This is what we're writing: " + cert);
 
-            SharedPrefsManager.getInstance(mContext).storeFriendKey(username, pubKey);
-                return 0;
+            byte[] certBytes = Base64.decode(cert, 0);
+            CertificateV2 certificateV2 = null;
+            try {
+                certificateV2 = new CertificateV2();
+                certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+                Globals.keyChain.sign(certificateV2);
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            } catch (PibImpl.Error error) {
+                error.printStackTrace();
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (TpmBackEnd.Error error) {
+                error.printStackTrace();
+            } catch (KeyChain.Error error) {
+                error.printStackTrace();
+            }
+
+            SharedPrefsManager.getInstance(mContext).storeFriendCert(username, certificateV2);
+            try {
+                SharedPrefsManager.getInstance(mContext).storeFriendKey(username, certificateV2.getPublicKey().toString());
+            } catch (CertificateV2.Error error) {
+                error.printStackTrace();
+            }
+            return 0;
             }
         return -1;
     }
 
-//    public ArrayList<String> getFriendsList() {
-//        ArrayList<String> friendsList = new ArrayList<>();
-//        File[] files = m_friendsDir.listFiles();
-//        for(File file : files) {
-//            friendsList.add(file.getName());
-//        }
-//        return friendsList;
-//    }
 
     public Blob getFriendKey(String friend) {
 //            File friendFile = new File(m_friendsDir + "/" + friend);
@@ -393,6 +423,14 @@ public class FileManager {
         int lastIndex = temp.indexOf("/");
         return temp.substring(0, lastIndex);
     }
+
+    public final OnInterestCallback onCertInterest = new OnInterestCallback() {
+        @Override
+        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
+            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+
+        }
+    };
 
     // we need to hash to some common directory or we will need to have a table that contain links to the files
 }

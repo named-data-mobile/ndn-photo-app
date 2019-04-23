@@ -11,7 +11,15 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
+import net.named_data.jndn.Data;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
+import net.named_data.jndn.security.pib.Pib;
+import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
+
+import java.nio.ByteBuffer;
 
 public class QRExchange {
 
@@ -51,13 +59,24 @@ public class QRExchange {
     // seem to play nice with strings.
     public static Bitmap makeQRFriendCode(Context context, FileManager manager) {
         String name = SharedPrefsManager.getInstance(context).getUsername();
-        Blob publicKey = Globals.pubKeyBlob;
-        Log.d("makeFriendCode", "Pubkey: " + publicKey.toString());
-        if(publicKey != null) {
-            String pubKey = Base64.encodeToString(publicKey.getImmutableArray(), 0);
+        CertificateV2 certificate = null;
+        try {
+            certificate = Globals.pibIdentity.getDefaultKey().getDefaultCertificate();
+        } catch (Pib.Error error) {
+            error.printStackTrace();
+        } catch (PibImpl.Error error) {
+            error.printStackTrace();
+        }
+        Log.d("makeFriendCode", "Certificate: " + certificate);
+        if(certificate != null) {
+            TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+            tlvEncodedDataContent.writeBuffer(certificate.wireEncode().buf());
+            byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+            String certString = Base64.encodeToString(finalDataContentByteArray, 0);
             // make sure we check later during registration that a username has no spaces
-            Log.d("makeFriendCode", "Pubkey: " + pubKey);
-            String qrContents = name + " " + pubKey;
+            Log.d("makeFriendCode", "Pubkey: " + certString);
+            String qrContents = name + " " + certString;
+
             // replace below section with makeQRCode method
             QRCodeWriter qrWriter = new QRCodeWriter();
             try {
@@ -71,11 +90,11 @@ public class QRExchange {
                 return bitmap;
             } catch (WriterException we) {
                 Log.d("makeQrFriendCode", "qrWriter failed");
-            } catch (Exception e) {
+            } catch (Exception ex) {
                 Log.d("makeQrFriendCode", "bitmap was not created");
             }
         }
-        // if it failed to make the bitmap
+            // if it failed to make the bitmap
         return null;
     }
 }

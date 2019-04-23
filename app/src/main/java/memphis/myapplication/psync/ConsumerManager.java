@@ -90,6 +90,7 @@ public class ConsumerManager {
      * @param prefix is the String "/npChat/friendName"
      */
     public static void createConsumer(String prefix) {
+        Log.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);
         consumer.sendHelloInterest();

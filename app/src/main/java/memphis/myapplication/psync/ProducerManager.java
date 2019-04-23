@@ -18,16 +18,20 @@ import java.util.Map;
 
 public class ProducerManager {
     public static PSync.PartialProducer m_producer;
+    public static PSync.PartialProducer m_cert_producer;
     private static Map<Long, Blob> m_seqToFileName = new HashMap<Long, Blob>();
     private static String producerPrefix;
 
     public ProducerManager(String p) {
         producerPrefix = p;
-        m_producer = new PSync.PartialProducer(80, producerPrefix,producerPrefix + "/data", 1000, 1000); }
+        m_producer = new PSync.PartialProducer(80, producerPrefix, producerPrefix + "/data", 1000, 1000);
+    }
 
-    public void setSeqMap(Blob syncData) {
+    public void setDataSeqMap(Blob syncData) {
         m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data"), syncData);
     }
+
+
 
     public Blob getSeqMap(long seq) {
         return m_seqToFileName.get(seq);
