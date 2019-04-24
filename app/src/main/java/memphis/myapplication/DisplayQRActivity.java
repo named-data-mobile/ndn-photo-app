@@ -1,9 +1,15 @@
 package memphis.myapplication;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
+import android.app.AlertDialog;
+
+import java.util.ArrayList;
+
 
 /**
  * This activity displays an image provided by the intent (intended for QR codes). This is its
@@ -11,6 +17,7 @@ import android.widget.ImageView;
  */
 
 public class DisplayQRActivity extends AppCompatActivity {
+    private int QR_SCANNED = 99;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +26,12 @@ public class DisplayQRActivity extends AppCompatActivity {
         Uri uri = getIntent().getData();
         ImageView image = findViewById(R.id.QRImage);
         image.setImageURI(uri);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        setResult(QR_SCANNED);
     }
 
 }

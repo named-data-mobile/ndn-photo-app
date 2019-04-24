@@ -10,14 +10,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.util.Base64;
+import android.util.Log;
 
+import net.named_data.jndn.Name;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.tlv.TlvEncoder;
-import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.pib.PibImpl;
-import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.v2.CertificateV2;
+import net.named_data.jndn.util.Blob;
 
 import javax.crypto.SecretKey;
 
@@ -80,14 +79,10 @@ public class SharedPrefsManager {
         return true;
     }
 
-    public void storeFriendKey(String friend, String key) {
-        SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        editor.putString(friend + "key", key);
-        editor.apply();
-    }
-
-    public String getFriendKey(String friend) {
-        return mSharedPreferences.getString(friend+"key", null);
+    public Blob getFriendKey(String friend) throws CertificateV2.Error, EncodingException {
+        CertificateV2 cert = getFriendCert(friend);
+        Blob key = cert.getPublicKey();
+        return key;
     }
 
     public void storeFriendCert(String friend, CertificateV2 cert) {
@@ -101,18 +96,13 @@ public class SharedPrefsManager {
 
     }
 
-    public CertificateV2 getFriendCert(String friend) {
+    public CertificateV2 getFriendCert(String friend) throws EncodingException {
         String certString = mSharedPreferences.getString(friend, null);
         byte[] certBytes = Base64.decode(certString, 0);
         CertificateV2 certificateV2 = null;
-        try {
-            certificateV2 = new CertificateV2();
-            certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
-            return certificateV2;
-        } catch (EncodingException e) {
-            e.printStackTrace();
-        }
-        return null;
+        certificateV2 = new CertificateV2();
+        certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+        return certificateV2;
 
     }
 
@@ -121,7 +111,6 @@ public class SharedPrefsManager {
         String keyString = Base64.encodeToString(keyBytes, Base64.NO_WRAP);
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
         editor.putString(filename, keyString);
-        System.out.println("Saving symkey: " + keyString);
         editor.apply();
     }
 
@@ -130,6 +119,18 @@ public class SharedPrefsManager {
             return  mSharedPreferences.getString(filename, null);
         }
         else return null;
+    }
+
+    public void saveSelfCert(CertificateV2 cert) {
+        Name certName = cert.getName();
+        String friend = certName.getSubName(4, 1).toString() + "_self";
+        storeFriendCert(friend, cert);
+        Log.d("SharedPrefsManager", "Saved our own cert signed by " + friend);
+    }
+
+    public void getSelfCert(String friend) throws EncodingException {
+        friend = friend + "_self";
+        getFriendCert(friend);
     }
 
     public Boolean getLogInStatus() {

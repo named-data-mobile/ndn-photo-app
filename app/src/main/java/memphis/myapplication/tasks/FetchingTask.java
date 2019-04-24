@@ -16,17 +16,24 @@ import net.named_data.jndn.security.DigestAlgorithm;
 import net.named_data.jndn.security.KeyType;
 import net.named_data.jndn.security.UnrecognizedKeyFormatException;
 import net.named_data.jndn.security.certificate.PublicKey;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 import net.named_data.jndn.util.SignedBlob;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import memphis.myapplication.Decrypter;
@@ -158,10 +165,14 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         Log.d("username&PubKey", "user: " + m_user);
         if(friendsList.contains(m_user)) {
             try {
-                m_pubKey = new PublicKey(m_manager.getFriendKey(m_user));
+                m_pubKey = new PublicKey(SharedPrefsManager.getInstance(m_currContext).getFriendKey(m_user));
             }
             catch(UnrecognizedKeyFormatException e) {
                 e.printStackTrace();
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            } catch (CertificateV2.Error error) {
+                error.printStackTrace();
             }
         }
     }
@@ -208,8 +219,22 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
             // Decrypt content
             Decrypter decrypter = new Decrypter(m_currContext);
-            Blob decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
-
+            Blob decryptedContent = null;
+            try {
+                decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            }
 
 
             boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());

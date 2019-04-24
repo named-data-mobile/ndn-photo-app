@@ -9,29 +9,21 @@ import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
+import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.pib.PibImpl;
-import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
 import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
-import net.named_data.jni.psync.PSync;
 
-//import org.apache.commons.io.FileUtils;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -46,7 +38,7 @@ public class FileManager {
     private File m_filesDir;
     private File m_rcvdFilesDir;
     private File m_rcvdPhotosDir;
-    private Context mContext;
+    private static Context mContext;
     public static boolean dirsCreated = false;
 
     public FileManager(Context context) {
@@ -161,71 +153,6 @@ public class FileManager {
      */
     protected String getMyQRPath() {
         return (m_selfDir + "/myQR.png");
-    }
-
-
-
-
-    // save friends
-    public int saveFriend(String friendContent) {
-        Log.d("Saving friend", friendContent);
-        if (friendContent.length() > 0) {
-            int index = friendContent.indexOf(" ");
-            String username = friendContent.substring(0, index);
-
-            // A friend's filename will be their username. Another reason why we must ensure uniqueness
-            if (!SharedPrefsManager.getInstance(mContext).addFriend(username)) {
-                return 1;
-            }
-            Log.d("MainActivity", "Adding consumer for " + username);
-            Globals.consumerManager.createConsumer(username);
-            String cert = friendContent.substring(index + 1);
-            Log.d("pubKey", "This is what we're writing: " + cert);
-
-            byte[] certBytes = Base64.decode(cert, 0);
-            CertificateV2 certificateV2 = null;
-            try {
-                certificateV2 = new CertificateV2();
-                certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
-                Globals.keyChain.sign(certificateV2);
-            } catch (EncodingException e) {
-                e.printStackTrace();
-            } catch (PibImpl.Error error) {
-                error.printStackTrace();
-            } catch (SecurityException e) {
-                e.printStackTrace();
-            } catch (TpmBackEnd.Error error) {
-                error.printStackTrace();
-            } catch (KeyChain.Error error) {
-                error.printStackTrace();
-            }
-
-            SharedPrefsManager.getInstance(mContext).storeFriendCert(username, certificateV2);
-            try {
-                SharedPrefsManager.getInstance(mContext).storeFriendKey(username, certificateV2.getPublicKey().toString());
-            } catch (CertificateV2.Error error) {
-                error.printStackTrace();
-            }
-            return 0;
-            }
-        return -1;
-    }
-
-
-    public Blob getFriendKey(String friend) {
-//            File friendFile = new File(m_friendsDir + "/" + friend);
-//            if(friendFile.exists()) {
-//                BufferedReader br = new BufferedReader(new FileReader(friendFile));
-//                StringBuffer strBuff = new StringBuffer();
-//                String line;
-//                while((line = br.readLine()) != null) {
-//                    strBuff.append(line);
-//                }
-//                // The string we have saved to format is the DER bytes in Base64. We need to revert
-//                // back to the original format
-            byte[] keyBytes = Base64.decode(SharedPrefsManager.getInstance(mContext).getFriendKey(friend), Base64.DEFAULT);
-            Blob key = new Blob(keyBytes);
-            return key;
     }
 
 
@@ -424,10 +351,32 @@ public class FileManager {
         return temp.substring(0, lastIndex);
     }
 
-    public final OnInterestCallback onCertInterest = new OnInterestCallback() {
+    public static final OnInterestCallback onCertInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+            Log.d("onCertInterest", "Called onCertInterest with Interest: " + interest.getName().toUri());
+            System.out.println("Friend name: " + (interest.getName().getSubName(4, 1)).toString());
+            String friend = (interest.getName().getSubName(4, 1)).toString().substring(1);
+            System.out.println("Friend name " + friend);
+            CertificateV2 friendCert = null;
+            try {
+                friendCert = SharedPrefsManager.getInstance(mContext).getFriendCert(friend);
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            }
+            Data data = new Data(interest.getName());
+            TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+            tlvEncodedDataContent.writeBuffer(friendCert.wireEncode().buf());
+            byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+            Blob d = new Blob(finalDataContentByteArray);
+            data.setContent(d);
+            data.setMetaInfo(new MetaInfo());
+            data.getMetaInfo().setFreshnessPeriod(31536000000.0);
+            try {
+                face.putData(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         }
     };

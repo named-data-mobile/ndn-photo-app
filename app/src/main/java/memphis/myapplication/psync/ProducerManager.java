@@ -24,7 +24,7 @@ public class ProducerManager {
 
     public ProducerManager(String p) {
         producerPrefix = p;
-        m_producer = new PSync.PartialProducer(80, producerPrefix, producerPrefix + "/data", 1000, 1000);
+        m_producer = new PSync.PartialProducer(80, producerPrefix, producerPrefix + "/data", 500, 1000);
     }
 
     public void setDataSeqMap(Blob syncData) {

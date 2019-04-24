@@ -46,27 +46,12 @@ public class Decrypter {
      * @param content the encrypted file data
      * @return Blob of decrypted file data
      */
-    public Blob decrypt(SecretKey secretKey, byte[] iv, Blob content) {
-        try {
-            ivspec = new IvParameterSpec(iv);
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
-            return new Blob(cipher.doFinal(content.getImmutableArray()), true);
-
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public Blob decrypt(SecretKey secretKey, byte[] iv, Blob content) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
+                                                                            InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        ivspec = new IvParameterSpec(iv);
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
+        return new Blob(cipher.doFinal(content.getImmutableArray()), true);
     }
 
     /**
@@ -74,7 +59,7 @@ public class Decrypter {
      * @param interestData encoded sync data
      * @return FetchingTaskParams object containing the interest for the file, the symmetric key, and the initialization vector
      */
-    public FetchingTaskParams decodeSyncData(Blob interestData) {
+    public FetchingTaskParams decodeSyncData(Blob interestData) throws TpmBackEnd.Error, EncodingException {
         SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(context);
 
 
@@ -84,50 +69,45 @@ public class Decrypter {
 
         TlvDecoder decoder = new TlvDecoder(interestData.buf());
         int endOffset = 0;
-        try {
-            endOffset = decoder.readNestedTlvsStart(syncDataType);
-            while (decoder.getOffset() < endOffset) {
-                if (decoder.peekType(filenameType, endOffset)) {
-                    filename = new Blob(decoder.readBlobTlv(filenameType), true);
-                }
-                else if (decoder.peekType(nameAndKeyType, endOffset)) {
-                    int friendOffsetEnd = decoder.readNestedTlvsStart(nameAndKeyType);
-                    while (decoder.getOffset() < friendOffsetEnd) {
-                        if (decoder.peekType(keyType, friendOffsetEnd)) {
+        endOffset = decoder.readNestedTlvsStart(syncDataType);
+        while (decoder.getOffset() < endOffset) {
+            if (decoder.peekType(filenameType, endOffset)) {
+                filename = new Blob(decoder.readBlobTlv(filenameType), true);
+            }
+            else if (decoder.peekType(nameAndKeyType, endOffset)) {
+                int friendOffsetEnd = decoder.readNestedTlvsStart(nameAndKeyType);
+                while (decoder.getOffset() < friendOffsetEnd) {
+                    if (decoder.peekType(keyType, friendOffsetEnd)) {
+                    }
+                    if (decoder.peekType(friendNameType, friendOffsetEnd)) {
+                        recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
+                        if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
+                            symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
+                            decoder.finishNestedTlvs(friendOffsetEnd);
                         }
-                        if (decoder.peekType(friendNameType, friendOffsetEnd)) {
-                            recipient = new Blob(decoder.readBlobTlv(friendNameType), true);
-                            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
-                                symmetricKey = new Blob(decoder.readBlobTlv(keyType), true);
-                                decoder.finishNestedTlvs(friendOffsetEnd);
-                            }
-                            else {
-                                decoder.skipTlv(ivType);
-                                decoder.skipTlv(keyType);
-                            }
+                        else {
+                            decoder.skipTlv(ivType);
+                            decoder.skipTlv(keyType);
                         }
                     }
-                    decoder.finishNestedTlvs(friendOffsetEnd);
                 }
+                decoder.finishNestedTlvs(friendOffsetEnd);
             }
-
-            if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
-                // Decrypt symmetric key
-                TpmBackEndFile m_tpm = Globals.tpm;
-                TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
-                Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
-                byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
-                SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
-                System.out.println("Filename : " + filename);
-                return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey);
-            }
-
-            decoder.finishNestedTlvs(endOffset);
-        } catch (EncodingException e) {
-            e.printStackTrace();
-        } catch (TpmBackEnd.Error error) {
-            error.printStackTrace();
         }
+
+        if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
+            // Decrypt symmetric key
+            TpmBackEndFile m_tpm = Globals.tpm;
+            TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
+            Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
+            byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
+            SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+            System.out.println("Filename : " + filename);
+            return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey);
+        }
+
+        decoder.finishNestedTlvs(endOffset);
         return null;
+
     }
 }

@@ -21,9 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -92,7 +96,6 @@ public class MemoryCache {
             e.printStackTrace();
             bytes = new byte[0];
         }
-        Blob blob = new Blob(bytes, true);
         FileManager manager = new FileManager(m_currContext);
         String s = manager.addAppPrefix(filename);
         Name prefixName = new Name(s);
@@ -106,8 +109,15 @@ public class MemoryCache {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+        } catch (InvalidAlgorithmParameterException e) {
+            e.printStackTrace();
         }
-
 
 
         Bitmap bitmap = QRExchange.makeQRCode(filename);
