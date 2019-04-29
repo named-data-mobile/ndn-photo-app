@@ -17,7 +17,6 @@
     <string name="files">Files</string>
     <string name="friends_title">Friends</string>
     <string name="no_friends">You currently haven\'t added any friends.</string>
-    <string name="friend_list">Friend List</string>
 
     <!--add friend activity-->
     <string name="display_qr">Display QR</string>
@@ -48,7 +47,5 @@
     <string name="email_label">Email:</string>
     <string name="confirm_password_label">Confirm\nPassword:</string>
     <string name="submit">Submit</string>
-    <string name="nfd_package">net.named_data.nfd</string>
-    <string name="remove_account">Remove Account</string>
-    <string name="certificate_prefix">cert</string>
+    <string name="no_photos">No Photos</string>
 </resources>
