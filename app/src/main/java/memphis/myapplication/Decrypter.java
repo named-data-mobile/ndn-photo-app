@@ -95,6 +95,10 @@ public class Decrypter {
             }
         }
 
+        if (recipient == null) {
+            return new FetchingTaskParams(new Interest(new Name(filename.toString())), null);
+        }
+
         if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
             // Decrypt symmetric key
             TpmBackEndFile m_tpm = Globals.tpm;

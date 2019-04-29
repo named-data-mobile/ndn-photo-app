@@ -1,5 +1,6 @@
 package memphis.myapplication;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -24,80 +26,130 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
     private ArrayList<String> m_selectedFriends;
     private Button m_sendButton;
     private ListDisplayRecyclerView adapter;
+    private boolean m_feedSelected;
+
 
     @Override
     public void onCreate (Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_recipients);
         m_selectedFriends = new ArrayList<>();
+        feed();
         showFriends();
     }
 
-    private void showFriends() {
-        Intent intent = getIntent();
-        ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
-        m_sendButton = findViewById(R.id.send_button);
+    private void feed() {
+        TextView feed = findViewById(R.id.feed);
+        feed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                m_feedSelected = true;
+                m_sendButton.setVisibility(View.VISIBLE);
+                m_sendButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        returnList();
+                    }});
+            }
+        });
+    }
 
-        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // if we don't have any saved friends, we have nothing to display; tell user
-        if(friendsList.isEmpty()) {
-            m_sendButton.setVisibility(View.GONE);
-            recyclerView.setVisibility(View.GONE);
-            Toast.makeText(getApplicationContext(),R.string.no_friends,Toast.LENGTH_LONG).show();
-        }
-        else {
+    private void showFriends() {
+        if (!m_feedSelected) {
+            Intent intent = getIntent();
+            ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
+            m_sendButton = findViewById(R.id.send_button);
+
+            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+            recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
             adapter = new ListDisplayRecyclerView(this, friendsList);
             adapter.setClickListener(this);
             recyclerView.setAdapter(adapter);
             m_sendButton.setVisibility(View.GONE);
         }
+
     }
 
     private void returnList() {
         // first ask for confirmation; do they want to send the photo to (show list of selected)
         // friends
-        AlertDialog.Builder question = new AlertDialog.Builder(SelectRecipientsActivity.this);
-        question.setTitle("Send photo to these friends?");
-        StringBuilder sb = new StringBuilder();
-        for(String friend : m_selectedFriends) {
-            sb.append(friend);
-            sb.append(", ");
+        if (m_feedSelected) {
+            AlertDialog.Builder question = new AlertDialog.Builder(SelectRecipientsActivity.this);
+            question.setTitle("Publish photo to your feed?");
+            question.setCancelable(false);
+
+            question.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        String path = getIntent().getStringExtra("photo");
+                        Intent data = new Intent();
+                        data.putExtra("photo", path);
+                        setResult(RESULT_OK, data);
+                        finish();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Intent data = new Intent();
+                        data.putStringArrayListExtra("recipients", m_selectedFriends);
+                        setResult(RESULT_CANCELED, data);
+                        finish();
+                    }
+                }
+            });
+
+            question.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // do nothing; we'll just go back to selecting friends
+                }
+            });
+
+            question.show();
+
         }
-        sb.delete(sb.lastIndexOf(","), sb.length());
-        question.setMessage(sb.toString());
-        question.setCancelable(false);
-
-        question.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-
-                try {
-                    String path = getIntent().getStringExtra("photo");
-                    Intent data = new Intent();
-                    data.putStringArrayListExtra("recipients", m_selectedFriends);
-                    data.putExtra("photo", path);
-                    setResult(RESULT_OK, data);
-                    finish();
-                }
-                catch(Exception e) {
-                    e.printStackTrace();
-                    Intent data = new Intent();
-                    data.putStringArrayListExtra("recipients", m_selectedFriends);
-                    setResult(RESULT_CANCELED, data);
-                    finish();
-                }
+        else {
+            AlertDialog.Builder question = new AlertDialog.Builder(SelectRecipientsActivity.this);
+            question.setTitle("Send photo to these friends?");
+            StringBuilder sb = new StringBuilder();
+            for (String friend : m_selectedFriends) {
+                sb.append(friend);
+                sb.append(", ");
             }
-        });
+            sb.delete(sb.lastIndexOf(","), sb.length());
+            question.setMessage(sb.toString());
+            question.setCancelable(false);
 
-        question.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                // do nothing; we'll just go back to selecting friends
-            }
-        });
+            question.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
 
-        question.show();
+                    try {
+                        String path = getIntent().getStringExtra("photo");
+                        Intent data = new Intent();
+                        data.putStringArrayListExtra("recipients", m_selectedFriends);
+                        data.putExtra("photo", path);
+                        setResult(RESULT_OK, data);
+                        finish();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Intent data = new Intent();
+                        data.putStringArrayListExtra("recipients", m_selectedFriends);
+                        setResult(RESULT_CANCELED, data);
+                        finish();
+                    }
+                }
+            });
+
+            question.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // do nothing; we'll just go back to selecting friends
+                }
+            });
+
+            question.show();
+        }
     }
 
     @Override

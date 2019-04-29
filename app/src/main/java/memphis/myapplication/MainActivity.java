@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private final int SELECT_RECIPIENTS_CODE = 1;
     private final int ADD_FRIEND_CODE = 2;
     private final int SETTINGS_CODE = 3;
+    private final int RESULT_FEED_OK = 4;
     private File m_curr_photo_file;
 
 
@@ -645,6 +646,8 @@ public class MainActivity extends AppCompatActivity {
                 // Encode sync data
                 Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
 
+                final boolean feed = (recipients == null);
+
                 Log.d("Publishing file", filename);
                 Thread publishingThread = new Thread(new Runnable() {
                     @Override
@@ -661,18 +664,26 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Log.d("file selection result", "file path: " + path);
                         try {
-                            Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                            sharedPrefsManager.saveSymKey(secretKey, filename);
-
-                            final FileManager manager = new FileManager(getApplicationContext());
                             String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;
                             Log.d("Publishing data", prefix);
+                            if (!feed) {
+                                Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                                sharedPrefsManager.saveSymKey(secretKey, filename);
 
-                            Common.publishData(encryptedBlob, new Name(prefix));
-                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                            manager.saveFileQR(bitmap, prefix);
-                            runOnUiThread(makeToast("Sending photo"));
+                                final FileManager manager = new FileManager(getApplicationContext());
+
+
+                                Common.publishData(encryptedBlob, new Name(prefix));
+                                Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                                manager.saveFileQR(bitmap, prefix);
+                                runOnUiThread(makeToast("Sending photo"));
+                            }
+                            else {
+                                Blob unencryptedBlob = new Blob(bytes);
+                                Common.publishData(unencryptedBlob, new Name(prefix));
+
+                            }
                         } catch (NoSuchAlgorithmException e) {
                             e.printStackTrace();
                         } catch (NoSuchPaddingException e) {

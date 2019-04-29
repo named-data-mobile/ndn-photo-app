@@ -212,32 +212,39 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
             Log.d("onPostExecute", "m_content size; " + m_content.size());
 
-            // Get IV
-            byte[] content = m_content.getImmutableArray();
-            byte[] iv = Arrays.copyOfRange(content, 0, 16);
-            byte[] data = Arrays.copyOfRange(content, iv.length, content.length);
+            boolean wasSaved;
+            if (m_secretKey != null) {
+                // Get IV
+                byte[] content = m_content.getImmutableArray();
+                byte[] iv = Arrays.copyOfRange(content, 0, 16);
+                byte[] data = Arrays.copyOfRange(content, iv.length, content.length);
 
-            // Decrypt content
-            Decrypter decrypter = new Decrypter(m_currContext);
-            Blob decryptedContent = null;
-            try {
-                decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (NoSuchPaddingException e) {
-                e.printStackTrace();
-            } catch (InvalidAlgorithmParameterException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            } catch (BadPaddingException e) {
-                e.printStackTrace();
-            } catch (IllegalBlockSizeException e) {
-                e.printStackTrace();
+                // Decrypt content
+                Decrypter decrypter = new Decrypter(m_currContext);
+                Blob decryptedContent = null;
+                try {
+                    decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (NoSuchPaddingException e) {
+                    e.printStackTrace();
+                } catch (InvalidAlgorithmParameterException e) {
+                    e.printStackTrace();
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                } catch (BadPaddingException e) {
+                    e.printStackTrace();
+                } catch (IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                }
+                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
+
+            } else {
+                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName().toUri());
+
             }
 
 
-            boolean wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
             if (wasSaved) {
                 m_resultMsg = "We got content.";
                 Log.d("FetchingTask: ", "Data saved");
