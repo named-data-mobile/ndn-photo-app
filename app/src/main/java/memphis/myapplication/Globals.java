@@ -8,6 +8,7 @@ import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
 
@@ -25,6 +26,7 @@ public class Globals extends Application {
     public static KeyChain keyChain;
     public static Blob pubKeyBlob;
     public static Name pubKeyName;
+    public static CertificateV2 certificate;
     public static boolean has_setup_security;
     public static PSync psync;
     public static ProducerManager producerManager;
@@ -57,6 +59,8 @@ public class Globals extends Application {
     public static void setPublicKey(Blob pk) {
         pubKeyBlob = pk;
     }
+
+    public static void setCertificate(CertificateV2 c) { certificate = c; }
 
     // setters
     public static void setFace(Face f) {

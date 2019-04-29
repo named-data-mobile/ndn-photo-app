@@ -16,6 +16,7 @@
         android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".CertificateExchangeActivity"></activity>
 
         <provider
             android:name=".UriFileProvider"
@@ -24,89 +25,85 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".services.NetworkService">
-        </service>
+        <service android:name=".services.NetworkService"></service>
 
-        <activity android:name=".FilesActivity"
+        <activity
+            android:name=".FilesActivity"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".AddFriendActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".IntroActivity"
-                  android:noHistory="true">
-            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
 
-        <activity android:name=".LoginActivity"
-                  android:noHistory="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".NewContentActivity"
+        <activity
+            android:name=".AddFriendActivity"
             android:launchMode="singleTask">
-        </activity>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".IntroActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".LoginActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".NewContentActivity"
+            android:launchMode="singleTask"></activity>
         <activity
             android:name=".DisplayQRActivity"
-            android:parentActivityName=".MainActivity" >
-        </activity>
-
-        <activity android:name=".SignUpActivity"
-            android:label="ndn-snapchat"
+            android:parentActivityName=".MainActivity"></activity>
+        <activity
+            android:name=".SignUpActivity"
             android:exported="true"
+            android:label="ndn-snapchat"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".SettingsActivity">
-        </activity>
-
+        <activity android:name=".SettingsActivity"></activity>
         <activity android:name=".SelectRecipientsActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ViewFriendsActivity"
+        <activity
+            android:name=".ViewFriendsActivity"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.DEFAULT"/>
+                <action android:name="android.intent.action.DEFAULT" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ViewPhotosActivity"
-            android:launchMode="singleTask">
-        </activity>
-
+        <activity
+            android:name=".ViewPhotosActivity"
+            android:launchMode="singleTask"></activity>
     </application>
 
 </manifest>

@@ -1,10 +1,13 @@
 package memphis.myapplication;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -14,7 +17,18 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
+import net.named_data.jndn.Interest;
+import net.named_data.jndn.Name;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.security.KeyChain;
+import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.SigningInfo;
+import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.v2.CertificateV2;
+
 import java.io.File;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
@@ -22,6 +36,8 @@ import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPE
 public class AddFriendActivity extends AppCompatActivity {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
+    private final int ADD_FRIEND_QR_REQUEST_CODE = 1;
+
     private FileManager m_manager;
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
@@ -54,6 +70,31 @@ public class AddFriendActivity extends AppCompatActivity {
         Button btn3 = findViewById(R.id.viewFriendsButton);
         btn3.setWidth(width);
     }
+
+        public void addFriend(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(AddFriendActivity.this);
+        builder.setTitle("Select whether you want to display your QR code or scan your friend's code").setCancelable(false);
+        final View tempView = view;
+
+        builder.setPositiveButton("Display QR code", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Send them to a new page to select friends to send photo to
+                displayMyQR(tempView);
+                scanFriendQR(tempView);
+
+            }
+        });
+        builder.setNegativeButton("Scan QR code", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                scanFriendQR(tempView);
+                displayMyQR(tempView);
+
+            }
+        });
+
+        builder.show();
+    }
+
 
     // To do: add new Intent for the remote friend button; this new activity should allow the user
     // to search for usernames and befriend them (send friendship interest)
@@ -88,9 +129,63 @@ public class AddFriendActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    // save friends
+    public int saveFriend(String friendContent) {
+        Log.d("Saving friend", friendContent);
+        if (friendContent.length() > 0) {
+            int index = friendContent.indexOf(" ");
+            String username = friendContent.substring(0, index);
+
+            // A friend's filename will be their username. Another reason why we must ensure uniqueness
+            if (!SharedPrefsManager.getInstance(this).addFriend(username)) {
+                return 1;
+            }
+
+            // Save friend's certificate
+            String cert = friendContent.substring(index + 1);
+
+            byte[] certBytes = Base64.decode(cert, 0);
+            CertificateV2 certificateV2 = null;
+            try {
+                SigningInfo signingInfo = new SigningInfo();
+                signingInfo.setSigningKeyName(Globals.pubKeyName);
+
+
+                certificateV2 = new CertificateV2();
+                certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+
+                Name certName = certificateV2.getName();
+                Name newCertName = new Name();
+                newCertName.append(certName.getSubName(0, 4));
+                newCertName.append(SharedPrefsManager.getInstance(this).getUsername());
+                newCertName.append(certName.getSubName(5));
+                Globals.keyChain.sign(certificateV2, signingInfo);
+                certificateV2.setName(newCertName);
+
+
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            } catch (PibImpl.Error error) {
+                error.printStackTrace();
+            } catch (TpmBackEnd.Error error) {
+                error.printStackTrace();
+            } catch (KeyChain.Error error) {
+                error.printStackTrace();
+            }
+
+
+            SharedPrefsManager.getInstance(this).storeFriendCert(username, certificateV2);
+            System.out.println(certificateV2.getKeyName());
+            return 0;
+        }
+        return -1;
+    }
+
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == FRIEND_QR_REQUEST_CODE) {
+        if ((requestCode == FRIEND_QR_REQUEST_CODE) || (requestCode == ADD_FRIEND_QR_REQUEST_CODE)) {
             IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, data);
             if (result == null) {
                 Toast.makeText(this, "Null", Toast.LENGTH_LONG).show();
@@ -103,8 +198,7 @@ public class AddFriendActivity extends AppCompatActivity {
                     Log.d("ScannedFriend", content);
                     // need to check this content to determine if we are scanning file or friend code
                     // Toast.makeText(this, content, Toast.LENGTH_LONG).show();
-                    FileManager manager = new FileManager(getApplicationContext());
-                    int saveResult = manager.saveFriend(content);
+                    int saveResult = saveFriend(content);
                     if (saveResult == 0) {
                         Toast.makeText(this, "Friend was saved successfully.", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent();
@@ -112,7 +206,9 @@ public class AddFriendActivity extends AppCompatActivity {
                             int index = content.indexOf(" ");
                             String username = content.substring(0, index);
                             intent.putExtra("username", username);
+                            System.out.println("Friend result ok");
                             setResult(RESULT_OK, intent);
+
                         }
                         else {
                             setResult(RESULT_CANCELED, intent);
@@ -127,6 +223,10 @@ public class AddFriendActivity extends AppCompatActivity {
                         setResult(RESULT_CANCELED, data);
                     }
                 }
+            } else if (resultCode == 99) {
+                System.out.println("Scanned");
+                scanFriendQR(findViewById(android.R.id.content));
+
             } else {
                 super.onActivityResult(requestCode, resultCode, data);
             }

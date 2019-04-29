@@ -9,6 +9,8 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
@@ -55,7 +57,14 @@ public class ConsumerManager {
             Blob interestData = data.getContent();
             System.out.println("interest: " + interest);
             Decrypter decrypter = new Decrypter(context);
-            FetchingTaskParams fetchingTaskParams = decrypter.decodeSyncData(interestData);
+            FetchingTaskParams fetchingTaskParams = null;
+            try {
+                fetchingTaskParams = decrypter.decodeSyncData(interestData);
+            } catch (TpmBackEnd.Error error) {
+                error.printStackTrace();
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            }
             if (fetchingTaskParams != null) {
                 new FetchingTask(activity).execute(fetchingTaskParams);
             }
@@ -90,6 +99,7 @@ public class ConsumerManager {
      * @param prefix is the String "/npChat/friendName"
      */
     public static void createConsumer(String prefix) {
+        Log.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);
         consumer.sendHelloInterest();

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -30,10 +31,16 @@ import com.intel.jndn.management.types.RibEntry;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
+import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
+import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
+import net.named_data.jndn.OnData;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
+import net.named_data.jndn.OnTimeout;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.der.DerDecodingException;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -44,6 +51,7 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 
 import net.named_data.jni.psync.PSync;
@@ -57,6 +65,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.nio.ByteBuffer;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,12 +75,16 @@ import java.util.Date;
 import java.util.List;
 
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import static java.lang.Thread.sleep;
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
+import memphis.myapplication.tasks.FetchingTask;
+import memphis.myapplication.tasks.FetchingTaskParams;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         psync = PSync.getInstance(getFilesDir().getAbsolutePath());
         Globals.setPSync(psync);
-
 
 
         sharedPrefsManager = SharedPrefsManager.getInstance(this);
@@ -152,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             );
         }
         sharedPrefsManager = SharedPrefsManager.getInstance(this);
-
+        psync = PSync.getInstance(getFilesDir().getAbsolutePath());
 
     }
 
@@ -193,18 +207,20 @@ public class MainActivity extends AppCompatActivity {
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername() + "/data");
+        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername());
         String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
-        Globals.setProducerManager(new ProducerManager(producerPrefix));
+        producerManager = new ProducerManager(producerPrefix);
+        Globals.setProducerManager(producerManager);
 
 
         // Creating consumers
         Log.d("MainActivity", "Creating consumer");
-        Globals.setConsumerManager(new ConsumerManager(this, getApplicationContext()));
+        consumerManager = new ConsumerManager(this, getApplicationContext());
+        Globals.setConsumerManager(consumerManager);
 
         for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
-            Globals.consumerManager.createConsumer(friendPrefix);
+            consumerManager.createConsumer(friendPrefix);
             Log.d("Consumer", "Added consumer for friend for " + friend);
         }
 
@@ -240,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
         Name identity = new Name(appAndUsername);
         Name defaultCertificateName;
-        PibIdentity pibId;
+        PibIdentity pibId = null;
         PibKey key;
 
         try {
@@ -280,12 +296,20 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             defaultCertificateName = new Name("/bogus/certificate/name");
         }
-
         Globals.setKeyChain(keyChain);
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
         Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
+        System.out.println("Certificate");
+        try {
+            System.out.println(pibId.getDefaultKey().getDefaultCertificate());
+        } catch (Pib.Error error) {
+            error.printStackTrace();
+        } catch (PibImpl.Error error) {
+            error.printStackTrace();
+        }
+
         Log.d("setup_security", "Security was setup successfully");
         
         try {
@@ -372,8 +396,10 @@ public class MainActivity extends AppCompatActivity {
         try {
             Name dataName = new Name(name);
             Name fileName = new Name(name);
+            Name certName = new Name(name);
             dataName.append("data");
             fileName.append("file");
+            certName.append("cert");
             Log.d("register_with_nfd", "Starting registration process.");
             Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
                     new OnRegisterFailed() {
@@ -412,6 +438,25 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }, Globals.memoryCache.onNoDataInterest
             );
+
+            Globals.face.registerPrefix(certName, FileManager.onCertInterest,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Log.d("OnRegisterFailed", "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    }
+            );
         } catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
@@ -420,6 +465,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Checks NFD for a multicast face and registers /npChat prefix for that face
+     */
     public void registerRouteToAp() {
         Name prefix = new Name(getString(R.string.app_name));
         int myFace = 0;
@@ -436,7 +484,6 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
             }
-
             if (!wifiDirect) {
                 for (FaceStatus f : faceList) {
                     if (f.getRemoteUri().contains("udp4://224")) {
@@ -491,13 +538,11 @@ public class MainActivity extends AppCompatActivity {
                         // Send them to a new page to select friends to send photo to
                         Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
 
-                        FileManager manager = new FileManager(getApplicationContext());
                         ArrayList<String> friendsList = sharedPrefsManager.getFriendsList();
                         intent.putStringArrayListExtra("friendsList", friendsList);
                         // make this startActivityForResult and catch the list of recipients;
                         intent.putExtra("photo", m_curr_photo_file.toString());
                         m_curr_photo_file = null;
-                        //startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
                         startActivityForResult(intent, SELECT_RECIPIENTS_CODE);
                     }
                 });
@@ -521,7 +566,25 @@ public class MainActivity extends AppCompatActivity {
         }
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
-                Globals.consumerManager.createConsumer(resultData.getStringExtra("username"));
+                final String friend = resultData.getStringExtra("username");
+                // Add friend as consumer
+                Log.d("MainActivity", "Adding consumer for " + friend);
+                consumerManager.createConsumer("/" + getString(R.string.app_name) + "/" + friend);
+
+                // After adding friend, wait 10 seconds and then send interest for your own certificate signed by your friend
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            generateCertificateInterest(friend);
+                        } catch (SecurityException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, 10000);
+
             }
         }
         else if (requestCode == SETTINGS_CODE) {
@@ -555,6 +618,10 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    /**
+     * encodes sync data, encrypts photo, and publishes filename and symmetric keys
+     * @param resultData: intent with filename and recipients list
+     */
     public void encryptAndPublish(Intent resultData) {
         try {
             final String path = resultData.getStringExtra("photo");
@@ -610,6 +677,14 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         } catch (NoSuchPaddingException e) {
                             e.printStackTrace();
+                        } catch (BadPaddingException e) {
+                            e.printStackTrace();
+                        } catch (InvalidKeyException e) {
+                            e.printStackTrace();
+                        } catch (IllegalBlockSizeException e) {
+                            e.printStackTrace();
+                        } catch (InvalidAlgorithmParameterException e) {
+                            e.printStackTrace();
                         }
 
                     }
@@ -617,9 +692,8 @@ public class MainActivity extends AppCompatActivity {
 
                 publishingThread.run();
 
-                Globals.producerManager.m_producer.publishName(name);
-                Globals.producerManager.setSeqMap(syncData);
-
+                producerManager.m_producer.publishName(name);
+                producerManager.setDataSeqMap(syncData);
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -630,6 +704,66 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
         }
     }
+
+    /**
+     * Generates and expresses interest for our certificate signed by friend
+     * @param friend: name of friend who has our certificate
+     */
+    public void generateCertificateInterest(String friend) throws SecurityException, IOException {
+        Name name =  new Name();
+        name.append(getString(R.string.app_name));
+        name.append(friend);
+        name.append(getString(R.string.certificate_prefix));
+        Name certName = Globals.keyChain.getDefaultCertificateName();
+        Name newCertName = new Name();
+        newCertName.append(certName.getSubName(0, 4));
+        newCertName.append(friend);
+        name.append(newCertName);
+        Interest interest = new Interest(name);
+        face.expressInterest(interest, onCertData, onCertTimeOut);
+    }
+
+    /**
+     * Callback for certificate from friend
+     */
+    OnData onCertData = new OnData() {
+
+        @Override
+        public void onData(Interest interest, Data data) {
+            Log.d("onCertData", "Getting our certificate back from friend");
+            Blob interestData = data.getContent();
+            byte[] certBytes = interestData.getImmutableArray();
+
+            CertificateV2 certificateV2 = new CertificateV2();
+            try {
+                certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            }
+            sharedPrefsManager.saveSelfCert(certificateV2);
+
+        }
+    };
+
+    /**
+     * Callback for timeout of interest for certificate from friend
+     */
+    OnTimeout onCertTimeOut = new OnTimeout() {
+
+        @Override
+        public void onTimeout(Interest interest) {
+            Log.d("OnTimeout", "Timeout for interest " + interest.toUri());
+            String friend = interest.getName().getSubName(1, 1).toString().substring(1);
+            Log.d("OnTimeout", "Resending interest to " + friend);
+            try {
+                generateCertificateInterest(friend);
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
 
     /**

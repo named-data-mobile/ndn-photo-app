@@ -2,10 +2,12 @@ package memphis.myapplication;
 
 import android.content.Context;
 
+import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.tlv.TlvEncoder;
 import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
 import net.named_data.jndn.encrypt.algo.EncryptParams;
 import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 
 import java.nio.ByteBuffer;
@@ -76,7 +78,7 @@ public class Encrypter {
      * @param secretKey the encrypted symmetric key
      * @return Blob of TLV encoded data
      */
-    public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey){
+    public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey) throws CertificateV2.Error, EncodingException {
         TlvEncoder encoder = new TlvEncoder();
         int saveLength;
         FileManager manager = new FileManager(context);
@@ -88,7 +90,7 @@ public class Encrypter {
         for (String friend : recipients) {
 
             // Get friend's public key
-            Blob friendKey = manager.getFriendKey(friend);
+            Blob friendKey = SharedPrefsManager.getInstance(context).getFriendKey(friend);
 
             // Encrypt secret key with friend's public key
             Blob encryptedKey = null;
@@ -127,28 +129,17 @@ public class Encrypter {
      * @param data the file data
      * @return Blob of encrypted file data
      */
-    public Blob encrypt(SecretKey secretKey, byte[] iv, byte[] data) throws NoSuchPaddingException, NoSuchAlgorithmException {
+    public Blob encrypt(SecretKey secretKey, byte[] iv, byte[] data) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
+                                                                    IllegalBlockSizeException, BadPaddingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivspec = new IvParameterSpec(iv);
-        try {
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
-            byte[] encryptedData = cipher.doFinal(data);
-            byte[] dataPlusIV = new byte[iv.length + encryptedData.length];
-            System.arraycopy(iv, 0, dataPlusIV, 0, iv.length);
-            System.arraycopy(encryptedData, 0, dataPlusIV, iv.length, encryptedData.length);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
+        byte[] encryptedData = cipher.doFinal(data);
+        byte[] dataPlusIV = new byte[iv.length + encryptedData.length];
+        System.arraycopy(iv, 0, dataPlusIV, 0, iv.length);
+        System.arraycopy(encryptedData, 0, dataPlusIV, iv.length, encryptedData.length);
 
-            return new Blob(dataPlusIV, false);
-
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new Blob(dataPlusIV, false);
 
     }
 
