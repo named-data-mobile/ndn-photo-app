@@ -1,6 +1,7 @@
 package memphis.myapplication;
 
 import android.content.Context;
+import android.util.Log;
 
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
@@ -48,6 +49,7 @@ public class Decrypter {
      */
     public Blob decrypt(SecretKey secretKey, byte[] iv, Blob content) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException,
                                                                             InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+        Log.d("Decrypter", "Decrypting file");
         ivspec = new IvParameterSpec(iv);
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
@@ -60,6 +62,7 @@ public class Decrypter {
      * @return FetchingTaskParams object containing the interest for the file, the symmetric key, and the initialization vector
      */
     public FetchingTaskParams decodeSyncData(Blob interestData) throws TpmBackEnd.Error, EncodingException {
+        Log.d("Decrypter", "Decoding Sync Data");
         SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(context);
 
 

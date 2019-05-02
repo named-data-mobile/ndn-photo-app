@@ -1,23 +1,17 @@
 package memphis.myapplication;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -39,19 +33,35 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
     }
 
     private void feed() {
-        TextView feed = findViewById(R.id.feed);
+        final TextView feed = findViewById(R.id.feed);
+        final GradientDrawable drawable1 = new GradientDrawable();
+        drawable1.setColor(Color.CYAN);
+        drawable1.setStroke(2, Color.BLACK);
         feed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                m_feedSelected = true;
-                m_sendButton.setVisibility(View.VISIBLE);
-                m_sendButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        returnList();
-                    }});
+                if (m_selectedFriends.size() <= 0) {
+                    if (feed.isSelected()) {
+                        m_feedSelected = false;
+                        feed.setSelected(false);
+                        feed.setBackground(null);
+                        m_sendButton.setVisibility(View.GONE);
+                    } else {
+                        m_feedSelected = true;
+                        feed.setSelected(true);
+                        feed.setBackground(drawable1);
+                        m_sendButton.setVisibility(View.VISIBLE);
+                        m_sendButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                returnList();
+                            }
+                        });
+                    }
+                }
             }
         });
+
     }
 
     private void showFriends() {

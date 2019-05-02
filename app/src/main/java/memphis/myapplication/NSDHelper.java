@@ -81,7 +81,7 @@ public class NSDHelper {
         @Override
         public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
             serviceName = NsdServiceInfo.getServiceName();
-            Log.d(TAG, "Servie name: " + serviceName);
+            Log.d(TAG, "Service name: " + serviceName);
         }
 
         @Override
@@ -179,7 +179,11 @@ public class NSDHelper {
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
 
-                Name npChatRoute = new Name("/npChat/" + new String(sI.getAttributes().get("username")));
+                //Log.d("Testing", new String(sI.getAttributes().get("username")));
+                // This hashmap is empty for some reason. So currently parsing the service name to get the username
+                String sIName = sI.getServiceName();
+                Log.d("NSD resolving", sIName);
+                Name npChatRoute = new Name("/npChat/" + sIName.substring(("npchat-").length()));
                 Nfdc.register(m_face, faceid, npChatRoute, 0);
             } catch (ManagementException e) {
                 e.printStackTrace();

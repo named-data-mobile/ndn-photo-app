@@ -319,6 +319,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
+
+        Log.d("Setup_security", "Discovering nodes");
+        NSDHelper nsdHelper;
+        nsdHelper = new NSDHelper(sharedPrefsManager.getUsername(), getApplicationContext(), face);
+        nsdHelper.discoverServices();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -627,6 +632,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
+            Log.d("MainActivity", "File size: " + photo.length());
             final Uri uri = UriFileProvider.getUriForFile(this,
                     getApplicationContext().getPackageName() +
                             ".UriFileProvider", photo);
@@ -670,20 +676,19 @@ public class MainActivity extends AppCompatActivity {
                             if (!feed) {
                                 Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                                 sharedPrefsManager.saveSymKey(secretKey, filename);
-
-                                final FileManager manager = new FileManager(getApplicationContext());
-
-
                                 Common.publishData(encryptedBlob, new Name(prefix));
-                                Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                                manager.saveFileQR(bitmap, prefix);
-                                runOnUiThread(makeToast("Sending photo"));
+
                             }
                             else {
+                                Log.d("MainActivity", "Publishing to feed");
                                 Blob unencryptedBlob = new Blob(bytes);
                                 Common.publishData(unencryptedBlob, new Name(prefix));
 
                             }
+                            final FileManager manager = new FileManager(getApplicationContext());
+                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                            manager.saveFileQR(bitmap, prefix);
+                            runOnUiThread(makeToast("Sending photo"));
                         } catch (NoSuchAlgorithmException e) {
                             e.printStackTrace();
                         } catch (NoSuchPaddingException e) {
