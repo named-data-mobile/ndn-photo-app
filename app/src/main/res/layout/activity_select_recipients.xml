@@ -12,10 +12,29 @@
         android:orientation="vertical"
         android:background="@color/colorPrimary"
         android:clickable="true"
+        android:focusable="true"
         android:elevation="@dimen/margin_0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
+
+        <TextView
+            android:id="@+id/feed"
+            android:gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:text="Feed"
+            android:textColor="@color/white"
+            android:textSize="35sp"
+            />
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/friendList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
 
     </LinearLayout>
 

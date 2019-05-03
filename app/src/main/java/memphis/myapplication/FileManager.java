@@ -166,6 +166,7 @@ public class FileManager {
      */
     public boolean saveContentToFile(Blob content, String path) {
         String filename = path.substring(path.lastIndexOf("/")+1);
+        Log.d("FileManager", "Saving " + filename);
         File dir;
         File file;
         int fileTypeIndex = filename.lastIndexOf(".");

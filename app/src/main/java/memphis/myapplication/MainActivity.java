@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
     private final int SELECT_RECIPIENTS_CODE = 1;
     private final int ADD_FRIEND_CODE = 2;
     private final int SETTINGS_CODE = 3;
+    private final int RESULT_FEED_OK = 4;
     private File m_curr_photo_file;
 
 
@@ -318,6 +319,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException | PibImpl.Error e) {
             e.printStackTrace();
         }
+
+        Log.d("Setup_security", "Discovering nodes");
+        NSDHelper nsdHelper;
+        nsdHelper = new NSDHelper(sharedPrefsManager.getUsername(), getApplicationContext(), face);
+        nsdHelper.discoverServices();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -626,6 +632,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
+            Log.d("MainActivity", "File size: " + photo.length());
             final Uri uri = UriFileProvider.getUriForFile(this,
                     getApplicationContext().getPackageName() +
                             ".UriFileProvider", photo);
@@ -645,6 +652,8 @@ public class MainActivity extends AppCompatActivity {
                 // Encode sync data
                 Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
 
+                final boolean feed = (recipients == null);
+
                 Log.d("Publishing file", filename);
                 Thread publishingThread = new Thread(new Runnable() {
                     @Override
@@ -661,15 +670,22 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Log.d("file selection result", "file path: " + path);
                         try {
-                            Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                            sharedPrefsManager.saveSymKey(secretKey, filename);
-
-                            final FileManager manager = new FileManager(getApplicationContext());
                             String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                             final String prefix = prefixApp + path;
                             Log.d("Publishing data", prefix);
+                            if (!feed) {
+                                Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                                sharedPrefsManager.saveSymKey(secretKey, filename);
+                                Common.publishData(encryptedBlob, new Name(prefix));
 
-                            Common.publishData(encryptedBlob, new Name(prefix));
+                            }
+                            else {
+                                Log.d("MainActivity", "Publishing to feed");
+                                Blob unencryptedBlob = new Blob(bytes);
+                                Common.publishData(unencryptedBlob, new Name(prefix));
+
+                            }
+                            final FileManager manager = new FileManager(getApplicationContext());
                             Bitmap bitmap = QRExchange.makeQRCode(prefix);
                             manager.saveFileQR(bitmap, prefix);
                             runOnUiThread(makeToast("Sending photo"));

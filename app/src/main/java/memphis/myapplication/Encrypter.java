@@ -1,6 +1,7 @@
 package memphis.myapplication;
 
 import android.content.Context;
+import android.util.Log;
 
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.tlv.TlvEncoder;
@@ -81,45 +82,47 @@ public class Encrypter {
     public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey) throws CertificateV2.Error, EncodingException {
         TlvEncoder encoder = new TlvEncoder();
         int saveLength;
-        FileManager manager = new FileManager(context);
 
         // Encode filename
         encoder.writeBlobTlv(filenameType, ByteBuffer.wrap(filename.getBytes()));
         saveLength = encoder.getLength();
 
-        for (String friend : recipients) {
+        if (recipients != null) {
 
-            // Get friend's public key
-            Blob friendKey = SharedPrefsManager.getInstance(context).getFriendKey(friend);
+            for (String friend : recipients) {
 
-            // Encrypt secret key with friend's public key
-            Blob encryptedKey = null;
-            try {
-                encryptedKey = RsaAlgorithm.encrypt
-                        (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep));
-            } catch (InvalidKeySpecException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (NoSuchPaddingException e) {
-                e.printStackTrace();
-            } catch (InvalidKeyException e) {
-                e.printStackTrace();
-            } catch (IllegalBlockSizeException e) {
-                e.printStackTrace();
-            } catch (BadPaddingException e) {
-                e.printStackTrace();
+                // Get friend's public key
+                Blob friendKey = SharedPrefsManager.getInstance(context).getFriendKey(friend);
+
+                // Encrypt secret key with friend's public key
+                Blob encryptedKey = null;
+                try {
+                    encryptedKey = RsaAlgorithm.encrypt
+                            (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep));
+                } catch (InvalidKeySpecException e) {
+                    e.printStackTrace();
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (NoSuchPaddingException e) {
+                    e.printStackTrace();
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                } catch (IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                } catch (BadPaddingException e) {
+                    e.printStackTrace();
+                }
+
+                // Encode the symmetric key, iv, and friend's name
+                encoder.writeBlobTlv(keyType, encryptedKey.buf());
+                encoder.writeBlobTlv(friendNameType, ByteBuffer.wrap(friend.getBytes()));
+                encoder.writeTypeAndLength(nameAndKeyType, encoder.getLength() - saveLength);
+                saveLength = encoder.getLength();
             }
-
-            // Encode the symmetric key, iv, and friend's name
-            encoder.writeBlobTlv(keyType, encryptedKey.buf());
-            encoder.writeBlobTlv(friendNameType, ByteBuffer.wrap(friend.getBytes()));
-            encoder.writeTypeAndLength(nameAndKeyType, encoder.getLength() - saveLength);
-            saveLength = encoder.getLength();
         }
 
-        encoder.writeTypeAndLength(syncDataType, encoder.getLength());
-        return new Blob(encoder.getOutput(), true);
+            encoder.writeTypeAndLength(syncDataType, encoder.getLength());
+            return new Blob(encoder.getOutput(), true);
     }
 
     /**
@@ -131,6 +134,7 @@ public class Encrypter {
      */
     public Blob encrypt(SecretKey secretKey, byte[] iv, byte[] data) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
                                                                     IllegalBlockSizeException, BadPaddingException {
+        Log.d("Encrypter", "Encrypting file");
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivspec = new IvParameterSpec(iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
