@@ -11,15 +11,24 @@ import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.tpm.TpmKeyHandle;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
+import org.apache.commons.lang3.SerializationUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import memphis.myapplication.Decrypter;
 import memphis.myapplication.Globals;
+import memphis.myapplication.SharedPrefsManager;
+import memphis.myapplication.SyncData;
 import memphis.myapplication.tasks.FetchingTask;
 import memphis.myapplication.tasks.FetchingTaskParams;
 
@@ -54,19 +63,37 @@ public class ConsumerManager {
 
         @Override
         public void onData(Interest interest, Data data) {
-            Blob interestData = data.getContent();
-            System.out.println("interest: " + interest);
-            Decrypter decrypter = new Decrypter(context);
-            FetchingTaskParams fetchingTaskParams = null;
             try {
-                fetchingTaskParams = decrypter.decodeSyncData(interestData);
-            } catch (TpmBackEnd.Error error) {
-                error.printStackTrace();
-            } catch (EncodingException e) {
+                Thread.sleep(30000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (fetchingTaskParams != null) {
-                new FetchingTask(activity).execute(fetchingTaskParams);
+            Log.d("ConsumerManager", "Got sync data");
+            byte[] interestData = data.getContent().getImmutableArray();
+            SyncData syncData = SerializationUtils.deserialize(interestData);
+            String filename = syncData.getFilename();
+
+            if (syncData.isFeed()) {
+                System.out.println("For feed");
+                new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+            }
+            else {
+                if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
+                    System.out.println("For me");
+                    try {
+                        Blob symmetricKey = new Blob(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), false);
+                        TpmBackEndFile m_tpm = Globals.tpm;
+                        TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
+                        Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
+                        byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
+                        SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+                        System.out.println("Filename : " + filename);
+                        new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                    } catch (TpmBackEnd.Error error) {
+                        error.printStackTrace();
+                    }
+
+                }
             }
         }
     };

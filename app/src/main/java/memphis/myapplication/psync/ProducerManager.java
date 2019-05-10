@@ -19,7 +19,7 @@ import java.util.Map;
 public class ProducerManager {
     public static PSync.PartialProducer m_producer;
     public static PSync.PartialProducer m_cert_producer;
-    private static Map<Long, Blob> m_seqToFileName = new HashMap<Long, Blob>();
+    private static Map<Long, byte[]> m_seqToFileName = new HashMap<Long, byte[]>();
     private static String producerPrefix;
 
     public ProducerManager(String p) {
@@ -27,13 +27,13 @@ public class ProducerManager {
         m_producer = new PSync.PartialProducer(80, producerPrefix, producerPrefix + "/data", 500, 1000);
     }
 
-    public void setDataSeqMap(Blob syncData) {
+    public void setDataSeqMap(byte[] syncData) {
         m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data"), syncData);
     }
 
 
 
-    public Blob getSeqMap(long seq) {
+    public byte[] getSeqMap(long seq) {
         return m_seqToFileName.get(seq);
     }
 
@@ -45,7 +45,7 @@ public class ProducerManager {
             try {
                 Data data = new Data(interest.getName());
                 System.out.print(data.getContent());
-                Blob content = m_seqToFileName.get(m_producer.getSeqNo(producerPrefix + "/data"));
+                Blob content = new Blob(m_seqToFileName.get(m_producer.getSeqNo(producerPrefix + "/data")), false);
                 data.setContent(new Blob(content));
                 face.putData(data);
 

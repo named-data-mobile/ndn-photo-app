@@ -142,13 +142,18 @@ public class MemoryCache {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
             Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            String filename = interest.getName().toUri();
-            System.out.println("What is the interest? " + interest.toUri());
-            if (SharedPrefsManager.getInstance(m_currContext).contains(interest.getName().toUri())) {
-                // Need to get fetching params (filename, key) and execute fetching task
-                process(filename);
-                }
-            }
+            Name baseInteret = interest.getName().getPrefix(interest.getName().size() - 2);
+            String filename = baseInteret.getSubName(3).toUri();
+            System.out.println("What is the filename? " + filename);
+//            if (SharedPrefsManager.getInstance(m_currContext).contains(interest.getName().toUri())) {
+//                Log.d("MemoryCache", "Processing interest");
+//                process(filename);
+//                }
+//            else {
+//                Log.d("MemoryCache", "Can't find file");
+//                process(filename);
+//            }
+        }
     };
 
     // Call this to “shut down” the MemoryContentCache while the application is still running.

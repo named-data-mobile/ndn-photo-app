@@ -41,6 +41,9 @@ import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.OnTimeout;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.der.DerDecodingException;
+import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
+import net.named_data.jndn.encrypt.algo.EncryptParams;
+import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -58,6 +61,7 @@ import net.named_data.jni.psync.PSync;
 
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -650,66 +654,78 @@ public class MainActivity extends AppCompatActivity {
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
-                Blob syncData = encrypter.encodeSyncData(recipients, filename, secretKey);
+                SyncData syncData = new SyncData(filename);
 
                 final boolean feed = (recipients == null);
+                if (feed) {
+                    Log.d("MainActivity", "For feed");
+                    syncData.setFeed();
+                }
+                else {
+                    Log.d("MainActivity", "For friends");
+                    for (String friend : recipients) {
+                        Blob friendKey = sharedPrefsManager.getFriendKey(friend);
+                        byte[] encryptedKey = RsaAlgorithm.encrypt
+                                (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
+                        syncData.addFriendKey(friend, encryptedKey);
+                    }
+                }
+                // Serialize sync data
+                byte[] serializedSyncData = SerializationUtils.serialize(syncData);
+                producerManager.setDataSeqMap(serializedSyncData);
+
+
+
 
                 Log.d("Publishing file", filename);
-                Thread publishingThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        byte[] bytes;
-                        try {
-                            InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
-                            bytes = IOUtils.toByteArray(is);
-                            Log.d("select file activity", "file byte array size: " + bytes.length);
-                        } catch (IOException e) {
-                            Log.d("onItemClick", "failed to byte");
-                            e.printStackTrace();
-                            bytes = new byte[0];
-                        }
-                        Log.d("file selection result", "file path: " + path);
-                        try {
-                            String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
-                            final String prefix = prefixApp + path;
-                            Log.d("Publishing data", prefix);
-                            if (!feed) {
-                                Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                                sharedPrefsManager.saveSymKey(secretKey, filename);
-                                Common.publishData(encryptedBlob, new Name(prefix));
 
-                            }
-                            else {
-                                Log.d("MainActivity", "Publishing to feed");
-                                Blob unencryptedBlob = new Blob(bytes);
-                                Common.publishData(unencryptedBlob, new Name(prefix));
-
-                            }
-                            final FileManager manager = new FileManager(getApplicationContext());
-                            Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                            manager.saveFileQR(bitmap, prefix);
-                            runOnUiThread(makeToast("Sending photo"));
-                        } catch (NoSuchAlgorithmException e) {
-                            e.printStackTrace();
-                        } catch (NoSuchPaddingException e) {
-                            e.printStackTrace();
-                        } catch (BadPaddingException e) {
-                            e.printStackTrace();
-                        } catch (InvalidKeyException e) {
-                            e.printStackTrace();
-                        } catch (IllegalBlockSizeException e) {
-                            e.printStackTrace();
-                        } catch (InvalidAlgorithmParameterException e) {
-                            e.printStackTrace();
-                        }
+                byte[] bytes;
+                try {
+                    InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
+                    bytes = IOUtils.toByteArray(is);
+                    Log.d("select file activity", "file byte array size: " + bytes.length);
+                } catch (IOException e) {
+                    Log.d("onItemClick", "failed to byte");
+                    e.printStackTrace();
+                    bytes = new byte[0];
+                }
+                Log.d("file selection result", "file path: " + path);
+                try {
+                    String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
+                    final String prefix = prefixApp + path;
+                    Log.d("Publishing data", prefix);
+                    if (!feed) {
+                        Log.d("MainActivity", "Publishing to friend(s)");
+                        Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                        sharedPrefsManager.saveSymKey(secretKey, filename);
+                        Common.publishData(encryptedBlob, new Name(prefix));
 
                     }
-                });
+                    else {
+                        Log.d("MainActivity", "Publishing to feed");
+                        Blob unencryptedBlob = new Blob(bytes);
+                        Common.publishData(unencryptedBlob, new Name(prefix));
 
-                publishingThread.run();
+                    }
+                    final FileManager manager = new FileManager(getApplicationContext());
+                    Bitmap bitmap = QRExchange.makeQRCode(prefix);
+                    manager.saveFileQR(bitmap, prefix);
+                    runOnUiThread(makeToast("Sending photo"));
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (NoSuchPaddingException e) {
+                    e.printStackTrace();
+                } catch (BadPaddingException e) {
+                    e.printStackTrace();
+                } catch (InvalidKeyException e) {
+                    e.printStackTrace();
+                } catch (IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                } catch (InvalidAlgorithmParameterException e) {
+                    e.printStackTrace();
+                }
 
                 producerManager.m_producer.publishName(name);
-                producerManager.setDataSeqMap(syncData);
             }
             catch(Exception e) {
                 e.printStackTrace();
