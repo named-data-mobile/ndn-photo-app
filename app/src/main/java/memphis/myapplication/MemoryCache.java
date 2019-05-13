@@ -32,6 +32,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import io.realm.Realm;
+import memphis.myapplication.RealmObjects.ContentKey;
 import memphis.myapplication.tasks.FetchingTask;
 import memphis.myapplication.tasks.FetchingTaskParams;
 
@@ -68,8 +70,8 @@ public class MemoryCache {
      * @param filename
      */
     public void process(String filename) {
-        byte[] keyBytes = (SharedPrefsManager.getInstance(m_currContext).getSymKey(filename).getBytes());
-        SecretKey secretKey = new SecretKeySpec(keyBytes, 0, keyBytes.length, "AES");
+        Realm realm = Realm.getDefaultInstance();
+        SecretKey secretKey = realm.where(ContentKey.class).equalTo("filename", filename).findFirst().getKey();
         Name iName = new Name(filename);
 
         Log.d("process", "Called process in FaceProxy");

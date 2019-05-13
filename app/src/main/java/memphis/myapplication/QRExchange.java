@@ -58,7 +58,6 @@ public class QRExchange {
     // consider changing this to send an interest for the key since it's in DER format. It does not
     // seem to play nice with strings.
     public static Bitmap makeQRFriendCode(Context context, FileManager manager) {
-        String name = SharedPrefsManager.getInstance(context).getUsername();
         CertificateV2 certificate = null;
         try {
             certificate = Globals.pibIdentity.getDefaultKey().getDefaultCertificate();
@@ -67,7 +66,7 @@ public class QRExchange {
         } catch (PibImpl.Error error) {
             error.printStackTrace();
         }
-        Log.d("makeFriendCode", "Certificate: " + certificate);
+        Log.d("makeFriendCode", "SelfCertificate: " + certificate);
         if(certificate != null) {
             TlvEncoder tlvEncodedDataContent = new TlvEncoder();
             tlvEncodedDataContent.writeBuffer(certificate.wireEncode().buf());
@@ -75,12 +74,11 @@ public class QRExchange {
             String certString = Base64.encodeToString(finalDataContentByteArray, 0);
             // make sure we check later during registration that a username has no spaces
             Log.d("makeFriendCode", "Pubkey: " + certString);
-            String qrContents = name + " " + certString;
 
             // replace below section with makeQRCode method
             QRCodeWriter qrWriter = new QRCodeWriter();
             try {
-                BitMatrix qrMatrix = qrWriter.encode(qrContents, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
+                BitMatrix qrMatrix = qrWriter.encode(certString, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
                 Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
                 for (int i = 0; i < BIT_HEIGHT; i++) {
                     for (int j = 0; j < BIT_WIDTH; j++) {

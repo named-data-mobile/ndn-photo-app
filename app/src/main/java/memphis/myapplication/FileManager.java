@@ -2,7 +2,6 @@ package memphis.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Base64;
 import android.util.Log;
 
 import net.named_data.jndn.Data;
@@ -27,6 +26,10 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+import io.realm.Realm;
+import memphis.myapplication.RealmObjects.SelfCertificate;
+import memphis.myapplication.RealmObjects.User;
+
 public class FileManager {
 
     private String m_appName;
@@ -40,6 +43,7 @@ public class FileManager {
     private File m_rcvdPhotosDir;
     private static Context mContext;
     public static boolean dirsCreated = false;
+    private static Realm mRealm;
 
     public FileManager(Context context) {
         /* Eventually, we will set m_appRootPath to getFilesDir(). This is the internal storage of
@@ -355,32 +359,91 @@ public class FileManager {
     public static final OnInterestCallback onCertInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
+            mRealm = Realm.getDefaultInstance();
             Log.d("onCertInterest", "Called onCertInterest with Interest: " + interest.getName().toUri());
-            System.out.println("Friend name: " + (interest.getName().getSubName(4, 1)).toString());
-            String friend = (interest.getName().getSubName(4, 1)).toString().substring(1);
-            System.out.println("Friend name " + friend);
-            CertificateV2 friendCert = null;
-            try {
-                friendCert = SharedPrefsManager.getInstance(mContext).getFriendCert(friend);
-            } catch (EncodingException e) {
-                e.printStackTrace();
+            String issuer = interest.getName().getSubName(4, 1).toString().substring(1);
+            String signer = interest.getName().getSubName(7, 1).toString().substring(1);
+            System.out.println("Signer: " + signer);
+            System.out.println("My name: " + SharedPrefsManager.getInstance(mContext).getUsername());
+
+            // Interest for our self-signed cert
+            if ((signer.equals(SharedPrefsManager.getInstance(mContext).getUsername()) && issuer.equals(signer))) {
+                System.out.println("Asking for our self-signed cert");
+                try {
+                    CertificateV2 cert = Globals.pibIdentity.getDefaultKey().getDefaultCertificate();
+                    System.out.println(cert.getName());
+
+                    Data data = new Data(interest.getName());
+                    TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+                    tlvEncodedDataContent.writeBuffer(cert.wireEncode().buf());
+                    byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+                    Blob d = new Blob(finalDataContentByteArray);
+                    data.setContent(d);
+                    data.setMetaInfo(new MetaInfo());
+                    data.getMetaInfo().setFreshnessPeriod(31536000000.0);
+
+                    face.putData(data);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
             }
-            Data data = new Data(interest.getName());
-            TlvEncoder tlvEncodedDataContent = new TlvEncoder();
-            tlvEncodedDataContent.writeBuffer(friendCert.wireEncode().buf());
-            byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
-            Blob d = new Blob(finalDataContentByteArray);
-            data.setContent(d);
-            data.setMetaInfo(new MetaInfo());
-            data.getMetaInfo().setFreshnessPeriod(31536000000.0);
-            try {
-                face.putData(data);
-            } catch (IOException e) {
-                e.printStackTrace();
+            // Interest for their cert signed by us
+            else if (signer.equals(SharedPrefsManager.getInstance(mContext).getUsername())) {
+                System.out.println("Asking for their own cert");
+                System.out.println("Friend name: " + (interest.getName().getSubName(4, 1)).toString());
+                String friend = (interest.getName().getSubName(4, 1)).toString().substring(1);
+                System.out.println("Friend name " + friend);
+                CertificateV2 friendCert = null;
+                try {
+                    friendCert = mRealm.where(User.class).equalTo("username", friend).findFirst().getCert();
+                    Data data = new Data(interest.getName());
+                    TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+                    tlvEncodedDataContent.writeBuffer(friendCert.wireEncode().buf());
+                    byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+                    Blob d = new Blob(finalDataContentByteArray);
+                    data.setContent(d);
+                    data.setMetaInfo(new MetaInfo());
+                    data.getMetaInfo().setFreshnessPeriod(31536000000.0);
+                    Log.d("OnCertInterest", "Their cert name signed by us " + friendCert.getName().toUri());
+                    face.putData(data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                catch (EncodingException e) {
+                    e.printStackTrace();
+                }
+
+            // Interest for our cert signed by mutual friend
+            }else {
+                try {
+                    System.out.println("Asking for our cert signed by mutual friend");
+                    System.out.println("Friend name: " + (interest.getName().getSubName(6, 1)).toString().substring(1));
+                    String friend = interest.getName().getSubName(6, 1).toString().substring(1);
+                    CertificateV2 cert = mRealm.where(SelfCertificate.class).equalTo("username", friend).findFirst().getCert();
+                    System.out.println(cert.getName());
+
+                    Data data = new Data(interest.getName());
+                    TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+                    tlvEncodedDataContent.writeBuffer(cert.wireEncode().buf());
+                    byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+                    Blob d = new Blob(finalDataContentByteArray);
+                    data.setContent(d);
+                    data.setMetaInfo(new MetaInfo());
+                    data.getMetaInfo().setFreshnessPeriod(31536000000.0);
+
+                    face.putData(data);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
 
         }
     };
 
-    // we need to hash to some common directory or we will need to have a table that contain links to the files
+
+
+            // we need to hash to some common directory or we will need to have a table that contain links to the files
 }

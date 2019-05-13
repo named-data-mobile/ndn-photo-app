@@ -57,81 +57,99 @@ public class SharedPrefsManager {
         return mPassword;
     }
 
-    public ArrayList<String> getFriendsList() {
-        ArrayList<String> friends = new ArrayList<>();
-        for (String friend : mFriendsList) {
-            friends.add(friend);
-        }
-        return friends;
-    }
-
-    public boolean addFriend(String friend) {
-        Set<String> friendsList = mFriendsList;
-
-        if (friendsList.contains(friend)) {
-            return false;
-        }
-        friendsList.add(friend);
-
-        SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
-        editor.apply();
-        return true;
-    }
-
-    public Blob getFriendKey(String friend) throws CertificateV2.Error, EncodingException {
-        CertificateV2 cert = getFriendCert(friend);
-        Blob key = cert.getPublicKey();
-        return key;
-    }
-
-    public void storeFriendCert(String friend, CertificateV2 cert) {
-        SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        TlvEncoder tlvEncodedDataContent = new TlvEncoder();
-        tlvEncodedDataContent.writeBuffer(cert.wireEncode().buf());
-        byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
-        String certString = Base64.encodeToString(finalDataContentByteArray, 0);
-        editor.putString(friend, certString);
-        editor.apply();
-
-    }
-
-    public CertificateV2 getFriendCert(String friend) throws EncodingException {
-        String certString = mSharedPreferences.getString(friend, null);
-        byte[] certBytes = Base64.decode(certString, 0);
-        CertificateV2 certificateV2 = null;
-        certificateV2 = new CertificateV2();
-        certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
-        return certificateV2;
-
-    }
-
-    public void saveSymKey(SecretKey secretKey, String filename) {
-        byte[] keyBytes = secretKey.getEncoded();
-        String keyString = Base64.encodeToString(keyBytes, Base64.NO_WRAP);
-        SharedPreferences.Editor editor =  mSharedPreferences.edit();
-        editor.putString(filename, keyString);
-        editor.apply();
-    }
-
-    public String getSymKey(String filename) {
-        if (mSharedPreferences.contains(filename)) {
-            return  mSharedPreferences.getString(filename, null);
-        }
-        else return null;
-    }
-
-    public void saveSelfCert(CertificateV2 cert) {
-        Name certName = cert.getName();
-        String friend = certName.getSubName(4, 1).toString() + "_self";
-        storeFriendCert(friend, cert);
-        Log.d("SharedPrefsManager", "Saved our own cert signed by " + friend);
-    }
-
-    public void getSelfCert(String friend) throws EncodingException {
-        friend = friend + "_self";
-        getFriendCert(friend);
-    }
+//    public ArrayList<String> getFriendsList() {
+//        ArrayList<String> friends = new ArrayList<>();
+//        for (String friend : mFriendsList) {
+//            friends.add(friend);
+//        }
+//        return friends;
+//    }
+//
+//    public boolean addFriend(String friend) {
+//        Set<String> friendsList = mFriendsList;
+//
+//        if (friendsList.contains(friend)) {
+//            return false;
+//        }
+//        friendsList.add(friend);
+//
+//        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+//        editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
+//        editor.apply();
+//        return true;
+//    }
+//
+//    public boolean checkFriend(String friend) {
+//        return mFriendsList.contains(friend);
+//    }
+//
+//    public Blob getFriendKey(String friend) throws CertificateV2.Error, EncodingException {
+//        CertificateV2 cert = getFriendCert(friend);
+//        Blob key = cert.getPublicKey();
+//        return key;
+//    }
+//
+//    public void storeFriendCert(String friend, CertificateV2 cert) {
+//        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+//        TlvEncoder tlvEncodedDataContent = new TlvEncoder();
+//        tlvEncodedDataContent.writeBuffer(cert.wireEncode().buf());
+//        byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
+//        String certString = Base64.encodeToString(finalDataContentByteArray, 0);
+//        editor.putString(friend, certString);
+//        editor.apply();
+//
+//    }
+//
+//    public CertificateV2 getFriendCert(String friend) throws EncodingException {
+//        String certString = mSharedPreferences.getString(friend, null);
+//        byte[] certBytes = Base64.decode(certString, 0);
+//        CertificateV2 certificateV2 = null;
+//        certificateV2 = new CertificateV2();
+//        certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
+//        return certificateV2;
+//
+//    }
+//
+//    public void saveSymKey(SecretKey secretKey, String filename) {
+//        byte[] keyBytes = secretKey.getEncoded();
+//        String keyString = Base64.encodeToString(keyBytes, Base64.NO_WRAP);
+//        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+//        editor.putString(filename, keyString);
+//        editor.apply();
+//    }
+//
+//    public String getSymKey(String filename) {
+//        if (mSharedPreferences.contains(filename)) {
+//            return  mSharedPreferences.getString(filename, null);
+//        }
+//        else return null;
+//    }
+//
+//    public void saveSelfCert(CertificateV2 cert) {
+//        Name certName = cert.getName();
+//        String friend = certName.getSubName(4, 1).toString().substring(1) + "_self";
+//        storeFriendCert(friend, cert);
+//        Log.d("SharedPrefsManager", "Saved our own cert signed by " + friend);
+//    }
+//
+//    public CertificateV2 getSelfCert(String friend) throws EncodingException {
+//        friend = friend + "_self";
+//        return getFriendCert(friend);
+//    }
+//
+//    public boolean removeFriend(String friend) {
+//        Set<String> friendsList = mFriendsList;
+//
+//        if (!friendsList.contains(friend)) {
+//            return false;
+//        }
+//        friendsList.remove(friend);
+//
+//        SharedPreferences.Editor editor =  mSharedPreferences.edit();
+//        editor.putStringSet(KEY_FRIENDS_LIST, friendsList);
+//        editor.apply();
+//        return true;
+//    }
 
     public Boolean getLogInStatus() {
         return mLogInStatus;

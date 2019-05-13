@@ -17,7 +17,7 @@ public class IntroActivity extends AppCompatActivity {
 
         // Check if NDN Forwarding Daemon is installed.
         // If installed -> Continue Regular Onboarding
-        // If not installed -> Show a Message and request User to install NDN Forwarding Daemon.
+        // If not installed -> Show a Message and request memphis.myapplication.RealmObjects.User to install NDN Forwarding Daemon.
         final String nfdAppPackageName = getString(R.string.nfd_package);
         Context context = getApplicationContext();
         PackageManager pm = context.getPackageManager();

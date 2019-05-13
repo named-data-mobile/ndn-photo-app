@@ -16,7 +16,7 @@
         android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".CertificateExchangeActivity"></activity>
+        <activity android:name=".SendFriendRequest"></activity>
 
         <provider
             android:name=".UriFileProvider"
@@ -28,7 +28,7 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".services.NetworkService"></service>
+        <service android:name=".services.NetworkService" />
 
         <activity
             android:name=".FilesActivity"
@@ -73,10 +73,10 @@
         </activity>
         <activity
             android:name=".NewContentActivity"
-            android:launchMode="singleTask"></activity>
+            android:launchMode="singleTask" />
         <activity
             android:name=".DisplayQRActivity"
-            android:parentActivityName=".MainActivity"></activity>
+            android:parentActivityName=".MainActivity" />
         <activity
             android:name=".SignUpActivity"
             android:exported="true"
@@ -88,7 +88,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".SettingsActivity" />
         <activity android:name=".SelectRecipientsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -103,7 +103,7 @@
         </activity>
         <activity
             android:name=".ViewPhotosActivity"
-            android:launchMode="singleTask"></activity>
+            android:launchMode="singleTask" />
     </application>
 
 </manifest>

@@ -15,7 +15,7 @@ import android.widget.Toast;
 public class LoginActivity extends AppCompatActivity {
 
     final private int MISSING_ELEMENT = 1;
-    private String username,password;
+    private String username, password, domain;
     private ProgressBar loginProgressBar;
     private Button loginButton;
     @Override
@@ -73,8 +73,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
+        EditText dom = findViewById(R.id.domain_text);
         EditText name = findViewById(R.id.username_text);
         EditText pass = findViewById(R.id.password_text);
+        domain = dom.getText().toString();
         username = name.getText().toString();
         password = pass.getText().toString();
         int attempt = loginAttempt(username, password);

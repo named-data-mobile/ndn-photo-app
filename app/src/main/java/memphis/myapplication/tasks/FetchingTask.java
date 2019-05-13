@@ -36,11 +36,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import io.realm.Realm;
 import memphis.myapplication.Decrypter;
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
-import memphis.myapplication.SharedPrefsManager;
+import memphis.myapplication.RealmObjects.User;
 
 import static java.lang.Thread.sleep;
 
@@ -160,12 +161,12 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         Name n = interest.getName().getSubName(1);
         System.out.println(n.toUri());
         m_user = (n.getPrefix(1).toUri()).substring(1);
+        Realm realm = Realm.getDefaultInstance();
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        ArrayList<String> friendsList = SharedPrefsManager.getInstance(m_currContext).getFriendsList();
         Log.d("username&PubKey", "user: " + m_user);
-        if(friendsList.contains(m_user)) {
+        if(realm.where(User.class).equalTo("username", m_user).findFirst().isFriend()) {
             try {
-                m_pubKey = new PublicKey(SharedPrefsManager.getInstance(m_currContext).getFriendKey(m_user));
+                m_pubKey = new PublicKey(realm.where(User.class).equalTo("username", m_user).findFirst().getCert().getPublicKey());
             }
             catch(UnrecognizedKeyFormatException e) {
                 e.printStackTrace();

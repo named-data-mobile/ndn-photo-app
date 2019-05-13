@@ -13,6 +13,7 @@ import net.named_data.jndn.Name;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +34,7 @@ public class NSDHelper {
 
     private Face m_face;
     private static Map<String, Integer> serviceNameToFaceId = new HashMap<String, Integer>();
+    public static ArrayList<String> users;
 
 
     public NSDHelper(String userName, Context context, Face face) {
