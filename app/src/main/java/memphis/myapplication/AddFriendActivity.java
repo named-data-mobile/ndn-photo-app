@@ -79,15 +79,15 @@ public class AddFriendActivity extends AppCompatActivity {
         builder.setPositiveButton("Display QR code", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Send them to a new page to select friends to send photo to
-                displayMyQR(tempView);
                 scanFriendQR(tempView);
+                displayMyQR(tempView);
 
             }
         });
         builder.setNegativeButton("Scan QR code", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                scanFriendQR(tempView);
                 displayMyQR(tempView);
+                scanFriendQR(tempView);
 
             }
         });
@@ -175,7 +175,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
 
             SharedPrefsManager.getInstance(this).storeFriendCert(username, certificateV2);
-            System.out.println(certificateV2.getKeyName());
+            Log.d("AddFriendActivity", certificateV2.getKeyName().toString());
             return 0;
         }
         return -1;

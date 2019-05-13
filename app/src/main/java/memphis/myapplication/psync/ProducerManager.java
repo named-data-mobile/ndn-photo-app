@@ -28,7 +28,7 @@ public class ProducerManager {
     }
 
     public void setDataSeqMap(byte[] syncData) {
-        m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data"), syncData);
+        m_seqToFileName.put(m_producer.getSeqNo(producerPrefix + "/data") + 1, syncData);
     }
 
 

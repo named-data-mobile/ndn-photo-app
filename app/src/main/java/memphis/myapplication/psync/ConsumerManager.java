@@ -63,11 +63,6 @@ public class ConsumerManager {
 
         @Override
         public void onData(Interest interest, Data data) {
-            try {
-                Thread.sleep(30000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             Log.d("ConsumerManager", "Got sync data");
             byte[] interestData = data.getContent().getImmutableArray();
             SyncData syncData = SerializationUtils.deserialize(interestData);

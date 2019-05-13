@@ -60,4 +60,5 @@ dependencies {
         exclude group: 'org.xerial'
         exclude group: 'com.google.android'
     }
+    implementation 'org.apache.commons:commons-lang3:3.5'
 }

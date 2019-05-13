@@ -752,6 +752,7 @@ public class MainActivity extends AppCompatActivity {
         newCertName.append(friend);
         name.append(newCertName);
         Interest interest = new Interest(name);
+        Log.d("generateCertInterest", "Expressing interest for our cert");
         face.expressInterest(interest, onCertData, onCertTimeOut);
     }
 
@@ -773,6 +774,8 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             sharedPrefsManager.saveSelfCert(certificateV2);
+            Log.d("onCertData", "Saved our certificate back signed by friend");
+
 
         }
     };
