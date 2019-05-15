@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.util.Base64;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -44,10 +44,10 @@ public class QRExchange {
             return bitmap;
         }
         catch(WriterException we) {
-            Log.d("makeQrFriendCode", "qrWriter failed");
+            Timber.d("qrWriter failed");
         }
         catch(Exception e) {
-            Log.d("makeQrFriendCode", "bitmap was not created");
+            Timber.d("bitmap was not created");
         }
         return null;
     }
@@ -67,14 +67,14 @@ public class QRExchange {
         } catch (PibImpl.Error error) {
             error.printStackTrace();
         }
-        Log.d("makeFriendCode", "Certificate: " + certificate);
+        Timber.d("Certificate: " + certificate);
         if(certificate != null) {
             TlvEncoder tlvEncodedDataContent = new TlvEncoder();
             tlvEncodedDataContent.writeBuffer(certificate.wireEncode().buf());
             byte[] finalDataContentByteArray = tlvEncodedDataContent.getOutput().array();
             String certString = Base64.encodeToString(finalDataContentByteArray, 0);
             // make sure we check later during registration that a username has no spaces
-            Log.d("makeFriendCode", "Pubkey: " + certString);
+            Timber.d("Pubkey: " + certString);
             String qrContents = name + " " + certString;
 
             // replace below section with makeQRCode method
@@ -89,9 +89,9 @@ public class QRExchange {
                 }
                 return bitmap;
             } catch (WriterException we) {
-                Log.d("makeQrFriendCode", "qrWriter failed");
+                Timber.d("qrWriter failed");
             } catch (Exception ex) {
-                Log.d("makeQrFriendCode", "bitmap was not created");
+                Timber.d("bitmap was not created");
             }
         }
             // if it failed to make the bitmap

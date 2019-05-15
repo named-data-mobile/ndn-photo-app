@@ -16,7 +16,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         boolean faceExists = (Globals.face == null);
-        Log.d("onCreate", "Globals face is null?: " + faceExists +
+        Timber.d( "Globals face is null?: " + faceExists +
                 "; Globals security is setup: " + Globals.has_setup_security);
         // need to check if we have an existing face or if security is not setup; either way, we
         // need to make changes; see setup_security()
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         keyChain = Globals.keyChain;
 
         if (!appThreadIsRunning()) {
-            Log.d("Main Activity", "Starting network thread");
+            Timber.d( "Starting network thread");
             startNetworkThread();
         }
 
@@ -185,14 +185,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
-        Log.d("menuInflation", "Inflated");
+        Timber.d("menuInflated");
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        Log.d("item", item.toString());
+        Timber.d("item: "+ item.toString());
         switch (item.getItemId()) {
             case R.id.action_settings:
                 Intent intent = new Intent(this, SettingsActivity.class);
@@ -206,27 +206,27 @@ public class MainActivity extends AppCompatActivity {
      * This function sets up identity storage, keys, and the face our app will use.
      */
     public void setup_security() {
-        Log.d("setup_security", "Setting up security");
+        Timber.d("Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
         Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Log.d("MainActivity", "Creating producer" + "/npChat/" + sharedPrefsManager.getUsername());
+        Timber.d("Creating producer" + "/npChat/" + sharedPrefsManager.getUsername());
         String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
         producerManager = new ProducerManager(producerPrefix);
         Globals.setProducerManager(producerManager);
 
 
         // Creating consumers
-        Log.d("MainActivity", "Creating consumer");
+        Timber.d( "Creating consumer");
         consumerManager = new ConsumerManager(this, getApplicationContext());
         Globals.setConsumerManager(consumerManager);
 
         for (String friend : sharedPrefsManager.getFriendsList()) {
             String friendPrefix = "/npChat/" + friend;
             consumerManager.createConsumer(friendPrefix);
-            Log.d("Consumer", "Added consumer for friend for " + friend);
+            Timber.d("Added consumer for friend for " + friend);
         }
 
         Context context = getApplicationContext();
@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
             error.printStackTrace();
         }
 
-        Log.d("setup_security", "Security was setup successfully");
+        Timber.d("Security was setup successfully");
         
         try {
             // since everyone is a potential producer, register your prefix
@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Log.d("Setup_security", "Discovering nodes");
+        Timber.d("Discovering nodes");
         NSDHelper nsdHelper;
         nsdHelper = new NSDHelper(sharedPrefsManager.getUsername(), getApplicationContext(), face);
         nsdHelper.discoverServices();
@@ -336,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             boolean faceExists = Globals.face == null;
-            Log.d("onCreate", "Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
+            Timber.d("Globals face is null?: " + faceExists + "; Globals security is setup: " + Globals.has_setup_security);
             if (!Globals.has_setup_security) {
                 setup_security();
             }
@@ -410,12 +410,12 @@ public class MainActivity extends AppCompatActivity {
             dataName.append("data");
             fileName.append("file");
             certName.append("cert");
-            Log.d("register_with_nfd", "Starting registration process.");
+            Timber.d("Starting registration process.");
             Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
-                            Log.d("OnRegisterFailed", "Registration Failure");
+                            Timber.d("Registration Failure");
                             String msg = "Registration failed for prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -423,7 +423,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -434,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
-                            Log.d("OnRegisterFailed", "Registration Failure");
+                            Timber.d("Registration Failure");
                             String msg = "Registration failed for prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -453,7 +453,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
-                            Log.d("OnRegisterFailed", "Registration Failure");
+                            Timber.d( "Registration Failure");
                             String msg = "Registration failed for prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                             runOnUiThread(makeToast(msg));
                         }
@@ -489,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
             for (RibEntry r : routeInfo) {
                 String name = r.getName().toString();
                 if (name.contains("wifidirect")) {
-                    Log.d("registerRouteToAp", "Connected via WifiDirect");
+                    Timber.d( "Connected via WifiDirect");
                     wifiDirect = true;
                     break;
                 }
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity {
             if (!wifiDirect) {
                 for (FaceStatus f : faceList) {
                     if (f.getRemoteUri().contains("udp4://224")) {
-                        Log.d("registerRouteToAp", "Using multicast face: " + f.getRemoteUri());
+                        Timber.d("Using multicast face: " + f.getRemoteUri());
                         myFace = f.getFaceId();
 
                     }
@@ -522,18 +522,18 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
 
-        Log.d("onActivityResult", "requestCode: " + requestCode);
+        Timber.d("requestCode: " + requestCode);
         if (requestCode == CAMERA_REQUEST_CODE) {
-            Log.d("onActivityResult", "Got result data");
+            Timber.d("Got result data");
             // check if we even took a picture
             if (m_curr_photo_file != null && m_curr_photo_file.length() > 0) {
-                Log.d("onActivityResult", "We have an actual file");
+                Timber.d("We have an actual file");
 
                 FileOutputStream out = null;
                 try {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
                     out = new FileOutputStream(m_curr_photo_file);
-                    Log.d("bitmapOnActivity", "bitmap is null?: " + (bitmap == null));
+                    Timber.d("bitmap is null?: " + (bitmap == null));
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
 
                 } catch (FileNotFoundException e) {
@@ -578,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
             if(resultCode == RESULT_OK) {
                 final String friend = resultData.getStringExtra("username");
                 // Add friend as consumer
-                Log.d("MainActivity", "Adding consumer for " + friend);
+                Timber.d("Adding consumer for " + friend);
                 consumerManager.createConsumer("/" + getString(R.string.app_name) + "/" + friend);
 
                 // After adding friend, wait 10 seconds and then send interest for your own certificate signed by your friend
@@ -598,7 +598,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else if (requestCode == SETTINGS_CODE) {
-            Log.d("onActivityResult", "SETTINGS_CODE hit");
+            Timber.d("SETTINGS_CODE hit");
             FileManager manager = new FileManager(getApplicationContext());
             ImageView imageView = findViewById(R.id.toolbar_main_photo);
             File file = manager.getProfilePhoto();
@@ -612,7 +612,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            Log.d("onActivityResult", "Unexpected activity requestcode caught");
+            Timber.d("Unexpected activity requestcode caught");
         }
     }
 
@@ -636,7 +636,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
-            Log.d("MainActivity", "File size: " + photo.length());
+            Timber.d("File size: " + photo.length());
             final Uri uri = UriFileProvider.getUriForFile(this,
                     getApplicationContext().getPackageName() +
                             ".UriFileProvider", photo);
@@ -658,11 +658,11 @@ public class MainActivity extends AppCompatActivity {
 
                 final boolean feed = (recipients == null);
                 if (feed) {
-                    Log.d("MainActivity", "For feed");
+                    Timber.d("For feed");
                     syncData.setFeed();
                 }
                 else {
-                    Log.d("MainActivity", "For friends");
+                    Timber.d( "For friends");
                     for (String friend : recipients) {
                         Blob friendKey = sharedPrefsManager.getFriendKey(friend);
                         byte[] encryptedKey = RsaAlgorithm.encrypt
@@ -677,32 +677,32 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                Log.d("Publishing file", filename);
+                Timber.d("Publishing file: %s", filename);
 
                 byte[] bytes;
                 try {
                     InputStream is = MainActivity.this.getContentResolver().openInputStream(uri);
                     bytes = IOUtils.toByteArray(is);
-                    Log.d("select file activity", "file byte array size: " + bytes.length);
+                    Timber.d("select file activity: %s", "file byte array size: " + bytes.length);
                 } catch (IOException e) {
-                    Log.d("onItemClick", "failed to byte");
+                    Timber.d("onItemClick: failed to byte");
                     e.printStackTrace();
                     bytes = new byte[0];
                 }
-                Log.d("file selection result", "file path: " + path);
+                Timber.d("file selection result: %s", "file path: " + path);
                 try {
                     String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
                     final String prefix = prefixApp + path;
-                    Log.d("Publishing data", prefix);
+                    Timber.d("Publishing data: %s", prefix);
                     if (!feed) {
-                        Log.d("MainActivity", "Publishing to friend(s)");
+                        Timber.d("Publishing to friend(s)");
                         Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                         sharedPrefsManager.saveSymKey(secretKey, filename);
                         Common.publishData(encryptedBlob, new Name(prefix));
 
                     }
                     else {
-                        Log.d("MainActivity", "Publishing to feed");
+                        Timber.d("Publishing to feed");
                         Blob unencryptedBlob = new Blob(bytes);
                         Common.publishData(unencryptedBlob, new Name(prefix));
 
@@ -752,7 +752,7 @@ public class MainActivity extends AppCompatActivity {
         newCertName.append(friend);
         name.append(newCertName);
         Interest interest = new Interest(name);
-        Log.d("generateCertInterest", "Expressing interest for our cert");
+        Timber.d( "Expressing interest for our cert");
         face.expressInterest(interest, onCertData, onCertTimeOut);
     }
 
@@ -763,7 +763,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onData(Interest interest, Data data) {
-            Log.d("onCertData", "Getting our certificate back from friend");
+            Timber.d("Getting our certificate back from friend");
             Blob interestData = data.getContent();
             byte[] certBytes = interestData.getImmutableArray();
 
@@ -774,7 +774,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             sharedPrefsManager.saveSelfCert(certificateV2);
-            Log.d("onCertData", "Saved our certificate back signed by friend");
+            Timber.d( "Saved our certificate back signed by friend");
 
 
         }
@@ -787,9 +787,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onTimeout(Interest interest) {
-            Log.d("OnTimeout", "Timeout for interest " + interest.toUri());
+            Timber.d( "Timeout for interest " + interest.toUri());
             String friend = interest.getName().getSubName(1, 1).toString().substring(1);
-            Log.d("OnTimeout", "Resending interest to " + friend);
+            Timber.d("Resending interest to " + friend);
             try {
                 generateCertificateInterest(friend);
             } catch (SecurityException e) {
@@ -866,7 +866,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        Log.d("onDestroy", "Destroying memory cache");
+        Timber.d("Destroying memory cache");
         //memoryCache.destroy();
         super.onDestroy();
     }

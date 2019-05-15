@@ -14,7 +14,7 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -106,7 +106,7 @@ public class FilesActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
 
-        Log.d("onActivityResult", "requestCode: " + requestCode);
+        Timber.d("requestCode: " + requestCode);
         Uri uri;
         if (resultData != null) {
             if (requestCode == FILE_SELECT_REQUEST_CODE) {
@@ -121,13 +121,13 @@ public class FilesActivity extends AppCompatActivity {
                     try {
                         InputStream is = this.getContentResolver().openInputStream(uri);
                         bytes = IOUtils.toByteArray(is);
-                        Log.d("select file activity", "file byte array size: " + bytes.length);
+                        Timber.d("select file activity: %s", "file byte array size: " + bytes.length);
                     } catch (IOException e) {
-                        Log.d("onItemClick", "failed to byte");
+                        Timber.d("onItemClick: %s", "failed to byte");
                         e.printStackTrace();
                         bytes = new byte[0];
                     }
-                    Log.d("file selection result", "file path: " + path);
+                    Timber.d("file selection result: %s", "file path: " + path);
                     final Blob blob = new Blob(bytes, true);
                     String s = m_manager.addAppPrefix(path);
                     Name prefix = new Name(s);
@@ -135,7 +135,7 @@ public class FilesActivity extends AppCompatActivity {
 
                     String filename = prefix.toUri();
                     Bitmap bitmap = QRExchange.makeQRCode(filename);
-                    Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
+                    Timber.d("publishData: %s", "filename: " + filename + " bitmap: " + (bitmap == null));
                     m_manager.saveFileQR(bitmap, filename);
                 }
                 else {
@@ -190,7 +190,7 @@ public class FilesActivity extends AppCompatActivity {
                 }
             }
             else {
-                Log.d("onActivityResult", "Unexpected activity requestcode caught");
+                Timber.d("Unexpected activity requestcode caught");
             }
         }
     }
@@ -208,7 +208,7 @@ public class FilesActivity extends AppCompatActivity {
         if (DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
             if (uri.getAuthority().equals("com.android.externalstorage.documents")) {
                 final String docId = DocumentsContract.getDocumentId(uri);
-                Log.d("file selection", "docId: " + docId);
+                Timber.d("file selection: %s", "docId: " + docId);
                 final String[] split = docId.split(":");
                 return Environment.getExternalStorageDirectory() + "/" + split[1];
             }
@@ -263,7 +263,7 @@ public class FilesActivity extends AppCompatActivity {
         // but it can display any image)
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         File appDir = new File(m_manager.getFilesDir());
-        Log.d("lookup_file_QR", appDir.toString());
+        Timber.d(appDir.toString());
         // Uri uri = Uri.fromFile(appDir);
         Uri uri = Uri.parse(appDir.toString());
         // start in app's file directory and limit allowable selections to .png files
@@ -292,7 +292,7 @@ public class FilesActivity extends AppCompatActivity {
         File rcvFilesDir = new File(m_manager.getRcvdFilesDir());
         //Uri uri = Uri.fromFile(rcvFilesDir);
         Uri uri = Uri.parse(rcvFilesDir.toString());
-        Log.d("browse", uri.toString());
+        Timber.d("browse: %s", uri.toString());
         // start in app's file directory and limit allowable selections to .png files
         intent.setDataAndType(uri, "*/*");
         startActivityForResult(intent, VIEW_FILE);

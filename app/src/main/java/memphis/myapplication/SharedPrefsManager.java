@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import android.util.Base64;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Name;
 import net.named_data.jndn.encoding.EncodingException;
@@ -125,7 +125,7 @@ public class SharedPrefsManager {
         Name certName = cert.getName();
         String friend = certName.getSubName(4, 1).toString() + "_self";
         storeFriendCert(friend, cert);
-        Log.d("SharedPrefsManager", "Saved our own cert signed by " + friend);
+        Timber.d("SharedPrefsManager: %s", "Saved our own cert signed by " + friend);
     }
 
     public void getSelfCert(String friend) throws EncodingException {

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -67,10 +67,10 @@ public class NewContentActivity extends AppCompatActivity implements ListDisplay
 
     @Override
     public void onItemClick(View view, int position) {
-        Log.d("newContentActivity", "we hit onClick");
+        Timber.d("we hit onClick");
         Intent intent = new Intent(view.getContext(), ViewPhotosActivity.class);
         intent.putStringArrayListExtra("photos", userContent.get(adapter.getItem(position)));
-        Log.d("newContentActivity", "content: " + userContent.get(adapter.getItem(position)));
+        Timber.d("content: " + userContent.get(adapter.getItem(position)));
         startActivityForResult(intent, VIEW_PHOTOS);
     }
 }
