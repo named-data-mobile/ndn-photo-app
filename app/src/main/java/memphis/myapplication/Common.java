@@ -1,6 +1,6 @@
 package memphis.myapplication;
 
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
@@ -37,14 +37,14 @@ public class Common {
                     ArrayList<Data> packets = packetize(blob, prefix);
                     // it would be null if this file is already in our cache so we do not packetize
                     if (packets != null) {
-                        Log.d("publishData", "Publishing with prefix: " + prefix);
+                        Timber.d("Publishing with prefix: " + prefix);
                         for (Data data : packetize(blob, prefix)) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
                         Globals.memoryCache.putInCache(fileData);
                     } else {
-                        Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
+                        Timber.d("No need to publish; " + prefix.toUri() + " already in cache.");
                     }
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
                         KeyChain.Error e) {
@@ -75,7 +75,7 @@ public class Common {
             if (byteBuffer.remaining() < PACKET_SIZE) {
                 PACKET_SIZE = byteBuffer.remaining();
             }
-            Log.d("packetize things", "PACKET_SIZE: " + PACKET_SIZE);
+            Timber.d("packetizing: %s", "PACKET_SIZE: " + PACKET_SIZE);
             byte[] segment_buffer = new byte[PACKET_SIZE];
             Data data = new Data();
             Name segment_name = new Name(prefix);
@@ -83,12 +83,12 @@ public class Common {
             segment_name.appendSegment(segment_number);
             data.setName(segment_name);
             try {
-                Log.d("packetize things", "full data name: " + data.getFullName().toString());
+                Timber.d("packetizing: %s", "full data name: " + data.getFullName().toString());
             } catch (EncodingException e) {
-                Log.d("packetize things", "unable to print full name");
+                Timber.d("packetizing: %s", "unable to print full name");
             }
             try {
-                Log.d("packetize things", "byteBuffer position: " + byteBuffer.position());
+                Timber.d("packetizing: %s", "byteBuffer position: " + byteBuffer.position());
                 byteBuffer.get(segment_buffer, 0, PACKET_SIZE);
             } catch (IndexOutOfBoundsException e) {
                 e.printStackTrace();

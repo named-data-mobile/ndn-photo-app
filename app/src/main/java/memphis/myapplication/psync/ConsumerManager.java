@@ -2,7 +2,7 @@ package memphis.myapplication.psync;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -52,7 +52,7 @@ public class ConsumerManager {
         public void onHelloDataCallBack(ArrayList<String> names, PSync.Consumer callbackConsumer) {
             for (String name : names) {
                 callbackConsumer.addSubscription(name);
-                Log.d("onHelloDataCallBack", "Subscription added for " + name);
+                Timber.d("Subscription added for " + name);
 
             }
             callbackConsumer.sendSyncInterest();
@@ -63,7 +63,7 @@ public class ConsumerManager {
 
         @Override
         public void onData(Interest interest, Data data) {
-            Log.d("ConsumerManager", "Got sync data");
+            Timber.d( "Got sync data");
             byte[] interestData = data.getContent().getImmutableArray();
             SyncData syncData = SerializationUtils.deserialize(interestData);
             String filename = syncData.getFilename();
@@ -97,7 +97,7 @@ public class ConsumerManager {
         @Override
         public void onSyncDataCallBack(ArrayList<MissingDataInfo> updates) {
 
-            Log.d("OnSyncDataCallBack", "Got sync callback");
+            Timber.d("Got sync callback");
             for (MissingDataInfo update : updates) {
 
                 Name name = new Name(update.prefix);
@@ -121,7 +121,7 @@ public class ConsumerManager {
      * @param prefix is the String "/npChat/friendName"
      */
     public static void createConsumer(String prefix) {
-        Log.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
+        Timber.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);
         consumer.sendHelloInterest();

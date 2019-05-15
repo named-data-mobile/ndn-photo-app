@@ -1,7 +1,7 @@
 package memphis.myapplication;
 
 import android.app.Application;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
@@ -15,7 +15,6 @@ import net.named_data.jni.psync.PSync;
 
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
-import timber.log.Timber;
 
 public class Globals extends Application {
     public static Face face;

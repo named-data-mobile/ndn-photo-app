@@ -3,7 +3,7 @@ package memphis.myapplication;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -72,13 +72,13 @@ public class MemoryCache {
         SecretKey secretKey = new SecretKeySpec(keyBytes, 0, keyBytes.length, "AES");
         Name iName = new Name(filename);
 
-        Log.d("process", "Called process in FaceProxy");
+        Timber.d("Called process in FaceProxy");
 
         File file;
         try {
             file = new File(FileManager.removeAppPrefix(filename));
         } catch (UnsupportedEncodingException e) {
-            Log.e("MemoryCache Process" , "URI decode error.");
+            Timber.e("URI decode error.");
             e.printStackTrace();
             return;
         }
@@ -92,7 +92,7 @@ public class MemoryCache {
             InputStream is = FileUtils.openInputStream(new File(filename));
             bytes = IOUtils.toByteArray(is);
         } catch (IOException e) {
-            Log.e("MemoryCache process", "failed to byte");
+            Timber.e("failed to byte");
             e.printStackTrace();
             bytes = new byte[0];
         }
@@ -121,7 +121,7 @@ public class MemoryCache {
 
 
         Bitmap bitmap = QRExchange.makeQRCode(filename);
-        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
+        Timber.d("publishData: %s", "filename: " + filename + " bitmap: " + (bitmap == null));
         manager.saveFileQR(bitmap, filename);
 
     }
@@ -141,16 +141,16 @@ public class MemoryCache {
     public final OnInterestCallback onNoDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+            Timber.d("Called OnInterestCallback with Interest: " + interest.getName().toUri());
             Name baseInteret = interest.getName().getPrefix(interest.getName().size() - 2);
             String filename = baseInteret.getSubName(3).toUri();
             System.out.println("What is the filename? " + filename);
 //            if (SharedPrefsManager.getInstance(m_currContext).contains(interest.getName().toUri())) {
-//                Log.d("MemoryCache", "Processing interest");
+//                Timber.d("Processing interest");
 //                process(filename);
 //                }
 //            else {
-//                Log.d("MemoryCache", "Can't find file");
+//                Timber.d( "Can't find file");
 //                process(filename);
 //            }
         }
