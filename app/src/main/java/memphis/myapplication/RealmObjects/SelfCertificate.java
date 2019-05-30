@@ -24,9 +24,6 @@ public class SelfCertificate extends RealmObject {
     @Required
     private byte[] cert;
 
-    @Required
-    private String certName;
-
 
     public String getUsername(){
         return username;

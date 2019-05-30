@@ -1,5 +1,6 @@
 package memphis.myapplication;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,10 +21,12 @@ import io.realm.RealmResults;
 import memphis.myapplication.RealmObjects.User;
 
 public class SendFriendRequest extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+    Spinner newFriendSpinner;
     String mutualFriend;
-    Spinner spinner;
-    TextView spinnerLabel;
+    Spinner mutualFriendSpinner;
+    TextView mutualFriendSpinnerLabel;
     EditText mEdit;
+    String friend;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,15 +34,41 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         setContentView(R.layout.activity_send_friend_request);
         Realm realm = Realm.getDefaultInstance();
 
-        // Spinner element
-        spinner = findViewById(R.id.spinner);
-        spinnerLabel = findViewById(R.id.mutal_friend_label);
+        // Edit text
+        mEdit = findViewById(R.id.add_remote_friend_edit_text);
 
-        // Spinner click listener
-        spinner.setOnItemSelectedListener(this);
+        // New Friend Spinner element
+        newFriendSpinner = findViewById(R.id.spinnerNewFriends);
 
-        // Spinner Drop down elements
-        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        // New Friend Spinner click listener
+        newFriendSpinner.setOnItemSelectedListener(this);
+
+        // New Friend Spinner Drop down elements
+        RealmResults<User> potentialFriends = realm.where(User.class).equalTo("friend", false).findAll();
+        List<String> potentialFriendsList = new ArrayList<>();
+        for (User f : potentialFriends)
+            potentialFriendsList.add(f.getUsername());
+
+        potentialFriendsList.add("Enter user prefix");
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> newFriendDataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, potentialFriendsList);
+
+        // Drop down layout style - list view with radio button
+        newFriendDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        newFriendSpinner.setAdapter(newFriendDataAdapter);
+
+        // Mutual Friend Spinner element
+        mutualFriendSpinner = findViewById(R.id.spinner);
+        mutualFriendSpinnerLabel = findViewById(R.id.mutal_friend_label);
+
+        // Mutual Friend Spinner click listener
+        mutualFriendSpinner.setOnItemSelectedListener(this);
+
+//         Mutual Friend Spinner Drop down elements
+        RealmResults<User> friends = realm.where(User.class).equalTo("trust", true).findAll();
         List<String> currentFriends = new ArrayList<>();
         for (User f : friends)
             currentFriends.add(f.getUsername());
@@ -51,15 +80,15 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         // attaching data adapter to spinner
-        spinner.setAdapter(dataAdapter);
+        mutualFriendSpinner.setAdapter(dataAdapter);
 
         // Radio buttons
         RadioButton rdb1 = findViewById(R.id.radioMutualFriend);
         rdb1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                spinner.setVisibility(View.VISIBLE);
-                spinnerLabel.setVisibility(View.VISIBLE);
+                mutualFriendSpinner.setVisibility(View.VISIBLE);
+                mutualFriendSpinnerLabel.setVisibility(View.VISIBLE);
 
             }
         });
@@ -68,29 +97,45 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         rdb2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                spinner.setVisibility(View.GONE);
-                spinnerLabel.setVisibility(View.GONE);
+                mutualFriendSpinner.setVisibility(View.GONE);
+                mutualFriendSpinnerLabel.setVisibility(View.GONE);
 
             }
         });
 
-        // Edit text
-        mEdit = findViewById(R.id.add_remote_friend_edit_text);
+
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         // On selecting a spinner item
-        mutualFriend = parent.getItemAtPosition(position).toString();
+        if (parent.getId() == R.id.spinner) {
+            mutualFriend = parent.getItemAtPosition(position).toString();
+        } else if (parent.getId() == R.id.spinnerNewFriends) {
+            if (parent.getItemAtPosition(position).toString().equals("Enter user prefix")) {
+                friend = null;
+                mEdit.setVisibility(View.VISIBLE);
+            } else {
+                mEdit.setVisibility(View.GONE);
+                friend = parent.getItemAtPosition(position).toString();
+            }
+
+
+        }
     }
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
     }
 
     public void sendRemoteFriendRequest(View view) {
-        String friend = mEdit.getText().toString();
+        if (friend == null)
+            friend = mEdit.getText().toString();
         Log.d("SendFriendRequest", "Sending friend request to " + friend + " using mutual friend " + mutualFriend);
-        new FriendRequest(friend, mutualFriend, this);
+        FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, this);
+        friendRequest.send();
+        Intent intent = new Intent(this, AddFriendActivity.class);
+        startActivity(intent);
+
 
     }
 }

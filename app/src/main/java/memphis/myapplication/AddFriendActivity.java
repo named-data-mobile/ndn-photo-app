@@ -45,6 +45,7 @@ public class AddFriendActivity extends AppCompatActivity {
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
     private String friendName;
+    private String friendDomain;
     private Realm mRealm;
 
     @Override
@@ -80,7 +81,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
         public void addFriend(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(AddFriendActivity.this);
-        builder.setTitle("Select whether you want to display your QR code or scan your friend's code").setCancelable(false);
+        builder.setTitle("Display or scan QR code first?").setCancelable(false);
         final View tempView = view;
 
         builder.setPositiveButton("Display QR code", new DialogInterface.OnClickListener() {
@@ -146,21 +147,25 @@ public class AddFriendActivity extends AppCompatActivity {
 
                 byte[] certBytes = Base64.decode(friendContent, 0);
                 CertificateV2 certificateV2 = null;
-                friendName = null;
-
 
                 certificateV2 = new CertificateV2();
                 certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
 
                 // Save self-signed cert for friend
-                friendName = certificateV2.getName().getSubName(1, 1).toUri().substring(1);
+                friendName = certificateV2.getName().getSubName(-5, 1).toUri().substring(1);
                 System.out.println("Friend name: " + friendName);
-
+                for (int i = 0; i <= certificateV2.getName().size(); i++) {
+                    System.out.println(certificateV2.getName().getSubName(i, 1).toUri());
+                    if (certificateV2.getName().getSubName(i, 1).toUri().equals("/npChat")) {
+                        friendDomain = certificateV2.getName().getPrefix(i).toUri();
+                    }
+                }
 
                 mRealm.beginTransaction();
                 User friend = mRealm.where(User.class).equalTo("username", friendName).findFirst();
                 if (friend == null) {
                     friend = mRealm.createObject(User.class, friendName);
+                    friend.setDomain(friendDomain);
                 }
                 else if (friend.isFriend()) {
                     mRealm.cancelTransaction();
@@ -178,13 +183,21 @@ public class AddFriendActivity extends AppCompatActivity {
                 // Change cert name
                 Name certName = certificateV2.getName();
                 Name newCertName = new Name();
-                newCertName.append(certName.getSubName(0, 4));
+                int signerComp = 0;
+                for (int i = 0; i<=certName.size(); i++) {
+                    if (certName.getSubName(i, 1).toUri().equals("/KEY")) {
+                        signerComp = i+2;
+                        break;
+                    }
+                }
+                newCertName.append(certName.getSubName(0, signerComp));
                 newCertName.append(SharedPrefsManager.getInstance(this).getUsername());
-                newCertName.append(certName.getSubName(5));
+                newCertName.append(certName.getSubName(signerComp+1));
                 certificateV2.setName(newCertName);
 
                 //Sign cert with our key
                 Globals.keyChain.sign(certificateV2, new SigningInfo(SigningInfo.SignerType.KEY, Globals.pubKeyName));
+                Log.d("Friend's cert", certificateV2.toString());
 
 
                 // Store friend's cert signed by us
@@ -246,7 +259,7 @@ public class AddFriendActivity extends AppCompatActivity {
                         Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG).show();
                         setResult(RESULT_CANCELED, data);
                     } else if (saveResult == 3) {
-                        Toast.makeText(this, "Retrieving certificate.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Already have certificate.", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent();
                         if (content.length() > 0) {
                             String username = friendName;

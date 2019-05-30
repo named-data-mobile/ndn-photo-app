@@ -1,6 +1,5 @@
 package memphis.myapplication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -30,12 +29,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import io.realm.Realm;
-import memphis.myapplication.RealmObjects.ContentKey;
-import memphis.myapplication.tasks.FetchingTask;
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.RealmObjects.PublishedContent;
 
 /**
  * MemoryCache is a class that works with MemoryContentCache class from jndn library that caches
@@ -70,11 +66,12 @@ public class MemoryCache {
      * @param filename
      */
     public void process(String filename) {
+        SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(m_currContext);
         Realm realm = Realm.getDefaultInstance();
-        SecretKey secretKey = realm.where(ContentKey.class).equalTo("filename", filename).findFirst().getKey();
+        SecretKey secretKey = realm.where(PublishedContent.class).equalTo("filename", filename).findFirst().getKey();
         Name iName = new Name(filename);
 
-        Log.d("process", "Called process in FaceProxy");
+        Log.d("process", "Called process in MemoryCache");
 
         File file;
         try {
@@ -99,32 +96,39 @@ public class MemoryCache {
             bytes = new byte[0];
         }
         FileManager manager = new FileManager(m_currContext);
-        String s = manager.addAppPrefix(filename);
-        Name prefixName = new Name(s);
-        Encrypter encrypter = new Encrypter(m_currContext);
-        byte[] iv = encrypter.generateIV();
-        try {
-            Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-            Common.publishData(encryptedBlob, new Name(prefixName));
+        String prefixApp = "/" + sharedPrefsManager.getNamespace();
+        String prefix = prefixApp + "/file" + filename;
 
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-            e.printStackTrace();
+        Encrypter encrypter = new Encrypter(m_currContext);
+        if (secretKey != null) {
+            byte[] iv = encrypter.generateIV();
+            try {
+                Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                Common.publishData(encryptedBlob, new Name(prefix));
+
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (InvalidAlgorithmParameterException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Blob unencryptedBlob = new Blob(bytes);
+            Common.publishData(unencryptedBlob, new Name(prefix));
         }
 
 
-        Bitmap bitmap = QRExchange.makeQRCode(filename);
-        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
-        manager.saveFileQR(bitmap, filename);
+
+//        Bitmap bitmap = QRExchange.makeQRCode(filename);
+//        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
+//        manager.saveFileQR(bitmap, filename);
 
     }
 
@@ -144,17 +148,24 @@ public class MemoryCache {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
             Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
-            Name baseInteret = interest.getName().getPrefix(interest.getName().size() - 2);
-            String filename = baseInteret.getSubName(3).toUri();
+            int start = 0;
+            for (int i = 0; i<=interest.getName().size(); i++) {
+                if ((interest.getName().getSubName(i, 1).toUri().equals("/npChat"))
+                        && (interest.getName().getSubName(i+1, 1).toUri().equals("/" + SharedPrefsManager.getInstance(m_currContext).getUsername()))
+                        && (interest.getName().getSubName(i+2, 1).toUri().equals("/file"))) {
+                    start = i + 3;
+                }
+            }
+            String filename = interest.getName().getSubName(start).toUri();
             System.out.println("What is the filename? " + filename);
-//            if (SharedPrefsManager.getInstance(m_currContext).contains(interest.getName().toUri())) {
-//                Log.d("MemoryCache", "Processing interest");
-//                process(filename);
-//                }
-//            else {
-//                Log.d("MemoryCache", "Can't find file");
-//                process(filename);
-//            }
+
+            // If file has been previously published, republish it
+            Realm realm = Realm.getDefaultInstance();
+            if (realm.where(PublishedContent.class).equalTo("filename", filename).findFirst() != null) {
+                process(filename);
+            } else {
+                Log.d("MemoryCache", "Can't find file. Ignoring");
+            }
         }
     };
 

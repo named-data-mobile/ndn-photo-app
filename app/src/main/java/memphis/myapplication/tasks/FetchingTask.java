@@ -92,9 +92,16 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         m_shouldReturn = false;
         interest.setInterestLifetimeMilliseconds(15000);
 
-        final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
-        Log.d("BeforeVerify", "appAndUsername:" + appAndUsername.toUri());
-        getUserInfo(m_baseInterest);
+        int npChatComp = 0;
+        for (int i = 0; i<=m_baseInterest.getName().size(); i++) {
+            if (m_baseInterest.getName().getSubName(i, 1).toUri().equals("/npChat")){
+                npChatComp = i;
+                break;
+            }
+        }
+        final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
+        Log.d("BeforeVerify", "user:" + username.toUri());
+        getUserInfo(username.toUri().substring(1));
         Log.d("KeyType", m_pubKey.getKeyType().toString());
 
         SegmentFetcher.fetch(
@@ -155,12 +162,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     /**
      * Extracts the username from the Data and sets m_user. It then checks if the username matches any
      * friend in the friends directory.
-     * @param interest
+     * @param user
      */
-    private void getUserInfo(Interest interest) {
-        Name n = interest.getName().getSubName(1);
-        System.out.println(n.toUri());
-        m_user = (n.getPrefix(1).toUri()).substring(1);
+    private void getUserInfo(String user) {
+        m_user = user;
         Realm realm = Realm.getDefaultInstance();
         // we have the user, check if we're friends. If so, retrieve their key from file.
         Log.d("username&PubKey", "user: " + m_user);
@@ -238,10 +243,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 } catch (IllegalBlockSizeException e) {
                     e.printStackTrace();
                 }
-                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
+                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName());
 
             } else {
-                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName().toUri());
+                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName());
 
             }
 

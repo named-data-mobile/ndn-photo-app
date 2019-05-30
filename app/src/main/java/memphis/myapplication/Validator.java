@@ -75,65 +75,142 @@ public class Validator {
             face = Globals.face;
             valConfig = new ValidatorConfig(face);
             rules = "validator\n" +
-                    " {\n" +
-                    "   rule\n" +
-                    "   {\n" +
-                    "     id \"Verify potential friend's certificate\"\n" +
-                    "     for data\n" +
-                    "     filter\n" +
-                    "     {\n" +
-                    "       type name\n" +
-                    "       ; /<prefix>/npChat/userA/KEY/o%85%C2k%97EC%85/self/%FD%00%00%01j%A9%13%A7%86\n" +
-                    "       regex ^<npChat><><KEY><><><>$\n" +
-                    "     }\n" +
-                    "     ; First checker for mutual friend, assume that trust anchors of mutual friends are stored in the app\n" +
-                    "     ; On app start up, load all the trust anchor into validato\n" +
-                    "     checker\n" +
-                    "     {\n" +
-                    "       type customized\n" +
-                    "       sig-type rsa-sha256\n" +
-                    "       key-locator\n" +
-                    "       {\n" +
-                    "         type name\n" +
-                    "         regex ^<npChat><><KEY><>$\n" +
-                    "         relation is-strict-prefix-of\n" +
-                    "       }\n" +
-                    "     }\n" +
-                    "     ; Second checker for testbed, assume that testbed root is burned in the app\n" +
-                    "     ; On app startup, the testbed root is loaded into the validator config via load\n" +
-                    "     ; Commented because we need it as a separate rule, otherwise validator tries to apply all rules at once\n" +
-                    "     ;checker\n" +
-                    "     ;{\n" +
-                    "     ;  type hierarchical\n" +
-                    "     ;  sig-type rsa-sha256\n" +
-                    "     ;}\n" +
-                    "   }\n" +
                     "\n" +
-                    "   rule\n" +
-                    "   {\n" +
-                    "     id \"Verify friend request was from potential friend\"\n" +
-                    "     for interest\n" +
-                    "     filter\n" +
-                    "     {\n" +
-                    "       type name\n" +
-                    "       ; userB part needs to be edited by the app once to be its own user name\n" +
-                    "       ; /<prefix>/npChat/userB/friend-request/mutual-friend\n" +
-                    "       name /npChat/" + SharedPrefsManager.getInstance(context).getUsername() + "/friend-request/mutual-friend\n" +
-                    "       relation is-prefix-of\n" +
-                    "     }\n" +
-                    "     checker\n" +
-                    "     {\n" +
-                    "       type customized\n" +
-                    "       sig-type rsa-sha256\n" +
-                    "       key-locator\n" +
-                    "       {\n" +
-                    "         type name\n" +
-                    "         regex ^<npChat><><KEY><>$\n" +
-                    "         relation is-strict-prefix-of\n" +
-                    "       }\n" +
-                    "     }\n" +
-                    "   }\n" +
-                    " }";
+                    "{\n" +
+                    "\n" +
+                    "  rule\n" +
+                    "\n" +
+                    "  {\n" +
+                    "\n" +
+                    "    id \"Verify potential friend's certificate\n" +
+                    "\n" +
+                    "        (data) signed by key which has\n" +
+                    "\n" +
+                    "        mutual friend's certificate\"\n" +
+                    "\n" +
+                    "    for data\n" +
+                    "\n" +
+                    "    filter\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type name\n" +
+                    "\n" +
+                    "      regex ^([^<npChat>]+)<npChat><><KEY><><><>$\n" +
+                    "\n" +
+                    "      ; Let's not accept anything that starts with npChat or KEY and also use +\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    checker\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type customized\n" +
+                    "\n" +
+                    "      sig-type rsa-sha256\n" +
+                    "\n" +
+                    "      key-locator\n" +
+                    "\n" +
+                    "      {\n" +
+                    "\n" +
+                    "        type name\n" +
+                    "\n" +
+                    "        regex ^([^<npChat>]+)<npChat><><KEY><>$\n" +
+                    "\n" +
+                    "      }\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "  }\n" +
+                    "\n" +
+                    "  ; no trust schema here because we will load it in code\n" +
+                    "\n" +
+                    "\n" +
+                    "  rule\n" +
+                    "\n" +
+                    "  {\n" +
+                    "\n" +
+                    "    id \"Verify friend request\n" +
+                    "\n" +
+                    "        from potential friend\n" +
+                    "\n" +
+                    "        via mutual friend cert\"\n" +
+                    "\n" +
+                    "    for interest\n" +
+                    "\n" +
+                    "    filter\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type name\n" +
+                    "\n" +
+                    "      ; * means zero or more times, + means 1 or more, should we allow the name to be started from /npChat\n" +
+                    "\n" +
+                    "      ; Do not start with npChat and have atleast 1 component before npChat\n" +
+                    "\n" +
+                    "      regex ^([^<npChat>]+)<npChat><><friend-request><mutual-friend><>+<npChat><><KEY><><><>$\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    checker\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type customized\n" +
+                    "\n" +
+                    "      sig-type rsa-sha256\n" +
+                    "\n" +
+                    "      key-locator\n" +
+                    "\n" +
+                    "      {\n" +
+                    "\n" +
+                    "        type name\n" +
+                    "\n" +
+                    "        regex ^([^<npChat>]+)<npChat><><KEY><>$\n" +
+                    "\n" +
+                    "      }\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "  }\n" +
+                    "\n" +
+                    "  rule\n" +
+                    "\n" +
+                    "  {\n" +
+                    "\n" +
+                    "    id \"Verify friend request\n" +
+                    "\n" +
+                    "        from potential friend\n" +
+                    "\n" +
+                    "        via testbed cert\"\n" +
+                    "\n" +
+                    "    for interest\n" +
+                    "\n" +
+                    "    filter\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type name\n" +
+                    "\n" +
+                    "      regex ^([^<npChat>]+)<npChat><><friend-request><testbed><>+<npChat><><KEY><><><>$\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    checker\n" +
+                    "\n" +
+                    "    {\n" +
+                    "\n" +
+                    "      type hierarchical\n" +
+                    "\n" +
+                    "      sig-type rsa-sha256\n" +
+                    "\n" +
+                    "    }\n" +
+                    "\n" +
+                    "  }\n" +
+                    "\n" +
+                    "}";
+
 
             try {
                 Realm realm = Realm.getDefaultInstance();
@@ -162,65 +239,141 @@ public class Validator {
         face = Globals.face;
         valConfig = new ValidatorConfig(face);
         rules = "validator\n" +
-                " {\n" +
-                "   rule\n" +
-                "   {\n" +
-                "     id \"Verify potential friend's certificate\"\n" +
-                "     for data\n" +
-                "     filter\n" +
-                "     {\n" +
-                "       type name\n" +
-                "       ; /<prefix>/npChat/userA/KEY/o%85%C2k%97EC%85/self/%FD%00%00%01j%A9%13%A7%86\n" +
-                "       regex ^<npChat><><KEY><><><>$\n" +
-                "     }\n" +
-                "     ; First checker for mutual friend, assume that trust anchors of mutual friends are stored in the app\n" +
-                "     ; On app start up, load all the trust anchor into validato\n" +
-                "     checker\n" +
-                "     {\n" +
-                "       type customized\n" +
-                "       sig-type rsa-sha256\n" +
-                "       key-locator\n" +
-                "       {\n" +
-                "         type name\n" +
-                "         regex ^<npChat><><KEY><>$\n" +
-                "         relation is-strict-prefix-of\n" +
-                "       }\n" +
-                "     }\n" +
-                "     ; Second checker for testbed, assume that testbed root is burned in the app\n" +
-                "     ; On app startup, the testbed root is loaded into the validator config via load\n" +
-                "     ; Commented because we need it as a separate rule, otherwise validator tries to apply all rules at once\n" +
-                "     ;checker\n" +
-                "     ;{\n" +
-                "     ;  type hierarchical\n" +
-                "     ;  sig-type rsa-sha256\n" +
-                "     ;}\n" +
-                "   }\n" +
                 "\n" +
-                "   rule\n" +
-                "   {\n" +
-                "     id \"Verify friend request was from potential friend\"\n" +
-                "     for interest\n" +
-                "     filter\n" +
-                "     {\n" +
-                "       type name\n" +
-                "       ; userB part needs to be edited by the app once to be its own user name\n" +
-                "       ; /<prefix>/npChat/userB/friend-request/mutual-friend\n" +
-                "       name /npChat/" + SharedPrefsManager.getInstance(context).getUsername() + "/friend-request/mutual-friend\n" +
-                "       relation is-prefix-of\n" +
-                "     }\n" +
-                "     checker\n" +
-                "     {\n" +
-                "       type customized\n" +
-                "       sig-type rsa-sha256\n" +
-                "       key-locator\n" +
-                "       {\n" +
-                "         type name\n" +
-                "         regex ^<npChat><><KEY><>$\n" +
-                "         relation is-strict-prefix-of\n" +
-                "       }\n" +
-                "     }\n" +
-                "   }\n" +
-                " }";
+                "{\n" +
+                "\n" +
+                "  rule\n" +
+                "\n" +
+                "  {\n" +
+                "\n" +
+                "    id \"Verify potential friend's certificate\n" +
+                "\n" +
+                "        (data) signed by key which has\n" +
+                "\n" +
+                "        mutual friend's certificate\"\n" +
+                "\n" +
+                "    for data\n" +
+                "\n" +
+                "    filter\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type name\n" +
+                "\n" +
+                "      regex ^([^<npChat>]+)<npChat><><KEY><><><>$\n" +
+                "\n" +
+                "      ; Let's not accept anything that starts with npChat or KEY and also use +\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "    checker\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type customized\n" +
+                "\n" +
+                "      sig-type rsa-sha256\n" +
+                "\n" +
+                "      key-locator\n" +
+                "\n" +
+                "      {\n" +
+                "\n" +
+                "        type name\n" +
+                "\n" +
+                "        regex ^([^<npChat>]+)<npChat><><KEY><>$\n" +
+                "\n" +
+                "      }\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "  }\n" +
+                "\n" +
+                "  ; no trust schema here because we will load it in code\n" +
+                "\n" +
+                "\n" +
+                "  rule\n" +
+                "\n" +
+                "  {\n" +
+                "\n" +
+                "    id \"Verify friend request\n" +
+                "\n" +
+                "        from potential friend\n" +
+                "\n" +
+                "        via mutual friend cert\"\n" +
+                "\n" +
+                "    for interest\n" +
+                "\n" +
+                "    filter\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type name\n" +
+                "\n" +
+                "      ; * means zero or more times, + means 1 or more, should we allow the name to be started from /npChat\n" +
+                "\n" +
+                "      ; Do not start with npChat and have atleast 1 component before npChat\n" +
+                "\n" +
+                "      regex ^([^<npChat>]+)<npChat><><friend-request><mutual-friend><>+<npChat><><KEY><><><>$\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "    checker\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type customized\n" +
+                "\n" +
+                "      sig-type rsa-sha256\n" +
+                "\n" +
+                "      key-locator\n" +
+                "\n" +
+                "      {\n" +
+                "\n" +
+                "        type name\n" +
+                "\n" +
+                "        regex ^([^<npChat>]+)<npChat><><KEY><>$\n" +
+                "\n" +
+                "      }\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "  }\n" +
+                "\n" +
+                "  rule\n" +
+                "\n" +
+                "  {\n" +
+                "\n" +
+                "    id \"Verify friend request\n" +
+                "\n" +
+                "        from potential friend\n" +
+                "\n" +
+                "        via testbed cert\"\n" +
+                "\n" +
+                "    for interest\n" +
+                "\n" +
+                "    filter\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type name\n" +
+                "\n" +
+                "      regex ^([^<npChat>]+)<npChat><><friend-request><testbed><>+<npChat><><KEY><><><>$\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "    checker\n" +
+                "\n" +
+                "    {\n" +
+                "\n" +
+                "      type hierarchical\n" +
+                "\n" +
+                "      sig-type rsa-sha256\n" +
+                "\n" +
+                "    }\n" +
+                "\n" +
+                "  }\n" +
+                "\n" +
+                "}";
 
         try {
             Realm realm = Realm.getDefaultInstance();

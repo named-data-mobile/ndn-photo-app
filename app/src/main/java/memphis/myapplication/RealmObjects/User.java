@@ -16,6 +16,10 @@ public class User extends RealmObject {
     @Required
     private String username;
 
+    @Required
+    private String domain;
+
+
     private byte[] cert;
     private boolean friend;
     private boolean trust;
@@ -34,6 +38,8 @@ public class User extends RealmObject {
         trust = b;
     }
 
+    public void setDomain(String d) { domain = d; }
+
     public String getUsername() {
         return username;
     }
@@ -51,6 +57,8 @@ public class User extends RealmObject {
     public boolean haveTrust() {
         return trust;
     }
+
+    public String getNamespace() { return domain + "/npChat/" + username; }
 
 
 }

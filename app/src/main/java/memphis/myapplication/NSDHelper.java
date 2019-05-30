@@ -12,10 +12,19 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+import memphis.myapplication.RealmObjects.User;
 
 public class NSDHelper {
     private String serviceName = "npchat";
@@ -34,7 +43,6 @@ public class NSDHelper {
 
     private Face m_face;
     private static Map<String, Integer> serviceNameToFaceId = new HashMap<String, Integer>();
-    public static ArrayList<String> users;
 
 
     public NSDHelper(String userName, Context context, Face face) {
@@ -110,7 +118,7 @@ public class NSDHelper {
         @Override
         public void onServiceFound(NsdServiceInfo service) {
             // A service was found! Do something with it.
-            Log.d(TAG, "Service discovery success" + service);
+            Log.d(TAG, "Service discovery success " + service);
             if (!service.getServiceType().equals(SERVICE_TYPE)) {
                 // Service type is the string containing the protocol and
                 // transport layer for this service.
@@ -173,23 +181,85 @@ public class NSDHelper {
                 return;
             }
 
+            // Upon discovering user, save their current face id and service name
+            // and create user in DB if they don't already exist
+
             int faceid = 0;
             try {
-                Log.d(TAG, "Created face: " + sI.getHost());
+//                Log.d(TAG, "Created face: " + sI.getHost());
                 // One slash is already in the sI.getHost(), need full canonical uri, other wise exception
-                String uri = "udp4:/" + sI.getHost() + ":6363";
+                Inet4Address ipv4Addr = (Inet4Address) Inet4Address.getByAddress (sI.getHost().getAddress());
+                String uri = "udp4:/" + ipv4Addr + ":6363";
+                Log.d("NSDHelper", uri);
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
 
+                String serviceName = sI.getServiceName();
+                int index = serviceName.lastIndexOf("/");
+                String username = serviceName.substring(index + 1);
+                String domain = serviceName.substring(("npchat-").length(), index - 7);
+                Log.d("NSDHelper", username + " and " + domain);
+
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                User user = realm.where(User.class).equalTo("username", username).findFirst();
+                if (user == null) {
+                    Log.d("NSDHelper", username + " is a new user");
+                    user = realm.createObject(User.class, username);
+                    user.setDomain(domain);
+                    realm.commitTransaction();
+                } else {
+                    realm.cancelTransaction();
+                }
+
+                realm.close();
+
                 //Log.d("Testing", new String(sI.getAttributes().get("username")));
                 // This hashmap is empty for some reason. So currently parsing the service name to get the username
-                String sIName = sI.getServiceName();
-                Log.d("NSD resolving", sIName);
-                Name npChatRoute = new Name("/npChat/" + sIName.substring(("npchat-").length()));
-                Nfdc.register(m_face, faceid, npChatRoute, 0);
+//                String sIName = sI.getServiceName();
+//                Log.d("NSD resolving", sIName);
+//                Name npChatRoute = new Name(sIName.substring(("npchat-").length()));
+//                Nfdc.register(m_face, faceid, npChatRoute, 0);
             } catch (ManagementException e) {
+                e.printStackTrace();
+            } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void registerFriends() {
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        for (User u : friends) {
+            Integer faceid = serviceNameToFaceId.get("npchat-" + u.getNamespace());
+            if (faceid != null) {
+                try {
+                    Nfdc.register(m_face, faceid, new Name(u.getNamespace()), 0);
+                } catch (ManagementException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                Log.d("NSDHelper", "User " + u.getUsername() + " is offline");
+            }
+        }
+        realm.close();
+    }
+
+    public void registerUser(String username) {
+        Realm realm = Realm.getDefaultInstance();
+        User user = realm.where(User.class).equalTo("username", username).findFirst();
+        Integer faceid = serviceNameToFaceId.get("npchat-" + user.getNamespace());
+        if (faceid != null) {
+            try {
+                Nfdc.register(m_face, faceid, new Name(user.getNamespace()), 0);
+            } catch (ManagementException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.d("NSDHelper", "User " + user.getUsername() + " is offline");
+        }
+        realm.close();
+
     }
 }

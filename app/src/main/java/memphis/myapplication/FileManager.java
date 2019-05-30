@@ -168,8 +168,8 @@ public class FileManager {
      * @param path The path of the file we will save it to.
      * @return whether the file operation was successful or not.
      */
-    public boolean saveContentToFile(Blob content, String path) {
-        String filename = path.substring(path.lastIndexOf("/")+1);
+    public boolean saveContentToFile(Blob content, Name path) {
+        String filename = path.getSubName(-1).toUri().substring(1);
         Log.d("FileManager", "Saving " + filename);
         File dir;
         File file;
@@ -177,7 +177,14 @@ public class FileManager {
         // if the data name has the .png file extension, save it in the received photos directory
         if(filename.substring(fileTypeIndex).equals(".jpg") || filename.substring(fileTypeIndex).equals(".png")) {
             dir = m_rcvdPhotosDir;
-            String friend = parsePathForFriend(path);
+            int npChatComp = 0;
+            for (int i = 0; i <= path.size(); i++) {
+                if (path.getSubName(i, 1).toUri().equals("/npChat")){
+                    npChatComp = i;
+                    break;
+                }
+            }
+            String friend = path.getSubName(npChatComp + 1, 1).toUri().substring(1);
             file = new File(m_rcvdPhotosDir + "/" + friend + "_" + filename);
         }
         // else save to the received files directory
@@ -361,9 +368,10 @@ public class FileManager {
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
             mRealm = Realm.getDefaultInstance();
             Log.d("onCertInterest", "Called onCertInterest with Interest: " + interest.getName().toUri());
-            String issuer = interest.getName().getSubName(4, 1).toString().substring(1);
-            String signer = interest.getName().getSubName(7, 1).toString().substring(1);
+            String issuer = interest.getName().getSubName(-5, 1).toString().substring(1);
+            String signer = interest.getName().getSubName(-2, 1).toString().substring(1);
             System.out.println("Signer: " + signer);
+            System.out.println("Issuer: " + issuer);
             System.out.println("My name: " + SharedPrefsManager.getInstance(mContext).getUsername());
 
             // Interest for our self-signed cert
@@ -390,10 +398,10 @@ public class FileManager {
 
             }
             // Interest for their cert signed by us
+            // <ourPrefix>/cert/<theirPrefix>/KEY/<keyID>/<our_username>/<version>
             else if (signer.equals(SharedPrefsManager.getInstance(mContext).getUsername())) {
                 System.out.println("Asking for their own cert");
-                System.out.println("Friend name: " + (interest.getName().getSubName(4, 1)).toString());
-                String friend = (interest.getName().getSubName(4, 1)).toString().substring(1);
+                String friend = (interest.getName().getSubName(-5, 1)).toString().substring(1);
                 System.out.println("Friend name " + friend);
                 CertificateV2 friendCert = null;
                 try {
@@ -415,12 +423,19 @@ public class FileManager {
                     e.printStackTrace();
                 }
 
-            // Interest for our cert signed by mutual friend
+                // Interest for our cert signed by mutual friend
+                //  <ourPrefix>/cert/<ourPrefix>/KEY/<keyID>/<mutual_friend_username>/<version>
             }else {
                 try {
                     System.out.println("Asking for our cert signed by mutual friend");
-                    System.out.println("Friend name: " + (interest.getName().getSubName(6, 1)).toString().substring(1));
-                    String friend = interest.getName().getSubName(6, 1).toString().substring(1);
+                    int friendNameComp = 0;
+                    for (int i = 0; i<=interest.getName().size(); i++) {
+                        if (interest.getName().getSubName(i, 1).toUri().equals("/KEY")) {
+                            friendNameComp = i+2;
+                            break;
+                        }
+                    }
+                    String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
                     CertificateV2 cert = mRealm.where(SelfCertificate.class).equalTo("username", friend).findFirst().getCert();
                     System.out.println(cert.getName());
 

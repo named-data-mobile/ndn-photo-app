@@ -19,7 +19,6 @@ import java.util.Map;
 
 public class ProducerManager {
     public static PSync.PartialProducer m_producer;
-    public static PSync.PartialProducer m_cert_producer;
     private static Map<Long, String> m_seqToFileName = new HashMap<Long, String>();
     private static String producerPrefix;
 

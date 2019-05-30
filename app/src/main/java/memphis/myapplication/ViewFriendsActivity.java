@@ -28,7 +28,7 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_with_list);
         Realm realm = Realm.getDefaultInstance();
-        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).or().equalTo("trust", true).findAll();
         realm.close();
         List<String> friendsList = new ArrayList<>();
         for (User f : friends)
@@ -63,7 +63,7 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
         Toast.makeText(this, "Friend Name: " + adapter.getItem(position), Toast.LENGTH_SHORT).show();
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Delete friend");
-        alert.setMessage("Are you sure you want to delete this friend?");
+        alert.setMessage("Are you sure you want to delete " + friend);
 
         // Specifying a listener allows you to take an action before dismissing the dialog.
         // The dialog is automatically dismissed when a dialog button is clicked.
@@ -74,6 +74,8 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
                 realm.beginTransaction();
                 User user = realm.where(User.class).equalTo("username", friend).findFirst();
                 user.setFriend(false);
+                // Temporary for testing purposes
+                user.setTrust(false);
                 realm.commitTransaction();
                 realm.close();
                 Globals.consumerManager.removeConsumer(friend);

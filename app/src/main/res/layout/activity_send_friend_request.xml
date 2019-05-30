@@ -22,11 +22,18 @@
         android:text="New friend"
         android:layout_marginBottom="5dp"/>
 
+    <Spinner
+        android:id="@+id/spinnerNewFriends"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+
     <EditText
         android:id="@+id/add_remote_friend_edit_text"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:inputType="text"/>
+        android:inputType="text"
+        android:visibility="gone"/>
 
     <TextView
         android:layout_width="fill_parent"

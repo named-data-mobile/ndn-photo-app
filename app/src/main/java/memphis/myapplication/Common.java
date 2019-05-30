@@ -34,18 +34,25 @@ public class Common {
                 try {
 
                     ArrayList<Data> fileData = new ArrayList<>();
-                    ArrayList<Data> packets = packetize(blob, prefix);
-                    // it would be null if this file is already in our cache so we do not packetize
-                    if (packets != null) {
-                        Log.d("publishData", "Publishing with prefix: " + prefix);
+                    Log.d("publishData", "Publishing with prefix: " + prefix);
                         for (Data data : packetize(blob, prefix)) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
-                        Globals.memoryCache.putInCache(fileData);
-                    } else {
-                        Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
-                    }
+                    Globals.memoryCache.putInCache(fileData);
+
+//                    ArrayList<Data> packets = packetize(blob, prefix);
+                    // it would be null if this file is already in our cache so we do not packetize
+//                    if (packets != null) {
+//                        Log.d("publishData", "Publishing with prefix: " + prefix);
+//                        for (Data data : packetize(blob, prefix)) {
+//                            Globals.keyChain.sign(data);
+//                            fileData.add(data);
+//                        }
+//                        Globals.memoryCache.putInCache(fileData);
+//                    } else {
+//                        Log.d("publishData", "No need to publish; " + prefix.toUri() + " already in cache.");
+//                    }
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
                         KeyChain.Error e) {
                     e.printStackTrace();
@@ -102,13 +109,13 @@ public class Common {
                 // Set the final component to have a final block id.
                 Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
                 meta_info.setFinalBlockId(finalBlockId);
+                datas.get(0).setMetaInfo(meta_info);
+                data.setMetaInfo(meta_info);
             }
-            data.setMetaInfo(meta_info);
             datas.add(data);
             segment_number++;
         } while (byteBuffer.hasRemaining());
         return datas;
     }
-
 
 }

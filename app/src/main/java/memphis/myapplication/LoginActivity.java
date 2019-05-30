@@ -107,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             // save username and go to mainpage
-            SharedPrefsManager.getInstance(LoginActivity.this).setCredentials(username, password);
+            SharedPrefsManager.getInstance(LoginActivity.this).setCredentials(username, password, domain);
             return null;
         }
 
