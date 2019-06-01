@@ -3,10 +3,14 @@ build/
 gen/
 .gradle
 local.properties
+
 # ItelliJ
 *.iml
 app/app.iml
 .idea
+
+# CMake
 psync/.externalNativeBuild/
 psync/src/main/libs/
-.externalNativeBuild/
+app/.externalNativeBuild/
+app/src/main/jniLibs/
