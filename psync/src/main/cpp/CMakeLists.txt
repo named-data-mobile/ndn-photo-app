@@ -8,10 +8,10 @@ set(SQLITE_LIBS ${ANDROID_NDK}/packages/sqlite/${SQLITE_VERSION}/libs/${ANDROID_
 set(OPENSSL_VERSION 1.1.1-pre8)
 set(OPENSSL_LIBS ${ANDROID_NDK}/packages/openssl/${OPENSSL_VERSION}/libs/${ANDROID_ABI})
 
-set(BOOST_VERSION 1.68.0)
+set(BOOST_VERSION 1.70.0)
 set(BOOST_DIR ${ANDROID_NDK}/packages/boost/${BOOST_VERSION})
 
-set(NDN_CXX_VERSION 0.6.5)
+set(NDN_CXX_VERSION 0.6.6)
 set(NDN_CXX_LIBS ${ANDROID_NDK}/packages/ndn_cxx/${NDN_CXX_VERSION}/libs/${ANDROID_ABI}/llvm)
 set(NDN_CXX_INCLUDE ${ANDROID_NDK}/packages/ndn_cxx/${NDN_CXX_VERSION}/include)
 
@@ -19,7 +19,7 @@ set(PSYNC_VERSION 0.1.0)
 set(PSYNC_LIBS ${ANDROID_NDK}/packages/psync/${PSYNC_VERSION}/libs/${ANDROID_ABI}/llvm)
 set(PSYNC_INCLUDE ${ANDROID_NDK}/packages/psync/${PSYNC_VERSION}/include)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -frtti -fexceptions -Wall -Werror -DBOOST_LOG_DYN_LINK")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -frtti -fexceptions -DBOOST_LOG_DYN_LINK")
 
 # Add ndn-cxx
 add_library(libndn-cxx SHARED IMPORTED)
