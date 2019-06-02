@@ -56,11 +56,24 @@
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
     <TextView
+        android:id="@+id/contribution"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/contribution"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@id/license"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/source_link"
+        app:layout_constraintVertical_bias="0" />
+
+    <TextView
         android:id="@+id/license"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/margin_32dp"
-        android:padding="@dimen/margin_10dp"
+        android:layout_marginTop="@dimen/margin_18dp"
         android:text="@string/license_info"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
@@ -68,19 +81,18 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/source_link"
-        app:layout_constraintVertical_bias="0.25" />
+        app:layout_constraintVertical_bias="0.30" />
 
     <TextView
         android:id="@+id/license_link"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="@dimen/margin_5dp"
+        android:paddingBottom="@dimen/margin_5dp"
         android:text="@string/license_link"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/license"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/license" />
 
 </android.support.constraint.ConstraintLayout>

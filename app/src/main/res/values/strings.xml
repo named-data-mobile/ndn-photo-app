@@ -55,6 +55,7 @@
     <string name="certificate_prefix">cert</string>
     <string name="version_info">version 0.0.0</string>
     <string name="source"><u><i>Link to the source code</i></u></string>
-    <string name="license_info">This app is licenced under GNU GPL</string>
+    <string name="license_info">This app is licenced under GNU GPL v3.0</string>
     <string name="license_link"><u><i>Tap to view the complete license</i></u></string>
+    <string name="contribution"><i>(Contribution and issues welcome)</i></string>
 </resources>
