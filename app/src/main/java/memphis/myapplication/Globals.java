@@ -32,6 +32,9 @@ public class Globals extends Application {
     public static PSync psync;
     public static ProducerManager producerManager;
     public static ConsumerManager consumerManager;
+    public static int multicastFaceID;
+    public static NSDHelper nsdHelper;
+    public static boolean useMulticast;
 
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
     // if they are present. Face can be new, but face will need to set things with keychain again.
@@ -85,8 +88,6 @@ public class Globals extends Application {
         pubKeyBlob = pk;
     }
 
-    public static void setCertificate(CertificateV2 c) { certificate = c; }
-
     // setters
     public static void setFace(Face f) {
         face = f;
@@ -113,6 +114,12 @@ public class Globals extends Application {
     public static void setProducerManager(ProducerManager pm) {producerManager = pm;}
 
     public static void setConsumerManager(ConsumerManager cm) { consumerManager = cm; }
+
+    public static void setMulticastFaceID(int f) { multicastFaceID = f; }
+
+    public static void setNSDHelper(NSDHelper n) { nsdHelper = n; }
+
+    public static void setUseMulticast(boolean b) { useMulticast = b; }
 
 
 }

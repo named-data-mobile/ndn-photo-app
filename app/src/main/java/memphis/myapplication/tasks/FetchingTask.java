@@ -36,11 +36,12 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import io.realm.Realm;
 import memphis.myapplication.Decrypter;
 import memphis.myapplication.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
-import memphis.myapplication.SharedPrefsManager;
+import memphis.myapplication.RealmObjects.User;
 
 import static java.lang.Thread.sleep;
 
@@ -91,9 +92,16 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         m_shouldReturn = false;
         interest.setInterestLifetimeMilliseconds(15000);
 
-        final Name appAndUsername = m_baseInterest.getName().getPrefix(2);
+        int npChatComp = 0;
+        for (int i = 0; i<=m_baseInterest.getName().size(); i++) {
+            if (m_baseInterest.getName().getSubName(i, 1).toUri().equals("/npChat")){
+                npChatComp = i;
+                break;
+            }
+        }
+        final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
         Timber.d("BeforeVerify: %s", "appAndUsername:" + appAndUsername.toUri());
-        getUserInfo(m_baseInterest);
+        getUserInfo(username.toUri().substring(1));
         Timber.d("KeyType: %s", m_pubKey.getKeyType().toString());
 
         SegmentFetcher.fetch(
@@ -154,18 +162,16 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     /**
      * Extracts the username from the Data and sets m_user. It then checks if the username matches any
      * friend in the friends directory.
-     * @param interest
+     * @param user
      */
-    private void getUserInfo(Interest interest) {
-        Name n = interest.getName().getSubName(1);
-        System.out.println(n.toUri());
-        m_user = (n.getPrefix(1).toUri()).substring(1);
+    private void getUserInfo(String user) {
+        m_user = user;
+        Realm realm = Realm.getDefaultInstance();
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        ArrayList<String> friendsList = SharedPrefsManager.getInstance(m_currContext).getFriendsList();
         Timber.d("username&PubKey: %s", "user: " + m_user);
-        if(friendsList.contains(m_user)) {
+        if(realm.where(User.class).equalTo("username", m_user).findFirst().isFriend()) {
             try {
-                m_pubKey = new PublicKey(SharedPrefsManager.getInstance(m_currContext).getFriendKey(m_user));
+                m_pubKey = new PublicKey(realm.where(User.class).equalTo("username", m_user).findFirst().getCert().getPublicKey());
             }
             catch(UnrecognizedKeyFormatException e) {
                 e.printStackTrace();
@@ -237,10 +243,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 } catch (IllegalBlockSizeException e) {
                     e.printStackTrace();
                 }
-                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName().toUri());
+                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName());
 
             } else {
-                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName().toUri());
+                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName());
 
             }
 

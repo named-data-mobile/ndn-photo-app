@@ -42,10 +42,7 @@ public class Common {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
-                        Globals.memoryCache.putInCache(fileData);
-                    } else {
-                        Timber.d("No need to publish; " + prefix.toUri() + " already in cache.");
-                    }
+                    Globals.memoryCache.putInCache(fileData);
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
                         KeyChain.Error e) {
                     e.printStackTrace();
@@ -102,13 +99,13 @@ public class Common {
                 // Set the final component to have a final block id.
                 Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
                 meta_info.setFinalBlockId(finalBlockId);
+                datas.get(0).setMetaInfo(meta_info);
+                data.setMetaInfo(meta_info);
             }
-            data.setMetaInfo(meta_info);
             datas.add(data);
             segment_number++;
         } while (byteBuffer.hasRemaining());
         return datas;
     }
-
 
 }

@@ -53,6 +53,17 @@
     <string name="remove_account">Remove Account</string>
 
     <string name="certificate_prefix">cert</string>
+    <string name="send_friend_request">Send friend request</string>
+    <string name="title_activity_send_friend_request">SendFriendRequestActivity</string>
+
+    <string-array name="acc_type">
+        <item>Mutual friend</item>
+        <item>Domain</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="domain">Domain:</string>
     <string name="version_info">version 0.0.0</string>
     <string name="source"><u><i>Link to the source code</i></u></string>
     <string name="license_info">This app is licenced under GNU GPL v3.0</string>

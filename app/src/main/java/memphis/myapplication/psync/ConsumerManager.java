@@ -2,6 +2,9 @@ package memphis.myapplication.psync;
 
 import android.app.Activity;
 import android.content.Context;
+
+import android.util.Base64;
+import android.util.Log;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -18,6 +21,7 @@ import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
 import org.apache.commons.lang3.SerializationUtils;
+import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,31 +68,38 @@ public class ConsumerManager {
         @Override
         public void onData(Interest interest, Data data) {
             Timber.d( "Got sync data");
-            byte[] interestData = data.getContent().getImmutableArray();
-            SyncData syncData = SerializationUtils.deserialize(interestData);
-            String filename = syncData.getFilename();
+            try {
+                String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
+                Log.d("ConsumerManager", interestData);
 
-            if (syncData.isFeed()) {
-                System.out.println("For feed");
-                new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
-            }
-            else {
-                if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
-                    System.out.println("For me");
-                    try {
-                        Blob symmetricKey = new Blob(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), false);
-                        TpmBackEndFile m_tpm = Globals.tpm;
-                        TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
-                        Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
-                        byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
-                        SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
-                        System.out.println("Filename : " + filename);
-                        new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
-                    } catch (TpmBackEnd.Error error) {
-                        error.printStackTrace();
+                SyncData syncData = new SyncData(interestData);
+                String filename = syncData.getFilename();
+                Log.d("ConsumerManager", "Filename: " + filename);
+
+
+                if (syncData.isFeed()) {
+                    System.out.println("For feed");
+                    new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+                } else {
+                    if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
+                        System.out.println("For me");
+                        try {
+                            Blob symmetricKey = new Blob(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), false);
+                            TpmBackEndFile m_tpm = Globals.tpm;
+                            TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
+                            Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
+                            byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
+                            SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+                            System.out.println("Filename : " + filename);
+                            new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                        } catch (TpmBackEnd.Error error) {
+                            error.printStackTrace();
+                        }
                     }
-
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
+
             }
         }
     };
@@ -121,9 +132,16 @@ public class ConsumerManager {
      * @param prefix is the String "/npChat/friendName"
      */
     public static void createConsumer(String prefix) {
+
         Timber.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);
         consumer.sendHelloInterest();
     }
+
+    public static void removeConsumer(String friend) {
+        Log.d("ConsumerManager", "Removing " + friend + " as consumer");
+        // Does nothing yet. Need to add.
+        }
+
 }

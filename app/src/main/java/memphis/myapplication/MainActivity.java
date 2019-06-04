@@ -34,18 +34,20 @@ import com.squareup.picasso.Picasso;
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
+import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
+import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.OnTimeout;
 import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.encoding.der.DerDecodingException;
 import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
 import net.named_data.jndn.encrypt.algo.EncryptParams;
 import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
+import net.named_data.jndn.security.VerificationHelpers;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
@@ -61,7 +63,6 @@ import net.named_data.jni.psync.PSync;
 
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -77,6 +78,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 
 import javax.crypto.BadPaddingException;
@@ -85,10 +88,14 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import static java.lang.Thread.sleep;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+import memphis.myapplication.RealmObjects.PublishedContent;
+import memphis.myapplication.RealmObjects.SelfCertificate;
+import memphis.myapplication.RealmObjects.User;
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
-import memphis.myapplication.tasks.FetchingTask;
-import memphis.myapplication.tasks.FetchingTaskParams;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -111,9 +118,10 @@ public class MainActivity extends AppCompatActivity {
     private final int SELECT_RECIPIENTS_CODE = 1;
     private final int ADD_FRIEND_CODE = 2;
     private final int SETTINGS_CODE = 3;
-    private final int RESULT_FEED_OK = 4;
+    private final int RESULT_ALREADY_TRUST = 5;
     private File m_curr_photo_file;
-
+    private int networkDiscoveryTries = 0;
+    private int maxnetworkDiscoveryTries = 10;
 
     private boolean netThreadShouldStop = true;
 
@@ -129,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
         setupToolbar();
         psync = PSync.getInstance(getFilesDir().getAbsolutePath());
         Globals.setPSync(psync);
+        Realm.init(this);
 
 
         sharedPrefsManager = SharedPrefsManager.getInstance(this);
@@ -211,11 +220,11 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("Setting up security");
         FileManager manager = new FileManager(getApplicationContext());
         // /npChat/<username>
-        Name appAndUsername = new Name("/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
+        Name appPrefix = new Name(sharedPrefsManager.getDomain() + "/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Timber.d("Creating producer" + "/npChat/" + sharedPrefsManager.getUsername());
-        String producerPrefix = "/npChat/" + sharedPrefsManager.getUsername();
+        Timber.d("Creating producer" +  appPrefix.toUri());
+        String producerPrefix = appPrefix.toUri();
         producerManager = new ProducerManager(producerPrefix);
         Globals.setProducerManager(producerManager);
 
@@ -225,11 +234,15 @@ public class MainActivity extends AppCompatActivity {
         consumerManager = new ConsumerManager(this, getApplicationContext());
         Globals.setConsumerManager(consumerManager);
 
-        for (String friend : sharedPrefsManager.getFriendsList()) {
-            String friendPrefix = "/npChat/" + friend;
-            consumerManager.createConsumer(friendPrefix);
-            Timber.d("Added consumer for friend for " + friend);
+        Realm realm = Realm.getDefaultInstance();
+
+        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        for (User friend : friends) {
+            String friendNamespace = friend.getNamespace();
+            consumerManager.createConsumer(friendNamespace);
+            Timber.d("Added consumer for friend for " + friendNamespace);
         }
+
 
         Context context = getApplicationContext();
         String rootPath = getApplicationContext().getFilesDir().toString();
@@ -244,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        // jndn has a typo in its getter
         m_tpm = new TpmBackEndFile(TpmBackEndFile.getDefaultDirecoryPath(context.getFilesDir()));
         Globals.setTpmBackEndFile(m_tpm);
         try {
@@ -261,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        Name identity = new Name(appAndUsername);
+        Name identity = new Name(appPrefix);
         Name defaultCertificateName;
         PibIdentity pibId = null;
         PibKey key;
@@ -294,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        Globals.setDefaultIdName(appAndUsername);
+        Globals.setDefaultIdName(appPrefix);
 
         try {
             defaultCertificateName = keyChain.getDefaultCertificateName();
@@ -308,9 +320,9 @@ public class MainActivity extends AppCompatActivity {
         Globals.setFace(face);
         Globals.setMemoryCache(new MemoryCache(face, getApplicationContext()));
         Globals.setHasSecurity(true);
-        System.out.println("Certificate");
+
         try {
-            System.out.println(pibId.getDefaultKey().getDefaultCertificate());
+            Log.d("MainActivity", keyChain.getPib().getDefaultIdentity().getDefaultKey().getDefaultCertificate().toString());
         } catch (Pib.Error error) {
             error.printStackTrace();
         } catch (PibImpl.Error error) {
@@ -318,18 +330,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Timber.d("Security was setup successfully");
-        
-        try {
-            // since everyone is a potential producer, register your prefix
-            register_with_NFD(appAndUsername);
-        } catch (IOException | PibImpl.Error e) {
-            e.printStackTrace();
-        }
+        register_with_NFD(appPrefix);
 
-        Timber.d("Discovering nodes");
-        NSDHelper nsdHelper;
-        nsdHelper = new NSDHelper(sharedPrefsManager.getUsername(), getApplicationContext(), face);
-        nsdHelper.discoverServices();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -343,14 +345,14 @@ public class MainActivity extends AppCompatActivity {
                 setup_security();
             }
             try {
-                sleep(100);
+                sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             while (!netThreadShouldStop) {
                 try {
                     face.processEvents();
-                    sleep(100);
+                    sleep(10);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e) {
@@ -394,7 +396,7 @@ public class MainActivity extends AppCompatActivity {
      * @throws IOException
      * @throws PibImpl.Error
      */
-    public void register_with_NFD(Name name) throws IOException, PibImpl.Error {
+    public void register_with_NFD(Name name) {
 
         if (!Globals.has_setup_security) {
             setup_security();
@@ -409,10 +411,16 @@ public class MainActivity extends AppCompatActivity {
             Name dataName = new Name(name);
             Name fileName = new Name(name);
             Name certName = new Name(name);
+            Name friendRequestName = new Name(name);
+            final Name networkDiscoveryName = new Name("network-discovery");
             dataName.append("data");
             fileName.append("file");
             certName.append("cert");
+            friendRequestName.append("friend-request");
+            networkDiscoveryName.append("discover");
+
             Timber.d("Starting registration process.");
+
             Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
                     new OnRegisterFailed() {
                         @Override
@@ -465,25 +473,214 @@ public class MainActivity extends AppCompatActivity {
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
                             Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
-                            runOnUiThread(makeToast(msg));
                         }
                     }
             );
+
+            Globals.face.registerPrefix(friendRequestName, new OnInterestCallback() {
+                        @Override
+                        public void onInterest(Name prefix, final Interest interest, final Face face, long interestFilterId, InterestFilter filter) {
+                            Log.d("onFriendRequestInterest", "Got interest " + interest.toUri());
+
+                            final FriendRequest friendRequest = new FriendRequest(interest, MainActivity.this);
+                            friendRequest.receive();
+                            friendRequest.addObserver(new Observer() {
+                                @Override
+                                public void update(Observable o, Object arg) {
+                                    int updateCode = (int) arg;
+                                    if (updateCode == 1) {
+                                        runOnUiThread(new Thread(new Runnable() {
+                                            public void run() {
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                                                alert.setTitle("Friend request");
+                                                alert.setMessage("Accept friend request from " + friendRequest.getPendingFriend());
+                                                alert.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                                        // Accept incoming friend request
+                                        try {
+                                            friendRequest.accept();
+                                        } catch (EncodingException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                                    }
+                                                });
+
+                                                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                                        // reject incoming friend request
+                                                        friendRequest.reject();
+                                                    }
+                                                });
+
+                                                alert.show();
+                                            }
+                                        }));
+                                    } else if (updateCode == 2) {
+                                        Log.d("OnFriendRequest", "Could not be verified");
+                                        runOnUiThread(makeToast("Received unverifiable friend request."));
+
+                                    } else if (updateCode == 3) {
+                                        Log.d("OnFriendRequest", "Already friends");
+                                        Data data = new Data();
+                                        data.setContent(new Blob("Friends"));
+                                        try {
+                                            face.putData(data);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    } else if (updateCode == 4) {
+                                        Log.d("OnFriendRequest", "Already trust");
+                                        runOnUiThread(new Thread(new Runnable() {
+                                            public void run() {
+                                                AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                                                alert.setTitle("Friend request");
+                                                alert.setMessage("Accept friend request from " + friendRequest.getPendingFriend());
+                                                alert.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                                        // Accept incoming friend request
+                                                        friendRequest.acceptTrusted();
+
+                                                    }
+                                                });
+
+                                                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                                        // reject incoming friend request
+                                                        friendRequest.reject();
+                                                    }
+                                                });
+
+                                                alert.show();
+                                            }
+                                        }));
+                                    }
+                                }
+                            });
+                            }},
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                        }
+                    }
+             );
+
+            Globals.face.registerPrefix(networkDiscoveryName, new OnInterestCallback() {
+                        @Override
+                        public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
+                            // Listen for incoming messages from other devices over multicast face
+                            // and save any new users so we can register routes to them later
+                            // Need to determine when to switch to NSD.
+                            Log.d("NetworkDiscovery", "Discovered other nodes via multicast face");
+                            Data data = new Data();
+                            data.setName(interest.getName());
+                            data.setContent(new Blob(new Blob(sharedPrefsManager.getNamespace())));
+                            try {
+                                face.putData(data);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            Globals.setUseMulticast(true);
+                                                    }
+                    },
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                        }
+                    });
         } catch (IOException | SecurityException e) {
             e.printStackTrace();
         }
 
-        registerRouteToAp();
+        // Register outgoing routes
+        registerRoutesToMulticastFace();
+        registerWithNSD();
+        expressNetworkDiscoveryInterest();
+
 
     }
 
-    /**
-     * Checks NFD for a multicast face and registers /npChat prefix for that face
-     */
-    public void registerRouteToAp() {
-        Name prefix = new Name(getString(R.string.app_name));
-        int myFace = 0;
+    public void expressNetworkDiscoveryInterest() {
+        final OnData onData = new OnData() {
+            @Override
+            public void onData(Interest interest, Data data) {
+                Log.d("NetworkDiscovery", "Got data");
+                Name interestData = new Name(data.getContent().toString());
+                Globals.setUseMulticast(true);
+                Realm realm = Realm .getDefaultInstance();
 
+                String username = null;
+                String userDomain = null;
+                for (int i = 0; i <= interestData.size(); i++) {
+                    if (interestData.getSubName(i, 1).toUri().equals("/npChat")) {
+                        username = interestData.getSubName(i+1, 1).toUri().substring(1);
+                        userDomain = interestData.getPrefix(i).toUri();
+                    }
+                }
+                Log.d("NetworkDiscovery", username + " and " + userDomain);
+
+
+                User user = realm.where(User.class).equalTo("username", username).findFirst();
+                if (user == null) {
+                    realm.beginTransaction();
+                    user = realm.createObject(User.class, username);
+                    user.setDomain(userDomain);
+                    realm.commitTransaction();
+                }
+                realm.close();
+                registerFriends();
+            }
+        };
+
+        final OnTimeout onTimeout = new OnTimeout() {
+            @Override
+            public void onTimeout(Interest interest) {
+                Log.d("MulticastDiscovery", "expressing interest after timeout");
+                networkDiscoveryTries++;
+                if (networkDiscoveryTries <= maxnetworkDiscoveryTries) {
+                    expressNetworkDiscoveryInterest();
+                } else if (networkDiscoveryTries == maxnetworkDiscoveryTries + 1){
+                    Log.d("MulticastDiscovery", "Now use NSD");
+                    Globals.setUseMulticast(false);
+                    Globals.nsdHelper.registerFriends();
+                }
+
+
+
+            }
+        };
+        try {
+            Log.d("MulticastDiscovery", "expressing initial interest");
+            Interest interest = new Interest(new Name("/network-discovery/discover/" + sharedPrefsManager.getNamespace()));
+            face.expressInterest(interest, onData, onTimeout);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Checks NFD for a multicast face and registers network discovery prefix
+     */
+    public void registerRoutesToMulticastFace() {
+        int myFace = 0;
         try {
             final List<FaceStatus> faceList = Nfdc.getFaceList(face);
             final List<RibEntry> routeInfo = Nfdc.getRouteList(face);
@@ -501,22 +698,59 @@ public class MainActivity extends AppCompatActivity {
                     if (f.getRemoteUri().contains("udp4://224")) {
                         Timber.d("Using multicast face: " + f.getRemoteUri());
                         myFace = f.getFaceId();
+                        Globals.setMulticastFaceID(myFace);
+
+                        if (myFace != 0) {
+                            try {
+                                // Register network discovery prefix
+                                Nfdc.register(face, myFace, new Name("network-discovery"), 0);
+
+                            } catch (ManagementException e) {
+                                e.printStackTrace();
+                            }
+                        }
 
                     }
-                }
-            }
-
-            if (myFace != 0) {
-                try {
-                    Nfdc.register(face, myFace, prefix, 0);
-                } catch (ManagementException e) {
-                    e.printStackTrace();
                 }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void registerFriends() {
+
+        int myFace = Globals.multicastFaceID;
+        Realm realm = Realm.getDefaultInstance();
+
+        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        for (User u : friends) {
+            try {
+                Nfdc.register(face, myFace, new Name(u.getNamespace()), 0);
+            } catch (ManagementException e) {
+                e.printStackTrace();
+            }
+        }
+        realm.close();
+    }
+
+    public void registerUser(String friendName) {
+        Realm realm = Realm.getDefaultInstance();
+        User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
+        try {
+            Nfdc.register(face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
+        } catch (ManagementException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void registerWithNSD() {
+        Log.d("Setup_security", "Discovering nodes");
+        NSDHelper nsdHelper;
+        nsdHelper = new NSDHelper(sharedPrefsManager.getNamespace(), getApplicationContext(), face);
+        Globals.setNSDHelper(nsdHelper);
+        nsdHelper.discoverServices();
     }
 
 
@@ -549,8 +783,13 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send them to a new page to select friends to send photo to
                         Intent intent = new Intent(MainActivity.this, SelectRecipientsActivity.class);
-
-                        ArrayList<String> friendsList = sharedPrefsManager.getFriendsList();
+                        Realm realm = Realm.getDefaultInstance();
+                        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+                        ArrayList<String> friendsList = new ArrayList<>();
+                        for (User f: friends) {
+                            System.out.println("Adding friend to friendslist " + f.getUsername());
+                            friendsList.add(f.getUsername());
+                        }
                         intent.putStringArrayListExtra("friendsList", friendsList);
                         // make this startActivityForResult and catch the list of recipients;
                         intent.putExtra("photo", m_curr_photo_file.toString());
@@ -579,11 +818,7 @@ public class MainActivity extends AppCompatActivity {
         else if (requestCode == ADD_FRIEND_CODE) {
             if(resultCode == RESULT_OK) {
                 final String friend = resultData.getStringExtra("username");
-                // Add friend as consumer
-                Timber.d("Adding consumer for " + friend);
-                consumerManager.createConsumer("/" + getString(R.string.app_name) + "/" + friend);
-
-                // After adding friend, wait 10 seconds and then send interest for your own certificate signed by your friend
+                // After adding friend, wait 5 seconds and then send interest for your own certificate signed by your friend
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -595,7 +830,17 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                     }
-                }, 10000);
+                }, 5000);
+
+            } else if (resultCode == RESULT_ALREADY_TRUST) {
+                final String friendName = resultData.getStringExtra("username");
+                Realm realm = Realm.getDefaultInstance();
+                realm.beginTransaction();
+                User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
+                friend.setFriend(true);
+                realm.commitTransaction();
+                realm.close();
+
 
             }
         }
@@ -648,37 +893,35 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<String> recipients;
             try {
                 recipients = resultData.getStringArrayListExtra("recipients");
-                String name = "/npChat/" + sharedPrefsManager.getUsername() + "/data";
-                final String filename = "/npChat/" + sharedPrefsManager.getUsername() + "/file" + path;
+                String name = sharedPrefsManager.getNamespace() + "/data";
+                final String filename = sharedPrefsManager.getNamespace() + "/file" + path;
 
                 // Generate symmetric key
                 final SecretKey secretKey = encrypter.generateKey();
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
-                SyncData syncData = new SyncData(filename);
+                SyncData syncData = new SyncData();
+                syncData.setFilename(filename);
 
                 final boolean feed = (recipients == null);
                 if (feed) {
                     Timber.d("For feed");
-                    syncData.setFeed();
+                    syncData.setFeed(true);
                 }
                 else {
+                    syncData.setFeed(false);
                     Timber.d( "For friends");
+                    Realm realm = Realm.getDefaultInstance();
                     for (String friend : recipients) {
-                        Blob friendKey = sharedPrefsManager.getFriendKey(friend);
+                        Blob friendKey = realm.where(User.class).equalTo("username", friend).findFirst().getCert().getPublicKey();
                         byte[] encryptedKey = RsaAlgorithm.encrypt
                                 (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
                         syncData.addFriendKey(friend, encryptedKey);
                     }
                 }
-                // Serialize sync data
-                byte[] serializedSyncData = SerializationUtils.serialize(syncData);
-                producerManager.setDataSeqMap(serializedSyncData);
-
-
-
-
+                // Stringify sync data
+                producerManager.setDataSeqMap(syncData.stringify());
                 Timber.d("Publishing file: %s", filename);
 
                 byte[] bytes;
@@ -693,18 +936,26 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Timber.d("file selection result: %s", "file path: " + path);
                 try {
-                    String prefixApp = "/npChat/" + sharedPrefsManager.getUsername() + "/file";
-                    final String prefix = prefixApp + path;
-                    Timber.d("Publishing data: %s", prefix);
+                    String prefixApp = "/" + sharedPrefsManager.getNamespace();
+
+                    final String prefix = prefixApp + "/file" + path;
+                    Log.d("Publishing data", prefix);
+                    Realm realm = Realm.getDefaultInstance();
+                    realm.beginTransaction();
+                    PublishedContent contentKey = realm.createObject(PublishedContent.class, path);
                     if (!feed) {
                         Timber.d("Publishing to friend(s)");
-                        Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                        sharedPrefsManager.saveSymKey(secretKey, filename);
-                        Common.publishData(encryptedBlob, new Name(prefix));
+                        contentKey.addKey(secretKey);
+                        realm.commitTransaction();
+                        realm.close();
 
+                        Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                        Common.publishData(encryptedBlob, new Name(prefix));
                     }
                     else {
                         Timber.d("Publishing to feed");
+                        realm.commitTransaction();
+                        realm.close();
                         Blob unencryptedBlob = new Blob(bytes);
                         Common.publishData(unencryptedBlob, new Name(prefix));
 
@@ -744,17 +995,26 @@ public class MainActivity extends AppCompatActivity {
      * @param friend: name of friend who has our certificate
      */
     public void generateCertificateInterest(String friend) throws SecurityException, IOException {
-        Name name =  new Name();
-        name.append(getString(R.string.app_name));
-        name.append(friend);
+        Realm realm = Realm.getDefaultInstance();
+        User user = realm.where(User.class).equalTo("username", friend).findFirst();
+        Name name =  new Name(user.getNamespace());
         name.append(getString(R.string.certificate_prefix));
         Name certName = Globals.keyChain.getDefaultCertificateName();
         Name newCertName = new Name();
-        newCertName.append(certName.getSubName(0, 4));
+        int end = 0;
+        for (int i = 0; i<= certName.size(); i++) {
+            if (certName.getSubName(i, 1).toUri().equals("/self")) {
+                newCertName.append(certName.getPrefix(i));
+                end = i;
+                break;
+            }
+        }
         newCertName.append(friend);
+        newCertName.append(certName.getSubName(end+1));
         name.append(newCertName);
         Interest interest = new Interest(name);
-        Timber.d( "Expressing interest for our cert");
+        Timber.d("Expressing interest for our cert" + name.toUri());
+        registerUser(friend);
         face.expressInterest(interest, onCertData, onCertTimeOut);
     }
 
@@ -766,6 +1026,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onData(Interest interest, Data data) {
             Timber.d("Getting our certificate back from friend");
+            Realm realm = Realm.getDefaultInstance();
+
+            String friendName = interest.getName().getSubName(-2, 1).toUri().substring(1);
+            User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
             Blob interestData = data.getContent();
             byte[] certBytes = interestData.getImmutableArray();
 
@@ -775,10 +1039,41 @@ public class MainActivity extends AppCompatActivity {
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
-            sharedPrefsManager.saveSelfCert(certificateV2);
-            Timber.d( "Saved our certificate back signed by friend");
+            realm.beginTransaction();
+            SelfCertificate realmCertificate = realm.where(SelfCertificate.class).equalTo("username", friendName).findFirst();
+            if (realmCertificate == null) {
+                realmCertificate = realm.createObject(SelfCertificate.class, friendName);
+            }
+            realmCertificate.setCert(certificateV2);
 
+            VerificationHelpers verificationHelpers = new VerificationHelpers();
+            System.out.println("Friend name: " + friendName);
+            try {
+                boolean verified = verificationHelpers.verifyDataSignature(certificateV2, realm.where(User.class).equalTo("username", friendName).findFirst().getCert());
+                System.out.println("Can we verify? " + verified);
+            } catch (EncodingException e) {
+                e.printStackTrace();
+            }
 
+            Log.d("onCertData", "Saved our certificate back signed by friend and adding them as a consumer");
+
+            friend.setFriend(true);
+            friend.setTrust(true);
+            consumerManager.createConsumer(friend.getNamespace());
+            realm.commitTransaction();
+
+            if (!Globals.useMulticast) {
+                    Globals.nsdHelper.registerUser(friendName);
+            } else {
+                User user = realm.where(User.class).equalTo("username", friendName).findFirst();
+                try {
+                    Nfdc.register(face, Globals.multicastFaceID, new Name(user.getNamespace()), 0);
+                } catch (ManagementException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            realm.close();
         }
     };
 
@@ -790,7 +1085,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onTimeout(Interest interest) {
             Timber.d( "Timeout for interest " + interest.toUri());
-            String friend = interest.getName().getSubName(1, 1).toString().substring(1);
+            String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
             Timber.d("Resending interest to " + friend);
             try {
                 generateCertificateInterest(friend);

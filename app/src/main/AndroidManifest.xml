@@ -16,8 +16,7 @@
         android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".CertificateExchangeActivity"/>
-
+        <activity android:name=".SendFriendRequest"></activity>
         <provider
             android:name=".UriFileProvider"
             android:authorities="memphis.myapplication.UriFileProvider"

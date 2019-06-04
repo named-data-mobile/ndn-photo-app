@@ -34,6 +34,23 @@
         app:layout_constraintVertical_bias="0.5" />
 
     <EditText
+        android:id="@+id/domain_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_10dp"
+        android:ems="10"
+        android:inputType="text"
+        android:elevation="@dimen/margin_2dp"
+        android:textColor="@color/jetBlack"
+        android:background="@color/white"
+        android:paddingLeft="@dimen/margin_5dp"
+        app:layout_constraintBottom_toTopOf="@+id/username_text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginBottom="@dimen/margin_10dp"
+        />
+
+    <EditText
         android:id="@+id/username_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -105,6 +122,25 @@
         app:layout_constraintRight_toLeftOf="@+id/password_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2"
+        android:layout_marginLeft="@dimen/margin_16dp"/>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_8dp"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:layout_marginEnd="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:elevation="@dimen/margin_2dp"
+        android:text="@string/domain"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textColor="@color/white"
+        android:textSize="@dimen/margin_16dp"
+        app:layout_constraintBottom_toTopOf="@+id/username_text"
+        app:layout_constraintEnd_toStartOf="@+id/domain_text"
+        app:layout_constraintRight_toLeftOf="@+id/domain_text"
+        app:layout_constraintStart_toStartOf="parent"
         android:layout_marginLeft="@dimen/margin_16dp"/>
 
    <!-- <Button

@@ -17,11 +17,9 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.SigningInfo;
 import net.named_data.jndn.security.pib.PibImpl;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
@@ -29,7 +27,10 @@ import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+
+
+import io.realm.Realm;
+import memphis.myapplication.RealmObjects.User;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
@@ -37,10 +38,15 @@ public class AddFriendActivity extends AppCompatActivity {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
     private final int ADD_FRIEND_QR_REQUEST_CODE = 1;
+    private final int REMOTE_FRIEND_REQUEST_CODE = 2;
+    private final int RESULT_ALREADY_TRUST = 5;
 
     private FileManager m_manager;
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
+    private String friendName;
+    private String friendDomain;
+    private Realm mRealm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +55,8 @@ public class AddFriendActivity extends AppCompatActivity {
         m_manager = new FileManager(getApplicationContext());
         setupToolbar();
         setButtonWidth();
+        mRealm = Realm.getDefaultInstance();
+
     }
 
     private void setupToolbar() {
@@ -73,7 +81,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
         public void addFriend(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(AddFriendActivity.this);
-        builder.setTitle("Select whether you want to display your QR code or scan your friend's code").setCancelable(false);
+        builder.setTitle("Display or scan QR code first?").setCancelable(false);
         final View tempView = view;
 
         builder.setPositiveButton("Display QR code", new DialogInterface.OnClickListener() {
@@ -123,56 +131,89 @@ public class AddFriendActivity extends AppCompatActivity {
     }
 
     public void viewFriendsList(View view) {
-        ArrayList<String> friendsList = SharedPrefsManager.getInstance(this).getFriendsList();
+//        ArrayList<String> friendsList = SharedPrefsManager.getInstance(this).getFriendsList();
         Intent intent = new Intent(this, ViewFriendsActivity.class);
-        intent.putStringArrayListExtra("friendsList", friendsList);
+//        intent.putStringArrayListExtra("friendsList", friendsList);
         startActivity(intent);
     }
 
     // save friends
     public int saveFriend(String friendContent) {
+        KeyChain keyChain = Globals.keyChain;
         Timber.d("Saving: %s", friendContent);
+
         if (friendContent.length() > 0) {
-            int index = friendContent.indexOf(" ");
-            String username = friendContent.substring(0, index);
-
-            // A friend's filename will be their username. Another reason why we must ensure uniqueness
-            if (!SharedPrefsManager.getInstance(this).addFriend(username)) {
-                return 1;
-            }
-
-            // Save friend's certificate
-            String cert = friendContent.substring(index + 1);
-
-            byte[] certBytes = Base64.decode(cert, 0);
-            CertificateV2 certificateV2 = null;
             try {
-                SigningInfo signingInfo = new SigningInfo();
-                signingInfo.setSigningKeyName(Globals.pubKeyName);
 
+
+                byte[] certBytes = Base64.decode(friendContent, 0);
+                CertificateV2 certificateV2 = null;
 
                 certificateV2 = new CertificateV2();
                 certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
 
+                // Save self-signed cert for friend
+                friendName = certificateV2.getName().getSubName(-5, 1).toUri().substring(1);
+                System.out.println("Friend name: " + friendName);
+                for (int i = 0; i <= certificateV2.getName().size(); i++) {
+                    System.out.println(certificateV2.getName().getSubName(i, 1).toUri());
+                    if (certificateV2.getName().getSubName(i, 1).toUri().equals("/npChat")) {
+                        friendDomain = certificateV2.getName().getPrefix(i).toUri();
+                    }
+                }
+
+                mRealm.beginTransaction();
+                User friend = mRealm.where(User.class).equalTo("username", friendName).findFirst();
+                if (friend == null) {
+                    friend = mRealm.createObject(User.class, friendName);
+                    friend.setDomain(friendDomain);
+                }
+                else if (friend.isFriend()) {
+                    mRealm.cancelTransaction();
+                    mRealm.close();
+                    return 1;
+                }
+                else if (friend.haveTrust()) {
+                    mRealm.cancelTransaction();
+                    mRealm.close();
+                    return 3;
+                }
+                // A friend's filename will be their username. Another reason why we must ensure uniqueness
+
+
+                // Change cert name
                 Name certName = certificateV2.getName();
                 Name newCertName = new Name();
-                newCertName.append(certName.getSubName(0, 4));
+                int signerComp = 0;
+                for (int i = 0; i<=certName.size(); i++) {
+                    if (certName.getSubName(i, 1).toUri().equals("/KEY")) {
+                        signerComp = i+2;
+                        break;
+                    }
+                }
+                newCertName.append(certName.getSubName(0, signerComp));
                 newCertName.append(SharedPrefsManager.getInstance(this).getUsername());
-                newCertName.append(certName.getSubName(5));
-                Globals.keyChain.sign(certificateV2, signingInfo);
+                newCertName.append(certName.getSubName(signerComp+1));
                 certificateV2.setName(newCertName);
 
+                //Sign cert with our key
+                Globals.keyChain.sign(certificateV2, new SigningInfo(SigningInfo.SignerType.KEY, Globals.pubKeyName));
+                Log.d("Friend's cert", certificateV2.toString());
 
+
+                // Store friend's cert signed by us
+//            SharedPrefsManager.getInstance(this).storeFriendCert(friendName, certificateV2);
+                friend.setCert(certificateV2);
+                mRealm.commitTransaction();
+            } catch (PibImpl.Error error) {
+                error.printStackTrace();
             } catch (EncodingException e) {
                 e.printStackTrace();
-            } catch (PibImpl.Error error) {
+            } catch (KeyChain.Error error) {
                 error.printStackTrace();
             } catch (TpmBackEnd.Error error) {
                 error.printStackTrace();
-            } catch (KeyChain.Error error) {
-                error.printStackTrace();
             }
-
 
             SharedPrefsManager.getInstance(this).storeFriendCert(username, certificateV2);
             Timber.d("AddFriendActivity: %s", certificateV2.getKeyName().toString());
@@ -181,7 +222,12 @@ public class AddFriendActivity extends AppCompatActivity {
         return -1;
     }
 
+    public void sendFriendRequest(View view) {
+        Intent intent = new Intent(this, SendFriendRequest.class);
+        startActivityForResult(intent, REMOTE_FRIEND_REQUEST_CODE);
 
+
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -200,11 +246,10 @@ public class AddFriendActivity extends AppCompatActivity {
                     // Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                     int saveResult = saveFriend(content);
                     if (saveResult == 0) {
-                        Toast.makeText(this, "Friend was saved successfully.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Retrieving certificate.", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent();
                         if (content.length() > 0) {
-                            int index = content.indexOf(" ");
-                            String username = content.substring(0, index);
+                            String username = friendName;
                             intent.putExtra("username", username);
                             System.out.println("Friend result ok");
                             setResult(RESULT_OK, intent);
@@ -217,6 +262,14 @@ public class AddFriendActivity extends AppCompatActivity {
                     else if (saveResult == 1) {
                         Toast.makeText(this, "You are already friends.", Toast.LENGTH_LONG).show();
                         setResult(RESULT_CANCELED, data);
+                    } else if (saveResult == 3) {
+                        Toast.makeText(this, "Already have certificate.", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent();
+                        if (content.length() > 0) {
+                            String username = friendName;
+                            intent.putExtra("username", username);
+                            System.out.println("Friend result ok");
+                            setResult(RESULT_ALREADY_TRUST, intent);
                     }
                     else {
                         Toast.makeText(this, "Error saving friend.", Toast.LENGTH_LONG).show();
@@ -231,5 +284,7 @@ public class AddFriendActivity extends AppCompatActivity {
                 super.onActivityResult(requestCode, resultCode, data);
             }
         }
+    }
+
     }
 }
