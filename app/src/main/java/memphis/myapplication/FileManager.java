@@ -2,7 +2,8 @@ package memphis.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
+import android.util.Base64;
+import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -129,7 +130,7 @@ public class FileManager {
         boolean madeRcvdPhotos = (m_rcvdPhotosDir).mkdir();
         String s = ("" + madeFriends + " " + madeSelf + " " + madePhotos + " " + madeFiles + " " + madeRcvdFiles
                     + " " + madeRcvdPhotos);
-        Log.d("createDirs", s);
+        Timber.d(s);
         dirsCreated = true;
     }
 
@@ -145,9 +146,9 @@ public class FileManager {
             myInfo.compress(Bitmap.CompressFormat.PNG, 90, fostream);
             fostream.close();
         } catch (FileNotFoundException e) {
-            Log.d("saveYourself", "File not found: " + e.getMessage());
+            Timber.d("saveYourself: %s", "File not found: " + e.getMessage());
         } catch (IOException e) {
-            Log.d("saveYourself", "Error accessing file: " + e.getMessage());
+            Timber.d("saveYourself: %s", "Error accessing file: " + e.getMessage());
         }
     }
 
@@ -168,9 +169,10 @@ public class FileManager {
      * @param path The path of the file we will save it to.
      * @return whether the file operation was successful or not.
      */
+
     public boolean saveContentToFile(Blob content, Name path) {
         String filename = path.getSubName(-1).toUri().substring(1);
-        Log.d("FileManager", "Saving " + filename);
+        Timber.d( "Saving " + filename);
         File dir;
         File file;
         int fileTypeIndex = filename.lastIndexOf(".");
@@ -234,7 +236,7 @@ public class FileManager {
         ConcurrentHashMap<String, ArrayList<String>> map = new ConcurrentHashMap<>();
         for(File file : files) {
             String filename = file.getName();
-            Log.d("getReceivedPhotos", filename);
+            Timber.d("getReceivedPhotos: %s", filename);
             String key = filename.substring(0, filename.indexOf('_'));
             ArrayList<String> list = map.get(key);
 
@@ -270,9 +272,9 @@ public class FileManager {
                 fostream.close();
                 return true;
             } catch (FileNotFoundException e) {
-                Log.d("saveFileQR", "File not found: " + e.getMessage());
+                Timber.d("File not found: " + e.getMessage());
             } catch (IOException e) {
-                Log.d("saveFileQR", "Error accessing file: " + e.getMessage());
+                Timber.d("Error accessing file: " + e.getMessage());
             }
             return false;
         }
@@ -295,7 +297,7 @@ public class FileManager {
         }
         catch(IndexOutOfBoundsException e) {
             e.printStackTrace();
-            Log.d("findFile", "IndexOutOfBoundsException. The provided path does not follow file naming convention.");
+            Timber.d("IndexOutOfBoundsException. The provided path does not follow file naming convention.");
         }
 
         trimmed = trimmed.substring(index);
@@ -395,7 +397,6 @@ public class FileManager {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
             }
             // Interest for their cert signed by us
             // <ourPrefix>/cert/<theirPrefix>/KEY/<keyID>/<our_username>/<version>

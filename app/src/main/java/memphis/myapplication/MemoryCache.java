@@ -2,7 +2,7 @@ package memphis.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -71,13 +71,12 @@ public class MemoryCache {
         SecretKey secretKey = realm.where(PublishedContent.class).equalTo("filename", filename).findFirst().getKey();
         Name iName = new Name(filename);
 
-        Log.d("process", "Called process in MemoryCache");
-
+        Timber.d("Called process in FaceProxy");
         File file;
         try {
             file = new File(FileManager.removeAppPrefix(filename));
         } catch (UnsupportedEncodingException e) {
-            Log.e("MemoryCache Process" , "URI decode error.");
+            Timber.e("URI decode error.");
             e.printStackTrace();
             return;
         }
@@ -91,7 +90,7 @@ public class MemoryCache {
             InputStream is = FileUtils.openInputStream(new File(filename));
             bytes = IOUtils.toByteArray(is);
         } catch (IOException e) {
-            Log.e("MemoryCache process", "failed to byte");
+            Timber.e("failed to byte");
             e.printStackTrace();
             bytes = new byte[0];
         }
@@ -124,8 +123,6 @@ public class MemoryCache {
             Common.publishData(unencryptedBlob, new Name(prefix));
         }
 
-
-
 //        Bitmap bitmap = QRExchange.makeQRCode(filename);
 //        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
 //        manager.saveFileQR(bitmap, filename);
@@ -147,7 +144,7 @@ public class MemoryCache {
     public final OnInterestCallback onNoDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            Log.d("onNoDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+            Timber.d("Called OnInterestCallback with Interest: " + interest.getName().toUri());
             int start = 0;
             for (int i = 0; i<=interest.getName().size(); i++) {
                 if ((interest.getName().getSubName(i, 1).toUri().equals("/npChat"))
@@ -166,6 +163,7 @@ public class MemoryCache {
             } else {
                 Log.d("MemoryCache", "Can't find file. Ignoring");
             }
+
         }
     };
 

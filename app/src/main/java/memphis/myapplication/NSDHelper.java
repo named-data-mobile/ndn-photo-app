@@ -3,7 +3,7 @@ package memphis.myapplication;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.util.Log;
+import timber.log.Timber;
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
@@ -29,7 +29,6 @@ import memphis.myapplication.RealmObjects.User;
 public class NSDHelper {
     private String serviceName = "npchat";
     private static final String SERVICE_TYPE = "_http._tcp.";
-    private static final String TAG = "NsdHelper";
 
     private String m_userName;
 
@@ -91,7 +90,7 @@ public class NSDHelper {
         @Override
         public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
             serviceName = NsdServiceInfo.getServiceName();
-            Log.d(TAG, "Service name: " + serviceName);
+            Timber.d("Service name: " + serviceName);
         }
 
         @Override
@@ -112,21 +111,21 @@ public class NSDHelper {
         // Called as soon as service discovery begins.
         @Override
         public void onDiscoveryStarted(String regType) {
-            Log.d(TAG,"Service discovery started");
+            Timber.d("Service discovery started");
         }
 
         @Override
         public void onServiceFound(NsdServiceInfo service) {
             // A service was found! Do something with it.
-            Log.d(TAG, "Service discovery success " + service);
+            Timber.d("Service discovery success" + service);
             if (!service.getServiceType().equals(SERVICE_TYPE)) {
                 // Service type is the string containing the protocol and
                 // transport layer for this service.
-                Log.d(TAG,"Unknown Service Type: " + service.getServiceType());
+                Timber.d("Unknown Service Type: " + service.getServiceType());
             } else if (service.getServiceName().equals(serviceName)) {
                 // The name of the service tells the user what they'd be
                 // connecting to. It could be "Bob's Chat App".
-                Log.d(TAG, "Same machine: " + serviceName);
+                Timber.d("Same machine: " + serviceName);
             } else if (service.getServiceName().contains("npchat")){
                 m_nsdManager.resolveService(service, new MyResolveListener());
             }
@@ -134,7 +133,7 @@ public class NSDHelper {
 
         @Override
         public void onServiceLost(NsdServiceInfo service) {
-            Log.e(TAG, "service lost: " + service);
+            Timber.e("service lost: " + service);
             // Destroy face (which will unregister routes)
             try {
                 Integer faceid = serviceNameToFaceId.get(service.getServiceName());
@@ -149,18 +148,18 @@ public class NSDHelper {
 
         @Override
         public void onDiscoveryStopped(String serviceType) {
-            Log.i(TAG, "Discovery stopped: " + serviceType);
+            Timber.i("Discovery stopped: " + serviceType);
         }
 
         @Override
         public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-            Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+            Timber.e("Discovery failed: Error code:" + errorCode);
             m_nsdManager.stopServiceDiscovery(this);
         }
 
         @Override
         public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-            Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+            Timber.e("Discovery failed: Error code:" + errorCode);
             m_nsdManager.stopServiceDiscovery(this);
         }
     }
@@ -169,15 +168,15 @@ public class NSDHelper {
         @Override
         public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
             // Called when the resolve fails. Use the error code to debug.
-            Log.e(TAG, "Resolve failed: " + errorCode);
+            Timber.e("Resolve failed: " + errorCode);
         }
 
         @Override
         public void onServiceResolved(NsdServiceInfo sI) {
-            Log.e(TAG, "Resolve Succeeded. " + sI);
+            Timber.e("Resolve Succeeded. " + sI);
 
             if (sI.getServiceName().equals(serviceName)) {
-                Log.d(TAG, "Same IP.");
+                Timber.d("Same IP.");
                 return;
             }
 
@@ -186,14 +185,13 @@ public class NSDHelper {
 
             int faceid = 0;
             try {
-//                Log.d(TAG, "Created face: " + sI.getHost());
+                Timber.d("Created face: " + sI.getHost());
                 // One slash is already in the sI.getHost(), need full canonical uri, other wise exception
                 Inet4Address ipv4Addr = (Inet4Address) Inet4Address.getByAddress (sI.getHost().getAddress());
                 String uri = "udp4:/" + ipv4Addr + ":6363";
                 Log.d("NSDHelper", uri);
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
-
                 String serviceName = sI.getServiceName();
                 int index = serviceName.lastIndexOf("/");
                 String username = serviceName.substring(index + 1);

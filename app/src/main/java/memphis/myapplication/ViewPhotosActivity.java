@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import timber.log.Timber;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
@@ -45,7 +45,7 @@ public class ViewPhotosActivity extends AppCompatActivity {
      */
     private void viewPhotos(final ArrayList<String> photos) {
         m_index = 0;
-        Log.d("viewPhotos", "photos.size(): " + photos.size());
+        Timber.d("photos.size(): " + photos.size());
         // kind of an annoying issue, I had to add 100 milliseconds so the correct number of onTicks
         // would be called. We may need to update this in the future so it adapts to more photos. For
         // instance, it might not be enough for 10 photos because I think the transition from photo
@@ -65,9 +65,9 @@ public class ViewPhotosActivity extends AppCompatActivity {
                         String photoToDelete = photos.get(m_index - 1);
                         File fileToDelete = new File(photoToDelete);
                         boolean wasDeleted = fileToDelete.delete();
-                        Log.d("viewPhotos", "file with path: " + photoToDelete + " was deleted? " + wasDeleted);
+                        Timber.d("file with path: " + photoToDelete + " was deleted? " + wasDeleted);
                     }
-                    Log.d("viewPhotos", "We set the imageURI with index number: " + m_index);
+                    Timber.d("We set the imageURI with index number: " + m_index);
                     m_index++;
                 }
             }

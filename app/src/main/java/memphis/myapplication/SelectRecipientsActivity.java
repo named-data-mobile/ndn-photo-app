@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -170,13 +170,13 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
         if(!m_selectedFriends.contains(adapter.getItem(position))){
             m_selectedFriends.add(adapter.getItem(position));
             view.setBackgroundColor(Color.CYAN);
-            Log.d("SelectRecipients", "We selected " + adapter.getItem(position));
-            Log.d("showFriends", "After add: " + m_selectedFriends.size());
+            Timber.d("SelectRecipients: %s", "We selected " + adapter.getItem(position));
+            Timber.d("showFriends: %s", "After add: " + m_selectedFriends.size());
         }else{
             m_selectedFriends.remove(adapter.getItem(position));
             view.setBackgroundColor(Color.TRANSPARENT);
-            Log.d("SelectRecipients", "We deselected " + adapter.getItem(position));
-            Log.d("showFriends", "After removed: " + m_selectedFriends.size());
+            Timber.d("SelectRecipients: %s", "We deselected " + adapter.getItem(position));
+            Timber.d("showFriends: %s", "After removed: " + m_selectedFriends.size());
         }
 
         if(m_selectedFriends.size() == 0) {

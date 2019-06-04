@@ -1,6 +1,7 @@
 package memphis.myapplication;
 
 import android.app.Application;
+import timber.log.Timber;
 
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
@@ -38,6 +39,30 @@ public class Globals extends Application {
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
     // if they are present. Face can be new, but face will need to set things with keychain again.
     public Globals() {
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        setupTimber();
+    }
+
+    private void setupTimber() {
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree() {
+                @Override
+                protected  String createStackElementTag(StackTraceElement element) {
+                    return "Log: " + element.getLineNumber() + " : "+super.createStackElementTag(element) + " : "+ element.getMethodName();
+                }
+            });
+        } else {
+            Timber.plant(new Timber.DebugTree() {
+                @Override
+                protected  String createStackElementTag(StackTraceElement element) {
+                    return super.createStackElementTag(element) + " : "+ element.getMethodName();
+                }
+            });
+        }
     }
 
     //v2 changes

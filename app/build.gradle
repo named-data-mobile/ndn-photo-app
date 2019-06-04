@@ -63,5 +63,6 @@ dependencies {
     }
     implementation 'org.apache.commons:commons-lang3:3.5'
     implementation 'com.googlecode.json-simple:json-simple:1.1'
-
+    // Timber
+    implementation 'com.jakewharton.timber:timber:4.7.1'
 }

@@ -1,7 +1,7 @@
 package memphis.myapplication.psync;
-
 import android.util.Base64;
 import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -41,7 +41,7 @@ public class ProducerManager {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
                                InterestFilter filterData) {
-            Log.d("onDataInterest", "Called OnInterestCallback with Interest: " + interest.getName().toUri());
+            Timber.d("Called OnInterestCallback with Interest: " + interest.getName().toUri());
             try {
                 Data data = new Data(interest.getName());
                 Blob content = new Blob(Base64.encode(m_seqToFileName.get(m_producer.getSeqNo(producerPrefix + "/data")).getBytes(), 0));

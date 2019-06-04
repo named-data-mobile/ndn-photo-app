@@ -7,6 +7,17 @@ import android.preference.PreferenceManager;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.util.Base64;
+import timber.log.Timber;
+
+import net.named_data.jndn.Name;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encoding.tlv.TlvEncoder;
+import net.named_data.jndn.security.v2.CertificateV2;
+import net.named_data.jndn.util.Blob;
+
+import javax.crypto.SecretKey;
+
 
 public class SharedPrefsManager {
     private static final String KEY_USERNAME = "username";
@@ -45,8 +56,9 @@ public class SharedPrefsManager {
         return mPassword;
     }
 
-    public String getDomain() { return mDomain; }
 
+    public String getDomain() { return mDomain; }
+  
     public String getNamespace() { return mDomain + "/npChat/" + mUsername; }
     public Boolean getLogInStatus() {
         return mLogInStatus;

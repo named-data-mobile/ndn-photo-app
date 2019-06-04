@@ -17,7 +17,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".SendFriendRequest"></activity>
-
         <provider
             android:name=".UriFileProvider"
             android:authorities="memphis.myapplication.UriFileProvider"
@@ -89,6 +88,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".SettingsActivity" />
+        <activity android:name=".AboutActivity" />
         <activity android:name=".SelectRecipientsActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

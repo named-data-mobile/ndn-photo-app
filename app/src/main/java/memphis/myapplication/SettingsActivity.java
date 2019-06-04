@@ -9,7 +9,7 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -62,7 +62,7 @@ public class SettingsActivity extends AppCompatActivity {
                     FileManager manager = new FileManager(getApplicationContext());
                     manager.setProfilePhoto(bitmap);
                 } catch (IOException e) {
-                    Log.d("profilePhoto", "Problem making bitmap from chosen photo");
+                    Timber.d("profilePhoto: %s", "Problem making bitmap from chosen photo");
                 }
                 Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
                 ToolbarHelper toolbarHelper = new ToolbarHelper(this);

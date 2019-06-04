@@ -10,7 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.Toast;
 
@@ -81,9 +81,9 @@ public class SignUpActivity extends AppCompatActivity {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
         if (permissionsCheck == PackageManager.PERMISSION_GRANTED){
-            Log.d("setUpAccount", "Permission granted");
-            Log.d("setUpAccount", "currContext: " + currContext);
-            Log.d("setUpAccount", "view.getContext(): " + view.getContext());
+            Timber.d("Permission granted");
+            Timber.d("currContext: " + currContext);
+            Timber.d("view.getContext(): " + view.getContext());
             QRExchange generator = new QRExchange();
             Context appContext = getApplicationContext();
             FileManager manager = new FileManager(appContext);
@@ -94,12 +94,12 @@ public class SignUpActivity extends AppCompatActivity {
                 manager.saveMyQRCode(myQRCode);
                 generator.displayMyQR(view);
             } else {
-                Log.d("setUpAccount", "Keys not saved");
+                Timber.d(""Keys not saved");
                 Toast.makeText(this, "Keys not saved", Toast.LENGTH_LONG).show();
             }
             return 0;
         }
-        Log.d("setUpAccount", "Permission denied");
+        Timber.d("Permission denied");
         return -1;
     }
 

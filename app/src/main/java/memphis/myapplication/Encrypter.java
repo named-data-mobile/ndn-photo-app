@@ -1,7 +1,7 @@
 package memphis.myapplication;
 
 import android.content.Context;
-import android.util.Log;
+import timber.log.Timber;
 
 import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.tlv.TlvEncoder;
@@ -138,7 +138,7 @@ public class Encrypter {
      */
     public Blob encrypt(SecretKey secretKey, byte[] iv, byte[] data) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException,
                                                                     IllegalBlockSizeException, BadPaddingException {
-        Log.d("Encrypter", "Encrypting file");
+        Timber.d( "Encrypting file");
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivspec = new IvParameterSpec(iv);
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);

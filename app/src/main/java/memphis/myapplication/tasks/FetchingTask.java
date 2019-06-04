@@ -3,7 +3,7 @@ package memphis.myapplication.tasks;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
+import timber.log.Timber;
 import android.widget.Toast;
 
 import net.named_data.jndn.Data;
@@ -70,7 +70,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         m_currContext = activity.getApplicationContext();
         m_appPrefix = "/" + m_currContext.getResources().getString(R.string.app_name);
         m_face = new Face();
-        Log.d("Face Check", "m_face: " + m_face.toString() + " globals: " + Globals.face);
+        Timber.d("Face Check: %s", "m_face: " + m_face.toString() + " globals: " + Globals.face);
         m_manager = new FileManager(m_currContext);
         m_received = false;
     }
@@ -80,7 +80,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
         m_secretKey = params[0].secretKey;
-        Log.d("Fetching task", m_baseInterest.toUri());
+        Timber.d(m_baseInterest.toUri());
         fetch(m_baseInterest, m_secretKey);
         // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
@@ -100,9 +100,9 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             }
         }
         final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
-        Log.d("BeforeVerify", "user:" + username.toUri());
+        Timber.d("BeforeVerify: %s", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(username.toUri().substring(1));
-        Log.d("KeyType", m_pubKey.getKeyType().toString());
+        Timber.d("KeyType: %s", m_pubKey.getKeyType().toString());
 
         SegmentFetcher.fetch(
                 m_face,
@@ -111,7 +111,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     @Override
                     public boolean verifySegment(Data data) {
                         //m_data = data;
-                        Log.d("verifySegement", "verifying segment");
+                        Timber.d( "verifying segment");
                         SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
                         boolean isVerified = verifySignature
                                 (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
@@ -131,7 +131,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
                         if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
-                            Log.d("Segment fetcher", "timed out");
+                            Timber.d( "timed out");
                              //get the name we timed out with from message
                             int index = message.lastIndexOf(m_appPrefix);
                             if(index != -1) {
@@ -168,7 +168,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         m_user = user;
         Realm realm = Realm.getDefaultInstance();
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        Log.d("username&PubKey", "user: " + m_user);
+        Timber.d("username&PubKey: %s", "user: " + m_user);
         if(realm.where(User.class).equalTo("username", m_user).findFirst().isFriend()) {
             try {
                 m_pubKey = new PublicKey(realm.where(User.class).equalTo("username", m_user).findFirst().getCert().getPublicKey());
@@ -196,7 +196,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                             java.security.Signature.getInstance("SHA256withRSA");
                     rsaSignature.initVerify(securityPublicKey);
                     rsaSignature.update(buffer);
-                    Log.d("verifySignature", "We've made it to verify(signature)");
+                    Timber.d("We've made it to verify(signature)");
                     return rsaSignature.verify(signature);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -210,13 +210,13 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     // What we do when doInBackground finishes; show result in Toast message
     @Override
     protected void onPostExecute(Boolean wasReceived) {
-        Log.d("FetchingTask", "Calling onPostExecute");
+        Timber.d("Calling onPostExecute");
         if (!m_received) {
-            Log.d("FetchingTask", "onPostExecute: not received");
+            Timber.d("onPostExecute: not received");
         }
         if (m_received) {
             // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
-            Log.d("onPostExecute", "m_content size; " + m_content.size());
+            Timber.d("m_content size; " + m_content.size());
 
             boolean wasSaved;
             if (m_secretKey != null) {
@@ -253,7 +253,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
             if (wasSaved) {
                 m_resultMsg = "We got content.";
-                Log.d("FetchingTask: ", "Data saved");
+                Timber.d( "Data saved");
                 m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
             } else {
                 m_resultMsg = "Failed to save retrieved content";
@@ -261,7 +261,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             }
         }
         else {
-            Log.d("fetch_data onError", m_resultMsg);
+            Timber.d(" onError: %s", m_resultMsg);
             m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
         }
     }

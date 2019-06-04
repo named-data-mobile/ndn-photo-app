@@ -9,7 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.util.Log;
+import timber.log.Timber;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -140,7 +140,8 @@ public class AddFriendActivity extends AppCompatActivity {
     // save friends
     public int saveFriend(String friendContent) {
         KeyChain keyChain = Globals.keyChain;
-        Log.d("Saving friend", friendContent);
+        Timber.d("Saving: %s", friendContent);
+
         if (friendContent.length() > 0) {
             try {
 
@@ -213,6 +214,9 @@ public class AddFriendActivity extends AppCompatActivity {
             } catch (TpmBackEnd.Error error) {
                 error.printStackTrace();
             }
+
+            SharedPrefsManager.getInstance(this).storeFriendCert(username, certificateV2);
+            Timber.d("AddFriendActivity: %s", certificateV2.getKeyName().toString());
             return 0;
         }
         return -1;
@@ -237,7 +241,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
                 if (result.getContents() != null) {
                     String content = result.getContents();
-                    Log.d("ScannedFriend", content);
+                    Timber.d("ScannedFriend: %s", content);
                     // need to check this content to determine if we are scanning file or friend code
                     // Toast.makeText(this, content, Toast.LENGTH_LONG).show();
                     int saveResult = saveFriend(content);
