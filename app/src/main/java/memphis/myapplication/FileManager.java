@@ -2,7 +2,7 @@ package memphis.myapplication;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Base64;
+
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -369,19 +369,18 @@ public class FileManager {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
             mRealm = Realm.getDefaultInstance();
-            Log.d("onCertInterest", "Called onCertInterest with Interest: " + interest.getName().toUri());
+            Timber.d("Called onCertInterest with Interest: %s", interest.getName().toUri());
             String issuer = interest.getName().getSubName(-5, 1).toString().substring(1);
             String signer = interest.getName().getSubName(-2, 1).toString().substring(1);
-            System.out.println("Signer: " + signer);
-            System.out.println("Issuer: " + issuer);
-            System.out.println("My name: " + SharedPrefsManager.getInstance(mContext).getUsername());
+            Timber.d("Signer: %s", signer);
+            Timber.d("Issuer: %s", issuer);
 
             // Interest for our self-signed cert
             if ((signer.equals(SharedPrefsManager.getInstance(mContext).getUsername()) && issuer.equals(signer))) {
-                System.out.println("Asking for our self-signed cert");
+                Timber.d("Asking for our self-signed cert");
                 try {
                     CertificateV2 cert = Globals.pibIdentity.getDefaultKey().getDefaultCertificate();
-                    System.out.println(cert.getName());
+                    Timber.d(cert.getName().toUri());
 
                     Data data = new Data(interest.getName());
                     TlvEncoder tlvEncodedDataContent = new TlvEncoder();
@@ -401,9 +400,9 @@ public class FileManager {
             // Interest for their cert signed by us
             // <ourPrefix>/cert/<theirPrefix>/KEY/<keyID>/<our_username>/<version>
             else if (signer.equals(SharedPrefsManager.getInstance(mContext).getUsername())) {
-                System.out.println("Asking for their own cert");
+                Timber.d("Asking for their own cert");
                 String friend = (interest.getName().getSubName(-5, 1)).toString().substring(1);
-                System.out.println("Friend name " + friend);
+                Timber.d("Friend name %s", friend);
                 CertificateV2 friendCert = null;
                 try {
                     friendCert = mRealm.where(User.class).equalTo("username", friend).findFirst().getCert();
@@ -415,7 +414,7 @@ public class FileManager {
                     data.setContent(d);
                     data.setMetaInfo(new MetaInfo());
                     data.getMetaInfo().setFreshnessPeriod(31536000000.0);
-                    Log.d("OnCertInterest", "Their cert name signed by us " + friendCert.getName().toUri());
+                    Timber.d("Their cert name signed by us %s", friendCert.getName().toUri());
                     face.putData(data);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -428,7 +427,7 @@ public class FileManager {
                 //  <ourPrefix>/cert/<ourPrefix>/KEY/<keyID>/<mutual_friend_username>/<version>
             }else {
                 try {
-                    System.out.println("Asking for our cert signed by mutual friend");
+                    Timber.d("Asking for our cert signed by mutual friend");
                     int friendNameComp = 0;
                     for (int i = 0; i<=interest.getName().size(); i++) {
                         if (interest.getName().getSubName(i, 1).toUri().equals("/KEY")) {
@@ -438,7 +437,7 @@ public class FileManager {
                     }
                     String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
                     CertificateV2 cert = mRealm.where(SelfCertificate.class).equalTo("username", friend).findFirst().getCert();
-                    System.out.println(cert.getName());
+                    Timber.d(cert.getName().toUri());
 
                     Data data = new Data(interest.getName());
                     TlvEncoder tlvEncodedDataContent = new TlvEncoder();

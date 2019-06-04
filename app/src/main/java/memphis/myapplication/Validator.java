@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import io.realm.Realm;
 import memphis.myapplication.RealmObjects.User;
+import timber.log.Timber;
 
 public class Validator {
         private static Context context;
@@ -221,7 +222,7 @@ public class Validator {
                 valConfig.loadAnchor("test", realm.where(User.class).equalTo("username", mutual_friend).findFirst().getCert());
                 valConfig.load(rules, "simple");
                 ValidationCallbacks callbacks = new ValidationCallbacks(valConfig);
-                Log.d("Pending friend cert: ", data.toString());
+                Timber.d("Pending friend cert: %s", data.toString());
 
                 valConfig.validate(data, callbacks, callbacks);
 
@@ -381,7 +382,7 @@ public class Validator {
             valConfig.loadAnchor("test", realm.where(User.class).equalTo("username", mutual_friend).findFirst().getCert());
             valConfig.load(rules, "simple");
             ValidationCallbacks callbacks = new ValidationCallbacks(valConfig);
-            Log.d("Pending friend cert: ", data.toString());
+            Timber.d("Pending friend cert: %s", data.toString());
 
             valConfig.validate(data, callbacks, callbacks);
             validInterest = true;

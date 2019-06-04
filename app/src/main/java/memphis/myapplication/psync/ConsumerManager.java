@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 
 import android.util.Base64;
-import android.util.Log;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -12,7 +11,6 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
-import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.security.tpm.TpmKeyHandle;
@@ -20,7 +18,6 @@ import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
-import org.apache.commons.lang3.SerializationUtils;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -29,7 +26,6 @@ import java.util.ArrayList;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import memphis.myapplication.Decrypter;
 import memphis.myapplication.Globals;
 import memphis.myapplication.SharedPrefsManager;
 import memphis.myapplication.SyncData;
@@ -56,7 +52,7 @@ public class ConsumerManager {
         public void onHelloDataCallBack(ArrayList<String> names, PSync.Consumer callbackConsumer) {
             for (String name : names) {
                 callbackConsumer.addSubscription(name);
-                Timber.d("Subscription added for " + name);
+                Timber.d("Subscription added for %s", name);
 
             }
             callbackConsumer.sendSyncInterest();
@@ -70,19 +66,19 @@ public class ConsumerManager {
             Timber.d( "Got sync data");
             try {
                 String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
-                Log.d("ConsumerManager", interestData);
+                Timber.d(interestData);
 
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
-                Log.d("ConsumerManager", "Filename: " + filename);
+                Timber.d("Filename: " + filename);
 
 
                 if (syncData.isFeed()) {
-                    System.out.println("For feed");
+                    Timber.d("For feed");
                     new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
-                        System.out.println("For me");
+                        Timber.d("For me");
                         try {
                             Blob symmetricKey = new Blob(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), false);
                             TpmBackEndFile m_tpm = Globals.tpm;
@@ -90,7 +86,7 @@ public class ConsumerManager {
                             Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
                             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
-                            System.out.println("Filename : " + filename);
+                            Timber.d("Filename : " + filename);
                             new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
@@ -113,10 +109,9 @@ public class ConsumerManager {
 
                 Name name = new Name(update.prefix);
                 name.appendSequenceNumber(update.highSeq);
-                System.out.println(name);
                 face = Globals.face;
                 try {
-                    System.out.println("Expressing interest for " + name);
+                    Timber.d("Expressing interest for %s", name);
                     face.expressInterest(name,  onData);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -133,14 +128,14 @@ public class ConsumerManager {
      */
     public static void createConsumer(String prefix) {
 
-        Timber.d("ConsumerManager", "Adding friend " + prefix + "as consumer");
+        Timber.d("Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.add(consumer);
         consumer.sendHelloInterest();
     }
 
     public static void removeConsumer(String friend) {
-        Log.d("ConsumerManager", "Removing " + friend + " as consumer");
+        Timber.d("Removing " + friend + " as consumer");
         // Does nothing yet. Need to add.
         }
 

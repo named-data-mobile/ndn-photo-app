@@ -109,7 +109,7 @@ public class Decrypter {
             Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
-            System.out.println("Filename : " + filename);
+            Timber.d("Filename : %s", filename);
             return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey);
         }
 

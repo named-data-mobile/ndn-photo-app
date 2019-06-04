@@ -3,6 +3,7 @@ package memphis.myapplication;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+
 import timber.log.Timber;
 
 import com.intel.jndn.management.ManagementException;
@@ -13,12 +14,8 @@ import net.named_data.jndn.Name;
 
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.ServerSocket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -189,20 +186,19 @@ public class NSDHelper {
                 // One slash is already in the sI.getHost(), need full canonical uri, other wise exception
                 Inet4Address ipv4Addr = (Inet4Address) Inet4Address.getByAddress (sI.getHost().getAddress());
                 String uri = "udp4:/" + ipv4Addr + ":6363";
-                Log.d("NSDHelper", uri);
+                Timber.d(uri);
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
                 String serviceName = sI.getServiceName();
                 int index = serviceName.lastIndexOf("/");
                 String username = serviceName.substring(index + 1);
                 String domain = serviceName.substring(("npchat-").length(), index - 7);
-                Log.d("NSDHelper", username + " and " + domain);
+                Timber.d(username + " and " + domain);
 
                 Realm realm = Realm.getDefaultInstance();
                 realm.beginTransaction();
                 User user = realm.where(User.class).equalTo("username", username).findFirst();
                 if (user == null) {
-                    Log.d("NSDHelper", username + " is a new user");
                     user = realm.createObject(User.class, username);
                     user.setDomain(domain);
                     realm.commitTransaction();
@@ -211,13 +207,6 @@ public class NSDHelper {
                 }
 
                 realm.close();
-
-                //Log.d("Testing", new String(sI.getAttributes().get("username")));
-                // This hashmap is empty for some reason. So currently parsing the service name to get the username
-//                String sIName = sI.getServiceName();
-//                Log.d("NSD resolving", sIName);
-//                Name npChatRoute = new Name(sIName.substring(("npchat-").length()));
-//                Nfdc.register(m_face, faceid, npChatRoute, 0);
             } catch (ManagementException e) {
                 e.printStackTrace();
             } catch (UnknownHostException e) {
@@ -238,7 +227,6 @@ public class NSDHelper {
                     e.printStackTrace();
                 }
             } else {
-                Log.d("NSDHelper", "User " + u.getUsername() + " is offline");
             }
         }
         realm.close();
@@ -255,7 +243,6 @@ public class NSDHelper {
                 e.printStackTrace();
             }
         } else {
-            Log.d("NSDHelper", "User " + user.getUsername() + " is offline");
         }
         realm.close();
 

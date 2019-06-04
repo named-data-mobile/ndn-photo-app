@@ -1,7 +1,7 @@
 package memphis.myapplication;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -123,10 +123,6 @@ public class MemoryCache {
             Common.publishData(unencryptedBlob, new Name(prefix));
         }
 
-//        Bitmap bitmap = QRExchange.makeQRCode(filename);
-//        Log.d("publishData", "filename: " + filename + " bitmap: " + (bitmap == null));
-//        manager.saveFileQR(bitmap, filename);
-
     }
 
     // need to put the newly published data segment in the cache
@@ -154,14 +150,14 @@ public class MemoryCache {
                 }
             }
             String filename = interest.getName().getSubName(start).toUri();
-            System.out.println("What is the filename? " + filename);
+            Timber.d("What is the filename? %s", filename);
 
             // If file has been previously published, republish it
             Realm realm = Realm.getDefaultInstance();
             if (realm.where(PublishedContent.class).equalTo("filename", filename).findFirst() != null) {
                 process(filename);
             } else {
-                Log.d("MemoryCache", "Can't find file. Ignoring");
+                Timber.d("Can't find file. Ignoring");
             }
 
         }

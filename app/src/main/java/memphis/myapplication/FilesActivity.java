@@ -22,17 +22,8 @@ import android.widget.Toast;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
-
-import net.named_data.jndn.ContentType;
-import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
-import net.named_data.jndn.MetaInfo;
 import net.named_data.jndn.Name;
-import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.pib.PibImpl;
-import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 
 import org.apache.commons.io.IOUtils;
@@ -40,8 +31,6 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 

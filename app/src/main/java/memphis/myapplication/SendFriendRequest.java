@@ -3,7 +3,6 @@ package memphis.myapplication;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,7 +10,6 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +17,7 @@ import java.util.List;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import memphis.myapplication.RealmObjects.User;
+import timber.log.Timber;
 
 public class SendFriendRequest extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     Spinner newFriendSpinner;
@@ -130,7 +129,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
     public void sendRemoteFriendRequest(View view) {
         if (friend == null)
             friend = mEdit.getText().toString();
-        Log.d("SendFriendRequest", "Sending friend request to " + friend + " using mutual friend " + mutualFriend);
+        Timber.d("Sending friend request to " + friend + " using mutual friend " + mutualFriend);
         FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, this);
         friendRequest.send();
         Intent intent = new Intent(this, AddFriendActivity.class);

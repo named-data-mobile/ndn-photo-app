@@ -1,6 +1,5 @@
 package memphis.myapplication.psync;
 import android.util.Base64;
-import android.util.Log;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;

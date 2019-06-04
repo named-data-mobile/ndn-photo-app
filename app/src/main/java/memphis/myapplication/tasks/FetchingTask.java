@@ -28,7 +28,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
@@ -100,7 +99,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             }
         }
         final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
-        Timber.d("BeforeVerify: %s", "appAndUsername:" + appAndUsername.toUri());
         getUserInfo(username.toUri().substring(1));
         Timber.d("KeyType: %s", m_pubKey.getKeyType().toString());
 

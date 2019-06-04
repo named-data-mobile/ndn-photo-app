@@ -42,6 +42,7 @@ public class Common {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
+                    }
                     Globals.memoryCache.putInCache(fileData);
                 } catch (PibImpl.Error | SecurityException | TpmBackEnd.Error |
                         KeyChain.Error e) {

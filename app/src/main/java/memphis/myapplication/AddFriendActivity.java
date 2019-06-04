@@ -154,9 +154,9 @@ public class AddFriendActivity extends AppCompatActivity {
 
                 // Save self-signed cert for friend
                 friendName = certificateV2.getName().getSubName(-5, 1).toUri().substring(1);
-                System.out.println("Friend name: " + friendName);
+                Timber.d("Friend name: %s", friendName);
                 for (int i = 0; i <= certificateV2.getName().size(); i++) {
-                    System.out.println(certificateV2.getName().getSubName(i, 1).toUri());
+                    Timber.d(certificateV2.getName().getSubName(i, 1).toUri());
                     if (certificateV2.getName().getSubName(i, 1).toUri().equals("/npChat")) {
                         friendDomain = certificateV2.getName().getPrefix(i).toUri();
                     }
@@ -198,7 +198,7 @@ public class AddFriendActivity extends AppCompatActivity {
 
                 //Sign cert with our key
                 Globals.keyChain.sign(certificateV2, new SigningInfo(SigningInfo.SignerType.KEY, Globals.pubKeyName));
-                Log.d("Friend's cert", certificateV2.toString());
+                Timber.d(certificateV2.toString());
 
 
                 // Store friend's cert signed by us
@@ -214,9 +214,6 @@ public class AddFriendActivity extends AppCompatActivity {
             } catch (TpmBackEnd.Error error) {
                 error.printStackTrace();
             }
-
-            SharedPrefsManager.getInstance(this).storeFriendCert(username, certificateV2);
-            Timber.d("AddFriendActivity: %s", certificateV2.getKeyName().toString());
             return 0;
         }
         return -1;
@@ -251,7 +248,7 @@ public class AddFriendActivity extends AppCompatActivity {
                         if (content.length() > 0) {
                             String username = friendName;
                             intent.putExtra("username", username);
-                            System.out.println("Friend result ok");
+                            Timber.d("Friend result ok");
                             setResult(RESULT_OK, intent);
 
                         }
@@ -268,7 +265,7 @@ public class AddFriendActivity extends AppCompatActivity {
                         if (content.length() > 0) {
                             String username = friendName;
                             intent.putExtra("username", username);
-                            System.out.println("Friend result ok");
+                            Timber.d("Friend result ok");
                             setResult(RESULT_ALREADY_TRUST, intent);
                     }
                     else {
@@ -277,7 +274,6 @@ public class AddFriendActivity extends AppCompatActivity {
                     }
                 }
             } else if (resultCode == 99) {
-                System.out.println("Scanned");
                 scanFriendQR(findViewById(android.R.id.content));
 
             } else {

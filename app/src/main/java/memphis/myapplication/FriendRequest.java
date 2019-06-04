@@ -1,10 +1,8 @@
 package memphis.myapplication;
 
-import android.app.slice.Slice;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
@@ -32,6 +30,7 @@ import java.util.Observable;
 import io.realm.Realm;
 import memphis.myapplication.RealmObjects.SelfCertificate;
 import memphis.myapplication.RealmObjects.User;
+import timber.log.Timber;
 
 public class FriendRequest extends Observable {
     private Context context;
@@ -61,7 +60,7 @@ public class FriendRequest extends Observable {
         if ((user == null) || !(user.haveTrust())) {
             if (user == null)
                 user = realm.createObject(User.class, m_newFriend);
-            Log.d("FriendRequest", "new friend");
+            Timber.d("new friend");
             String userPrefix = user.getNamespace();
             if (Globals.useMulticast) {
                 try {
@@ -77,14 +76,14 @@ public class FriendRequest extends Observable {
             try {
                 CertificateV2 certificate = realm.where(SelfCertificate.class).equalTo("username", m_mutualFriend).findFirst().getCert();
                 Name name = new Name(userPrefix + "/friend-request/mutual-friend/");
-                System.out.println("KeyName: " + Globals.pubKeyName +
+                Timber.d("KeyName: " + Globals.pubKeyName +
                         ", CertName: " + certificate.getName());
                 name.append(certificate.getName());
 
                 Interest interest = new Interest(name);
                 interest.setInterestLifetimeMilliseconds(600000);
                 Globals.keyChain.sign(interest, new SigningInfo(SigningInfo.SignerType.KEY, Globals.pubKeyName));
-                System.out.println("Express signed interest " + interest.toUri());
+                Timber.d("Express signed interest %s", interest.toUri());
 
 
                 Globals.face.expressInterest(interest, onCertData, onFriendRequestTimeOut);
@@ -101,7 +100,7 @@ public class FriendRequest extends Observable {
             }
         } else if (user.isFriend()) {
             // Already friends. Do nothing
-            Log.d("FriendRequest", "already friends");
+            Timber.d("already friends");
             realm.cancelTransaction();
             realm.close();
         }
@@ -112,23 +111,20 @@ public class FriendRequest extends Observable {
 
         @Override
         public void onData(Interest interest, Data data) {
-            Log.d("FriendRequest", "Got data packet with name " + data.getName().toUri());
+            Timber.d("Got data packet with name %s", data.getName().toUri());
             Realm realm = Realm.getDefaultInstance();
             try {
                 Blob interestData = data.getContent();
                 if (data.getContent().toString().equals("Rejected")) {
-                    Log.d("FriendRequest", "Rejected");
+                    Timber.d("Rejected");
 
                 } else if (data.getContent().toString().equals("Friends")) {
-                    Log.d("FriendRequest", "Already friends");
+                    Timber.d("Already friends");
                 } else {
                     byte[] certBytes = interestData.getImmutableArray();
 
                     CertificateV2 certificateV2 = new CertificateV2();
                     certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
-                    Log.d("FriendRequest", "Got pending friend's cert " + certificateV2.toString());
-                    Log.d("FriendRequest", "Friend name " + m_newFriend);
-                    Log.d("FriendRequest", "Mutual friend name " + m_mutualFriend);
                     Validator validator = new Validator(certificateV2, m_mutualFriend, context);
                     // If valid, then save their cert and get our cert signed by them
                     if (validator.valid()) {
@@ -150,7 +146,6 @@ public class FriendRequest extends Observable {
                         newCertName.append(certName.getSubName(-1, 1));
                         name.append(newCertName);
                         Interest certInterest = new Interest(name);
-                        Log.d("FriendRequest", "Asking for cert " + name.toUri());
                         realm.close();
 
                         Globals.face.expressInterest(certInterest, new OnData() {
@@ -166,7 +161,6 @@ public class FriendRequest extends Observable {
                                 } catch (EncodingException e) {
                                     e.printStackTrace();
                                 }
-                                Log.d("FriendRequest", "Got our cert back " + certificateV2.getName().toUri());
                                 Realm realm = Realm.getDefaultInstance();
                                 realm.beginTransaction();
                                 SelfCertificate selfCertificate = realm.where(SelfCertificate.class).equalTo("username", m_newFriend).findFirst();
@@ -227,7 +221,7 @@ public class FriendRequest extends Observable {
 
         final String mutual_friend = interestName.getSubName(friendComp + 3, 1).toUri().substring(1);
         m_mutualFriend = mutual_friend;
-        Log.d("onFriendRequestInterest", "Pending friend name: " + friend);
+        Timber.d("Pending friend name: %s", friend);
         realm.beginTransaction();
         User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
         if (user == null)
@@ -250,7 +244,6 @@ public class FriendRequest extends Observable {
             }
 
             String userPrefix = user.getNamespace();
-            Log.d("FriendRequest", "User prefix " + userPrefix);
             realm.commitTransaction();
             realm.close();
 
@@ -267,18 +260,18 @@ public class FriendRequest extends Observable {
             }
 
             Name certNameToFetch = interestName.getSubName(start, end - start);
-            System.out.println("Cert name to fetch: " + certNameToFetch);
+            Timber.d("Cert name to fetch: %s", certNameToFetch);
             Name newInterest = new Name(userPrefix);
             newInterest.append("cert");
             newInterest.append(certNameToFetch);
-            System.out.println("Interest name to fetch: " + newInterest);
+            Timber.d("Interest name to fetch: %s", newInterest);
 
             try {
                 Globals.face.expressInterest(newInterest, new OnData() {
 
                     @Override
                     public void onData(Interest interest, Data data) {
-                        Log.d("onCertData", "Getting certificate from pending friend");
+                        Timber.d("Getting certificate from pending friend");
                         Blob interestData = data.getContent();
                         byte[] certBytes = interestData.getImmutableArray();
 
@@ -289,11 +282,11 @@ public class FriendRequest extends Observable {
                             e.printStackTrace();
                         }
 
-                        Log.d("onCertData", "Pending friend certificate: " + certificateV2.getName());
+                        Timber.d("Pending friend certificate: %s", certificateV2.getName().toUri());
 
                         Validator validator = new Validator(certificateV2, m_mutualFriend, m_signedInterest, context);
                         if (validator.valid()) {
-                            Log.d("onCertData", "Everything verified, saving friend's cert");
+                            Timber.d("Everything verified, saving friend's cert");
                             Realm realm = Realm.getDefaultInstance();
                             realm.beginTransaction();
                             User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
@@ -319,10 +312,10 @@ public class FriendRequest extends Observable {
     }
 
     public void accept() throws EncodingException {
-        Log.d("onCertData", "Accepting request and sending our cert back");
+        Timber.d("Accepting request and sending our cert back");
         Realm realm = Realm.getDefaultInstance();
         CertificateV2 myCert = realm.where(SelfCertificate.class).equalTo("username", m_mutualFriend).findFirst().getCert();
-        Log.d("onCertData", myCert.toString());
+        Timber.d(myCert.toString());
 
         Data certData = new Data(m_signedInterest.getName());
         TlvEncoder tlvEncodedDataContent = new TlvEncoder();
@@ -366,7 +359,7 @@ public class FriendRequest extends Observable {
                         newCertName.append(certName.getSubName(-1, 1));
                         name.append(newCertName);
                         Interest certInterest = new Interest(name);
-                        Log.d("FriendRequest", "Getting our cert back " + name.toUri());
+                        Timber.d("Getting our cert back " + name.toUri());
 
 
                         try {
@@ -374,7 +367,7 @@ public class FriendRequest extends Observable {
                                 @Override
                                 public void onData(Interest interest, Data data) {
                                     // Got our cert signed by new friend, save and add them as a friend
-                                    Log.d("FriendRequest", "Got our cert back");
+                                    Timber.d("Got our cert back");
                                     Blob interestData = data.getContent();
                                     byte[] certBytes = interestData.getImmutableArray();
 
@@ -403,7 +396,7 @@ public class FriendRequest extends Observable {
                             }, new OnTimeout() {
                                 @Override
                                 public void onTimeout(Interest interest) {
-                                    Log.d("OnTimeout", "Timeout for interest " + interest.toUri());
+                                    Timber.d("Timeout for interest %s", interest.toUri());
                                 }
                             });
                         } catch (IOException e) {
@@ -421,7 +414,7 @@ public class FriendRequest extends Observable {
     }
 
     public void reject()  {
-        Log.d("onCertData", "Rejecting request");
+        Timber.d("Rejecting request");
         Data data = new Data(m_signedInterest.getName());
         data.setContent(new Blob("Rejected"));
         try {
@@ -455,7 +448,7 @@ public class FriendRequest extends Observable {
 
         @Override
         public void onTimeout(Interest interest) {
-            System.out.println("Time out for interest " + interest.getName().toUri());
+            Timber.d("Time out for interest %s", interest.getName().toUri());
         }
     };
 

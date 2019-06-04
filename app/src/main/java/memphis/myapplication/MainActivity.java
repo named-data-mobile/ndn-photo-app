@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import timber.log.Timber;
+
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -322,7 +323,7 @@ public class MainActivity extends AppCompatActivity {
         Globals.setHasSecurity(true);
 
         try {
-            Log.d("MainActivity", keyChain.getPib().getDefaultIdentity().getDefaultKey().getDefaultCertificate().toString());
+            Timber.d(keyChain.getPib().getDefaultIdentity().getDefaultKey().getDefaultCertificate().toString());
         } catch (Pib.Error error) {
             error.printStackTrace();
         } catch (PibImpl.Error error) {
@@ -480,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
             Globals.face.registerPrefix(friendRequestName, new OnInterestCallback() {
                         @Override
                         public void onInterest(Name prefix, final Interest interest, final Face face, long interestFilterId, InterestFilter filter) {
-                            Log.d("onFriendRequestInterest", "Got interest " + interest.toUri());
+                            Timber.d("Got interest " + interest.toUri());
 
                             final FriendRequest friendRequest = new FriendRequest(interest, MainActivity.this);
                             friendRequest.receive();
@@ -517,11 +518,11 @@ public class MainActivity extends AppCompatActivity {
                                             }
                                         }));
                                     } else if (updateCode == 2) {
-                                        Log.d("OnFriendRequest", "Could not be verified");
+                                        Timber.d("Could not be verified");
                                         runOnUiThread(makeToast("Received unverifiable friend request."));
 
                                     } else if (updateCode == 3) {
-                                        Log.d("OnFriendRequest", "Already friends");
+                                        Timber.d("Already friends");
                                         Data data = new Data();
                                         data.setContent(new Blob("Friends"));
                                         try {
@@ -531,7 +532,7 @@ public class MainActivity extends AppCompatActivity {
                                         }
 
                                     } else if (updateCode == 4) {
-                                        Log.d("OnFriendRequest", "Already trust");
+                                        Timber.d( "Already trust");
                                         runOnUiThread(new Thread(new Runnable() {
                                             public void run() {
                                                 AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
@@ -568,7 +569,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                         }
                     }
@@ -580,7 +581,7 @@ public class MainActivity extends AppCompatActivity {
                             // Listen for incoming messages from other devices over multicast face
                             // and save any new users so we can register routes to them later
                             // Need to determine when to switch to NSD.
-                            Log.d("NetworkDiscovery", "Discovered other nodes via multicast face");
+                            Timber.d("Discovered other nodes via multicast face");
                             Data data = new Data();
                             data.setName(interest.getName());
                             data.setContent(new Blob(new Blob(sharedPrefsManager.getNamespace())));
@@ -601,7 +602,7 @@ public class MainActivity extends AppCompatActivity {
                     new OnRegisterSuccess() {
                         @Override
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
-                            Log.d("OnRegisterSuccess", "Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
                         }
                     });
@@ -621,7 +622,7 @@ public class MainActivity extends AppCompatActivity {
         final OnData onData = new OnData() {
             @Override
             public void onData(Interest interest, Data data) {
-                Log.d("NetworkDiscovery", "Got data");
+                Timber.d("Got data");
                 Name interestData = new Name(data.getContent().toString());
                 Globals.setUseMulticast(true);
                 Realm realm = Realm .getDefaultInstance();
@@ -634,7 +635,7 @@ public class MainActivity extends AppCompatActivity {
                         userDomain = interestData.getPrefix(i).toUri();
                     }
                 }
-                Log.d("NetworkDiscovery", username + " and " + userDomain);
+                Timber.d(username + " and " + userDomain);
 
 
                 User user = realm.where(User.class).equalTo("username", username).findFirst();
@@ -652,12 +653,12 @@ public class MainActivity extends AppCompatActivity {
         final OnTimeout onTimeout = new OnTimeout() {
             @Override
             public void onTimeout(Interest interest) {
-                Log.d("MulticastDiscovery", "expressing interest after timeout");
+                Timber.d( "expressing interest after timeout");
                 networkDiscoveryTries++;
                 if (networkDiscoveryTries <= maxnetworkDiscoveryTries) {
                     expressNetworkDiscoveryInterest();
                 } else if (networkDiscoveryTries == maxnetworkDiscoveryTries + 1){
-                    Log.d("MulticastDiscovery", "Now use NSD");
+                    Timber.d("Now use NSD");
                     Globals.setUseMulticast(false);
                     Globals.nsdHelper.registerFriends();
                 }
@@ -667,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         try {
-            Log.d("MulticastDiscovery", "expressing initial interest");
+            Timber.d("expressing initial interest");
             Interest interest = new Interest(new Name("/network-discovery/discover/" + sharedPrefsManager.getNamespace()));
             face.expressInterest(interest, onData, onTimeout);
         } catch (IOException e) {
@@ -746,7 +747,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void registerWithNSD() {
-        Log.d("Setup_security", "Discovering nodes");
+        Timber.d("Discovering nodes");
         NSDHelper nsdHelper;
         nsdHelper = new NSDHelper(sharedPrefsManager.getNamespace(), getApplicationContext(), face);
         Globals.setNSDHelper(nsdHelper);
@@ -758,7 +759,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
 
-        Timber.d("requestCode: " + requestCode);
+        Timber.d("requestCode: %s", requestCode);
         if (requestCode == CAMERA_REQUEST_CODE) {
             Timber.d("Got result data");
             // check if we even took a picture
@@ -769,7 +770,7 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     Bitmap bitmap = BitmapFactory.decodeFile(m_curr_photo_file.getAbsolutePath());
                     out = new FileOutputStream(m_curr_photo_file);
-                    Timber.d("bitmap is null?: " + (bitmap == null));
+                    Timber.d("bitmap is null?: %s", (bitmap == null));
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
 
                 } catch (FileNotFoundException e) {
@@ -787,7 +788,7 @@ public class MainActivity extends AppCompatActivity {
                         RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
                         ArrayList<String> friendsList = new ArrayList<>();
                         for (User f: friends) {
-                            System.out.println("Adding friend to friendslist " + f.getUsername());
+                            Timber.d("Adding friend to friendslist %s", f.getUsername());
                             friendsList.add(f.getUsername());
                         }
                         intent.putStringArrayListExtra("friendsList", friendsList);
@@ -939,7 +940,7 @@ public class MainActivity extends AppCompatActivity {
                     String prefixApp = "/" + sharedPrefsManager.getNamespace();
 
                     final String prefix = prefixApp + "/file" + path;
-                    Log.d("Publishing data", prefix);
+                    Timber.d(prefix);
                     Realm realm = Realm.getDefaultInstance();
                     realm.beginTransaction();
                     PublishedContent contentKey = realm.createObject(PublishedContent.class, path);
@@ -1013,7 +1014,7 @@ public class MainActivity extends AppCompatActivity {
         newCertName.append(certName.getSubName(end+1));
         name.append(newCertName);
         Interest interest = new Interest(name);
-        Timber.d("Expressing interest for our cert" + name.toUri());
+        Timber.d("Expressing interest for our cert %s", name.toUri());
         registerUser(friend);
         face.expressInterest(interest, onCertData, onCertTimeOut);
     }
@@ -1047,15 +1048,13 @@ public class MainActivity extends AppCompatActivity {
             realmCertificate.setCert(certificateV2);
 
             VerificationHelpers verificationHelpers = new VerificationHelpers();
-            System.out.println("Friend name: " + friendName);
             try {
                 boolean verified = verificationHelpers.verifyDataSignature(certificateV2, realm.where(User.class).equalTo("username", friendName).findFirst().getCert());
-                System.out.println("Can we verify? " + verified);
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
 
-            Log.d("onCertData", "Saved our certificate back signed by friend and adding them as a consumer");
+            Timber.d("Saved our certificate back signed by friend and adding them as a consumer");
 
             friend.setFriend(true);
             friend.setTrust(true);

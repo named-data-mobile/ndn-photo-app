@@ -11,15 +11,10 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import net.named_data.jndn.Data;
-import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.encoding.tlv.TlvEncoder;
 import net.named_data.jndn.security.pib.Pib;
 import net.named_data.jndn.security.pib.PibImpl;
 import net.named_data.jndn.security.v2.CertificateV2;
-import net.named_data.jndn.util.Blob;
-
-import java.nio.ByteBuffer;
 
 public class QRExchange {
 
