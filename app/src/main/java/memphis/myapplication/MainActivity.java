@@ -333,6 +333,9 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("Security was setup successfully");
         register_with_NFD(appPrefix);
 
+        // Share friends list
+        producerManager.m_producer.publishName(appPrefix.toUri() + "/friends");
+
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -412,17 +415,19 @@ public class MainActivity extends AppCompatActivity {
             Name dataName = new Name(name);
             Name fileName = new Name(name);
             Name certName = new Name(name);
+            Name friendsListName = new Name(name);
             Name friendRequestName = new Name(name);
             final Name networkDiscoveryName = new Name("network-discovery");
             dataName.append("data");
             fileName.append("file");
             certName.append("cert");
+            friendsListName.append("friends");
             friendRequestName.append("friend-request");
             networkDiscoveryName.append("discover");
 
             Timber.d("Starting registration process.");
 
-            Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
+            Globals.face.registerPrefix(dataName, Globals.producerManager.onDataInterest,
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
@@ -477,6 +482,24 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
             );
+
+            Globals.face.registerPrefix(friendsListName, Globals.producerManager.onFriendsListInterest,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Timber.d( "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                        }
+                    }
+                    );
 
             Globals.face.registerPrefix(friendRequestName, new OnInterestCallback() {
                         @Override

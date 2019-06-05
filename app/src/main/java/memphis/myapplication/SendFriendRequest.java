@@ -67,7 +67,8 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         mutualFriendSpinner.setOnItemSelectedListener(this);
 
 //         Mutual Friend Spinner Drop down elements
-        RealmResults<User> friends = realm.where(User.class).equalTo("trust", true).findAll();
+//        RealmResults<User> friends = realm.where(User.class).equalTo("trust", true).findAll();
+        RealmResults<User> friends = realm.where(User.class).findAll();
         List<String> currentFriends = new ArrayList<>();
         for (User f : friends)
             currentFriends.add(f.getUsername());

@@ -8,9 +8,32 @@ a partial sync protocol, and utilize a Web-Of-Trust like model instead of the tr
 npChat requires the NDN Forwarding Daemon be run alongside it. NFD can be installed via [Google Play](https://play.google.com/store/apps/details?id=net.named_data.nfd) or directly from the [source](https://github.com/named-data-mobile/NFD-android).
 
 ## Building
-This build currently includes [PSync JNI for Android](https://github.com/agawande/psync-android). Please follow the initial two steps of its build instructions first. 
 
-After, it is recommended that one uses Android Studio. Simply pull this repository and allow the project to build itself. No other installations are required at this point of time. All other dependencies are pulled from external sources when the build file executes. This application only works on Android OS 6.0 and above.
+### Getting PSync JNI
+
+This build depends on PSync JNI. Clone [Android Crew Staging](https://github.com/named-data-mobile/android-crew-staging) in
+your `Android/Sdk/ndk-bundle` folder and install ndn-cxx and prerequisites.
+NFD is not needed unless you plan to build [NFD-android](https://github.com/named-data-mobile/NFD-android).
+Being in the ndk-bundle directory, execute the following commands:
+
+    CREW_OWNER=named-data-mobile crew.dir/crew install target/sqlite target/openssl
+    CREW_OWNER=named-data-mobile crew.dir/crew install target/boost target/ndn-cxx
+    CREW_OWNER=named-data-mobile crew.dir/crew install target/psync
+
+Use `--no-check-shasum` if there are problems with shasum.
+
+Also add these `local.properties` file if not already added:
+
+    ndk.dir=/path/to/Android/Sdk/ndk-bundle
+    sdk.dir=/path/to/Android/Sdk
+
+### Building npChat
+
+After installing PSync, it is recommended that one uses Android Studio to build the app.
+Simply pull this repository and allow the project to build itself.
+No other installations are required at this point of time.
+All other dependencies are pulled from external sources when the build file executes.
+This application only works on Android OS 6.0 and above.
 
 ## Testing
 Launch NFD and check "NFD is started." 

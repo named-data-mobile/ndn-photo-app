@@ -14,6 +14,7 @@ import net.named_data.jndn.Name;
 
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -184,8 +185,8 @@ public class NSDHelper {
             try {
                 Timber.d("Created face: " + sI.getHost());
                 // One slash is already in the sI.getHost(), need full canonical uri, other wise exception
-                Inet4Address ipv4Addr = (Inet4Address) Inet4Address.getByAddress (sI.getHost().getAddress());
-                String uri = "udp4:/" + ipv4Addr + ":6363";
+                InetAddress addr = sI.getHost();
+                String uri = "udp4:/" + addr + ":6363";
                 Timber.d(uri);
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
@@ -208,8 +209,6 @@ public class NSDHelper {
 
                 realm.close();
             } catch (ManagementException e) {
-                e.printStackTrace();
-            } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
         }
