@@ -335,7 +335,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Share friends list
         producerManager.m_producer.publishName(appPrefix.toUri() + "/friends");
-
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -1083,6 +1082,10 @@ public class MainActivity extends AppCompatActivity {
             friend.setTrust(true);
             consumerManager.createConsumer(friend.getNamespace());
             realm.commitTransaction();
+
+            // Share friend's list
+            producerManager.m_producer.publishName(sharedPrefsManager.getNamespace() + "/friends");
+
 
             if (!Globals.useMulticast) {
                     Globals.nsdHelper.registerUser(friendName);

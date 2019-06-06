@@ -5,7 +5,9 @@ import net.named_data.jndn.encoding.tlv.TlvEncoder;
 import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
@@ -19,6 +21,7 @@ public class User extends RealmObject {
     @Required
     private String domain;
 
+    private RealmList<String> friends = new RealmList<>();
 
     private byte[] cert;
     private boolean friend;
@@ -59,6 +62,19 @@ public class User extends RealmObject {
     }
 
     public String getNamespace() { return domain + "/npChat/" + username; }
+
+    public void addFriend(String f) {
+        if (friends.contains(f)) {
+            return;
+        }
+        friends.add(f);
+    }
+
+    public ArrayList<String> getFriends() {
+        ArrayList<String> friendsArray = new ArrayList<>();
+        friendsArray.addAll(friends);
+        return friendsArray;
+    }
 
 
 }

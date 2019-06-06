@@ -9,24 +9,26 @@ import io.realm.RealmResults;
 import memphis.myapplication.RealmObjects.User;
 import timber.log.Timber;
 
+/**
+ * The FriendsList class contains methods for getting the user's friends' friends list, comparing
+ * those lists with the user's own, and adding the new users as discovered users
+ */
+
 public class FriendsList {
     RealmResults<User> friends;
     ArrayList<String> friendsPrefixesList;
     ArrayList<String> friendsNameList;
 
-
+    /**
+     * The default constructor creates a FriendsList instance with the user's friends/trusted users
+     */
     public FriendsList() {
         friendsPrefixesList = new ArrayList<>();
         friendsNameList = new ArrayList<>();
         Realm realm = Realm.getDefaultInstance();
         friends = realm.where(User.class).equalTo("friend", true).or().equalTo("trust", true).findAll();
 
-        if (friends == null) {
-            Timber.d("Huh");
-        }
-
         for (User f : friends) {
-            Timber.d(f.toString());
             friendsPrefixesList.add(f.getNamespace());
             friendsNameList.add(f.getUsername());
         }
@@ -34,6 +36,9 @@ public class FriendsList {
         realm.close();
     }
 
+    /**
+     * Constructor takes a String containing a friend's friends list.
+     */
     public FriendsList(String j) throws JSONException {
 
         JSONArray ja = new JSONArray(j);
@@ -55,19 +60,30 @@ public class FriendsList {
         return friendsPrefixesList;
     }
 
+    /**
+     * Outputs JSONArray string of the friends list
+     * @return jsonArray.toString(): friends list
+     */
     public String stringify() {
         JSONArray jsonArray = new JSONArray((friendsPrefixesList));
         return jsonArray.toString();
     }
 
-    public void addNew(FriendsList fl, String myPrefix) {
+    /**
+     * Compares the user's friends list with their friend's, adds any new users to discovered list,
+     * and updates the local friends list for the friend
+     * @param fl: a friend's friends list instance
+     * @param friendName: the friend's name
+     * @param myPrefix: the user's prefix
+     */
+    public void addNew(FriendsList fl, String friendName, String myPrefix) {
         ArrayList<String> newFriends = new ArrayList<String>(fl.friendsPrefixesList);
         newFriends.removeAll(friendsPrefixesList);
         newFriends.remove("/" + myPrefix);
 
         Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
         for (String f : newFriends) {
+            realm.beginTransaction();
             String username = f.substring(f.lastIndexOf("/")+1);
             Timber.d(username);
             User user = realm.where(User.class).equalTo("username", username).findFirst();
@@ -76,8 +92,12 @@ public class FriendsList {
                 Timber.d(f.substring(0, f.indexOf("/npChat")));
                 user.setDomain(f.substring(0, f.indexOf("/npChat")));
             }
+            User sharingUser = realm.where(User.class).equalTo("username", friendName).findFirst();
+            user.addFriend(sharingUser.getNamespace());
+            sharingUser.addFriend(f);
+            realm.commitTransaction();
+
         }
-        realm.commitTransaction();
         realm.close();
 
     }

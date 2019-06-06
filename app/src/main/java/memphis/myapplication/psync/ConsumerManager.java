@@ -110,11 +110,13 @@ public class ConsumerManager {
             try {
             Timber.d( "Got sync data for /friends");
             String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
+            String friendName = interest.getName().getSubName(-3, 1).toUri().substring(1);
             Timber.d(interestData);
+            Timber.d(friendName);
 
             FriendsList friendsList = new FriendsList(interestData);
             FriendsList myFriendsList = new FriendsList();
-            myFriendsList.addNew(friendsList, SharedPrefsManager.getInstance(context).getNamespace());
+            myFriendsList.addNew(friendsList, friendName, SharedPrefsManager.getInstance(context).getNamespace());
 
             } catch (JSONException e) {
                 e.printStackTrace();
