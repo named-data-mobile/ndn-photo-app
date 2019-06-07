@@ -13,6 +13,8 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.HashMap;
@@ -86,7 +88,7 @@ public class NSDHelper {
         @Override
         public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
             serviceName = NsdServiceInfo.getServiceName();
-            Timber.d("Service name: " + serviceName);
+            Timber.d("Service name: %s", serviceName);
         }
 
         @Override
@@ -113,15 +115,15 @@ public class NSDHelper {
         @Override
         public void onServiceFound(NsdServiceInfo service) {
             // A service was found! Do something with it.
-            Timber.d("Service discovery success" + service);
+            Timber.d("Service discovery success %s", service);
             if (!service.getServiceType().equals(SERVICE_TYPE)) {
                 // Service type is the string containing the protocol and
                 // transport layer for this service.
-                Timber.d("Unknown Service Type: " + service.getServiceType());
+                Timber.d("Unknown Service Type: %s", service.getServiceType());
             } else if (service.getServiceName().equals(serviceName)) {
                 // The name of the service tells the user what they'd be
                 // connecting to. It could be "Bob's Chat App".
-                Timber.d("Same machine: " + serviceName);
+                Timber.d("Same machine: %s", serviceName);
             } else if (service.getServiceName().contains("npchat")){
                 m_nsdManager.resolveService(service, new MyResolveListener());
             }
@@ -129,7 +131,7 @@ public class NSDHelper {
 
         @Override
         public void onServiceLost(NsdServiceInfo service) {
-            Timber.e("service lost: " + service);
+            Timber.e("service lost: %s", service);
             // Destroy face (which will unregister routes)
             try {
                 Integer faceid = serviceNameToFaceId.get(service.getServiceName());
@@ -144,18 +146,18 @@ public class NSDHelper {
 
         @Override
         public void onDiscoveryStopped(String serviceType) {
-            Timber.i("Discovery stopped: " + serviceType);
+            Timber.i("Discovery stopped: %s", serviceType);
         }
 
         @Override
         public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-            Timber.e("Discovery failed: Error code:" + errorCode);
+            Timber.e("Discovery failed: Error code: %s", errorCode);
             m_nsdManager.stopServiceDiscovery(this);
         }
 
         @Override
         public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-            Timber.e("Discovery failed: Error code:" + errorCode);
+            Timber.e("Discovery failed: Error code: %s", errorCode);
             m_nsdManager.stopServiceDiscovery(this);
         }
     }
@@ -164,12 +166,12 @@ public class NSDHelper {
         @Override
         public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
             // Called when the resolve fails. Use the error code to debug.
-            Timber.e("Resolve failed: " + errorCode);
+            Timber.e("Resolve failed: %s", errorCode);
         }
 
         @Override
         public void onServiceResolved(NsdServiceInfo sI) {
-            Timber.e("Resolve Succeeded. " + sI);
+            Timber.e("Resolve Succeeded. %s", sI);
 
             if (sI.getServiceName().equals(serviceName)) {
                 Timber.d("Same IP.");
@@ -181,11 +183,19 @@ public class NSDHelper {
 
             int faceid = 0;
             try {
-                Timber.d("Created face: " + sI.getHost());
+                Timber.d("Created face: %s", sI.getHost());
                 // One slash is already in the sI.getHost(), need full canonical uri, other wise exception
                 InetAddress addr = sI.getHost();
-                String uri = "udp4:/" + addr + ":6363";
-                Timber.d(uri);
+                String uri = null;
+
+                if (addr instanceof Inet6Address) {
+                    // It's ipv6
+                    uri = "udp6://[" + addr.toString().substring(1) + "%wlan0]:6363";
+
+                } else if (addr instanceof Inet4Address) {
+                    Timber.d("IPv4");
+                    uri = "udp4:/" + addr + ":6363";
+                }
                 faceid = Nfdc.createFace(m_face, uri);
                 serviceNameToFaceId.put(sI.getServiceName(), faceid);
                 String serviceName = sI.getServiceName();
