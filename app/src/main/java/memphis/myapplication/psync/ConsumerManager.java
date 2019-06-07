@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 
 import android.util.Base64;
+
+import memphis.myapplication.FriendsList;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -59,14 +61,16 @@ public class ConsumerManager {
         }
     };
 
-    static OnData onData = new OnData() {
+    private OnData onFileData = new OnData() {
 
         @Override
         public void onData(Interest interest, Data data) {
-            Timber.d( "Got sync data");
+            Timber.d( "Got sync data for /data");
             try {
                 String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
                 Timber.d(interestData);
+
+
 
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
@@ -100,7 +104,28 @@ public class ConsumerManager {
         }
     };
 
-    static PSync.OnSyncDataCallBack syncDataCallBack = new PSync.OnSyncDataCallBack() {
+    private OnData onFriendsData = new OnData() {
+        @Override
+        public void onData(Interest interest, Data data) {
+            try {
+            Timber.d( "Got sync data for /friends");
+            String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
+            String friendName = interest.getName().getSubName(-3, 1).toUri().substring(1);
+            Timber.d(interestData);
+            Timber.d(friendName);
+
+            FriendsList friendsList = new FriendsList(interestData);
+            FriendsList myFriendsList = new FriendsList();
+            myFriendsList.addNew(friendsList, friendName, SharedPrefsManager.getInstance(context).getNamespace());
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    };
+
+    PSync.OnSyncDataCallBack syncDataCallBack = new PSync.OnSyncDataCallBack() {
         @Override
         public void onSyncDataCallBack(ArrayList<MissingDataInfo> updates) {
 
@@ -110,11 +135,21 @@ public class ConsumerManager {
                 Name name = new Name(update.prefix);
                 name.appendSequenceNumber(update.highSeq);
                 face = Globals.face;
-                try {
-                    Timber.d("Expressing interest for %s", name);
-                    face.expressInterest(name,  onData);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                Timber.d(name.getSubName(-2,1).toUri());
+                if (name.getSubName(-2,1).toUri().equals("/friends")) {
+                    try {
+                        Timber.d("Expressing interest for friends list");
+                        face.expressInterest(name,  onFriendsData);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else if (name.getSubName(-2,1).toUri().equals("/data")) {
+                    try {
+                        Timber.d("Expressing interest for published file");
+                        face.expressInterest(name, onFileData);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
@@ -126,7 +161,7 @@ public class ConsumerManager {
      * Creates a new consumer for each friend and adds it to the ArrayList of consumers.
      * @param prefix is the String "/npChat/friendName"
      */
-    public static void createConsumer(String prefix) {
+    public void createConsumer(String prefix) {
 
         Timber.d("Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
@@ -134,7 +169,7 @@ public class ConsumerManager {
         consumer.sendHelloInterest();
     }
 
-    public static void removeConsumer(String friend) {
+    public void removeConsumer(String friend) {
         Timber.d("Removing " + friend + " as consumer");
         // Does nothing yet. Need to add.
         }

@@ -67,21 +67,15 @@
     </RadioGroup>
 
     <TextView
-        android:id="@+id/mutal_friend_label"
+        android:id="@+id/trustTypeMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="16dp"
         android:layout_marginTop="5dp"
-        android:text="Select mutual friend"
+        android:text=""
         android:visibility="visible"
         />
-
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:visibility="visible"/>
 
     <Button
         android:layout_width="wrap_content"

@@ -175,7 +175,7 @@ public class FriendRequest extends Observable {
                                 realm.commitTransaction();
                                 realm.close();
 
-
+                                Globals.producerManager.m_producer.publishName(sharedPrefsManager.getNamespace() + "/friends");
 
                             }
                         }, onCertTimeOut);

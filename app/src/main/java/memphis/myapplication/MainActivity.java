@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         Name appPrefix = new Name(sharedPrefsManager.getDomain() + "/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Timber.d("Creating producer" +  appPrefix.toUri());
+        Timber.d("Creating producer %s",  appPrefix.toUri());
         String producerPrefix = appPrefix.toUri();
         producerManager = new ProducerManager(producerPrefix);
         Globals.setProducerManager(producerManager);
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         for (User friend : friends) {
             String friendNamespace = friend.getNamespace();
             consumerManager.createConsumer(friendNamespace);
-            Timber.d("Added consumer for friend for " + friendNamespace);
+            Timber.d("Added consumer for friend for %s", friendNamespace);
         }
 
 
@@ -333,6 +333,15 @@ public class MainActivity extends AppCompatActivity {
         Timber.d("Security was setup successfully");
         register_with_NFD(appPrefix);
 
+        // Share friends list
+        producerManager.updateFriendsList();
+
+//        Realm tempRealm = Realm.getDefaultInstance();
+//        tempRealm.beginTransaction();
+//        RealmResults<User> users = tempRealm.where(User.class).equalTo("username", "mw").or().equalTo("username","mb").findAll();
+//        users.deleteAllFromRealm();
+//        tempRealm.commitTransaction();
+//        tempRealm.close();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -412,17 +421,19 @@ public class MainActivity extends AppCompatActivity {
             Name dataName = new Name(name);
             Name fileName = new Name(name);
             Name certName = new Name(name);
+            Name friendsListName = new Name(name);
             Name friendRequestName = new Name(name);
             final Name networkDiscoveryName = new Name("network-discovery");
             dataName.append("data");
             fileName.append("file");
             certName.append("cert");
+            friendsListName.append("friends");
             friendRequestName.append("friend-request");
             networkDiscoveryName.append("discover");
 
             Timber.d("Starting registration process.");
 
-            Globals.face.registerPrefix(dataName, ProducerManager.onDataInterest,
+            Globals.face.registerPrefix(dataName, Globals.producerManager.onDataInterest,
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {
@@ -477,6 +488,24 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
             );
+
+            Globals.face.registerPrefix(friendsListName, Globals.producerManager.onFriendsListInterest,
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+                            Timber.d( "Registration Failure");
+                            String msg = "Registration failed for prefix: " + prefix.toUri();
+                            runOnUiThread(makeToast(msg));
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                            String msg = "Successfully registered prefix: " + prefix.toUri();
+                        }
+                    }
+                    );
 
             Globals.face.registerPrefix(friendRequestName, new OnInterestCallback() {
                         @Override
@@ -840,6 +869,7 @@ public class MainActivity extends AppCompatActivity {
                 User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
                 friend.setFriend(true);
                 realm.commitTransaction();
+                consumerManager.createConsumer(friend.getNamespace());
                 realm.close();
 
 
@@ -978,8 +1008,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (InvalidAlgorithmParameterException e) {
                     e.printStackTrace();
                 }
-
-                producerManager.m_producer.publishName(name);
+                producerManager.publishFile(name);
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -1060,6 +1089,9 @@ public class MainActivity extends AppCompatActivity {
             friend.setTrust(true);
             consumerManager.createConsumer(friend.getNamespace());
             realm.commitTransaction();
+
+            // Share friend's list
+            producerManager.updateFriendsList();
 
             if (!Globals.useMulticast) {
                     Globals.nsdHelper.registerUser(friendName);
