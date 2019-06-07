@@ -47,8 +47,6 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         for (User f : potentialFriends)
             potentialFriendsList.add(f.getUsername());
 
-        potentialFriendsList.add("Enter user prefix");
-
         // Creating adapter for spinner
         ArrayAdapter<String> newFriendDataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, potentialFriendsList);
 
@@ -59,6 +57,26 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         newFriendSpinner.setAdapter(newFriendDataAdapter);
 
         message = findViewById(R.id.trustTypeMessage);
+
+        String friendsMessage = "";
+        friend = potentialFriends.get(0).getUsername();
+        User newFriend = realm.where(User.class).equalTo("username", friend).findFirst();
+        ArrayList<String> newFriendsList = newFriend.getFriends();
+        RealmResults<User> myFriends = realm.where(User.class).equalTo("trust", true).findAll();
+        ArrayList<String> myFriendsList = new ArrayList<>();
+        for (User u : myFriends) {
+            myFriendsList.add(u.getNamespace());
+        }
+        myFriendsList.retainAll(newFriendsList);
+        if (myFriendsList.isEmpty()) {
+            friendsMessage = "No mutual friends";
+        }
+        for (String f : myFriendsList) {
+            mutualFriend = f.substring(f.lastIndexOf("/")+1);
+            friendsMessage = friendsMessage + f + "\n";
+        }
+        message.setText(friendsMessage);
+        realm.close();
 
 
 
@@ -78,6 +96,9 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
                     myFriendsList.add(u.getNamespace());
                 }
                 myFriendsList.retainAll(newFriendsList);
+                if (myFriendsList.isEmpty()) {
+                    friendsMessage = "No mutual friends";
+                }
                 for (String f : myFriendsList) {
                     mutualFriend = f.substring(f.lastIndexOf("/")+1);
                     friendsMessage = friendsMessage + f + "\n";
@@ -95,19 +116,14 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
         });
 
-
+        realm.close();
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (parent.getId() == R.id.spinnerNewFriends) {
-            if (parent.getItemAtPosition(position).toString().equals("Enter user prefix")) {
-                friend = null;
-                mEdit.setVisibility(View.VISIBLE);
-            } else {
                 mEdit.setVisibility(View.GONE);
                 friend = parent.getItemAtPosition(position).toString();
-            }
         }
     }
     public void onNothingSelected(AdapterView<?> arg0) {
@@ -122,7 +138,5 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         friendRequest.send();
         Intent intent = new Intent(this, AddFriendActivity.class);
         startActivity(intent);
-
-
     }
 }

@@ -28,7 +28,7 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
         super.onCreate(savedInstanceBundle);
         setContentView(R.layout.activity_with_list);
         Realm realm = Realm.getDefaultInstance();
-        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).or().equalTo("trust", true).findAll();
+        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
         realm.close();
         List<String> friendsList = new ArrayList<>();
         for (User f : friends)
@@ -79,6 +79,7 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
                 realm.commitTransaction();
                 realm.close();
                 Globals.consumerManager.removeConsumer(friend);
+                Globals.producerManager.updateFriendsList();
             }
         });
 

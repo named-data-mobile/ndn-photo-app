@@ -14,7 +14,6 @@ import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +35,16 @@ public class ProducerManager {
 
     public void setDataSeqMap(String syncData) {
         m_seqToFileName.put(m_producer.getSeqNo(dataPrefix) + 1, syncData);
+    }
+
+    public void updateFriendsList() {
+        m_producer.publishName(friendsPrefix);
+
+    }
+
+    public void publishFile(String name) {
+        m_producer.publishName(name);
+
     }
 
 

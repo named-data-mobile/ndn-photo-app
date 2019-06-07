@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         Name appPrefix = new Name(sharedPrefsManager.getDomain() + "/" + getString(R.string.app_name) + "/" + sharedPrefsManager.getUsername());
 
         // Creating producer
-        Timber.d("Creating producer" +  appPrefix.toUri());
+        Timber.d("Creating producer %s",  appPrefix.toUri());
         String producerPrefix = appPrefix.toUri();
         producerManager = new ProducerManager(producerPrefix);
         Globals.setProducerManager(producerManager);
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         for (User friend : friends) {
             String friendNamespace = friend.getNamespace();
             consumerManager.createConsumer(friendNamespace);
-            Timber.d("Added consumer for friend for " + friendNamespace);
+            Timber.d("Added consumer for friend for %s", friendNamespace);
         }
 
 
@@ -334,7 +334,14 @@ public class MainActivity extends AppCompatActivity {
         register_with_NFD(appPrefix);
 
         // Share friends list
-        producerManager.m_producer.publishName(appPrefix.toUri() + "/friends");
+        producerManager.updateFriendsList();
+
+//        Realm tempRealm = Realm.getDefaultInstance();
+//        tempRealm.beginTransaction();
+//        RealmResults<User> users = tempRealm.where(User.class).equalTo("username", "mw").or().equalTo("username","mb").findAll();
+//        users.deleteAllFromRealm();
+//        tempRealm.commitTransaction();
+//        tempRealm.close();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -862,6 +869,7 @@ public class MainActivity extends AppCompatActivity {
                 User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
                 friend.setFriend(true);
                 realm.commitTransaction();
+                consumerManager.createConsumer(friend.getNamespace());
                 realm.close();
 
 
@@ -1000,8 +1008,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (InvalidAlgorithmParameterException e) {
                     e.printStackTrace();
                 }
-
-                producerManager.m_producer.publishName(name);
+                producerManager.publishFile(name);
             }
             catch(Exception e) {
                 e.printStackTrace();
@@ -1084,8 +1091,7 @@ public class MainActivity extends AppCompatActivity {
             realm.commitTransaction();
 
             // Share friend's list
-            producerManager.m_producer.publishName(sharedPrefsManager.getNamespace() + "/friends");
-
+            producerManager.updateFriendsList();
 
             if (!Globals.useMulticast) {
                     Globals.nsdHelper.registerUser(friendName);

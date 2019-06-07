@@ -26,7 +26,7 @@ public class FriendsList {
         friendsPrefixesList = new ArrayList<>();
         friendsNameList = new ArrayList<>();
         Realm realm = Realm.getDefaultInstance();
-        friends = realm.where(User.class).equalTo("friend", true).or().equalTo("trust", true).findAll();
+        friends = realm.where(User.class).equalTo("friend", true).findAll();
 
         for (User f : friends) {
             friendsPrefixesList.add(f.getNamespace());
@@ -77,15 +77,31 @@ public class FriendsList {
      * @param myPrefix: the user's prefix
      */
     public void addNew(FriendsList fl, String friendName, String myPrefix) {
+        Realm realm = Realm.getDefaultInstance();
         ArrayList<String> newFriends = new ArrayList<String>(fl.friendsPrefixesList);
         newFriends.removeAll(friendsPrefixesList);
-        newFriends.remove("/" + myPrefix);
 
-        Realm realm = Realm.getDefaultInstance();
+        // Remove our username from the friends list
+        if (newFriends.contains("/" + myPrefix)) {
+            Timber.d("We're still friends");
+            newFriends.remove("/" + myPrefix);
+        // If we don't find our name, then that means we are no longer friends with them. So remove
+        // them from our friends list
+        } else {
+            Timber.d("We're not friends. Removing %s from our friends list", friendName);
+            realm.beginTransaction();
+            User user = realm.where(User.class).equalTo("username", friendName).findFirst();
+            user.setFriend(false);
+            realm.commitTransaction();
+        }
+
+
+
+
         for (String f : newFriends) {
             realm.beginTransaction();
             String username = f.substring(f.lastIndexOf("/")+1);
-            Timber.d(username);
+            Timber.d("Adding user: %s", username);
             User user = realm.where(User.class).equalTo("username", username).findFirst();
             if (user == null) {
                 user = realm.createObject(User.class, username);
