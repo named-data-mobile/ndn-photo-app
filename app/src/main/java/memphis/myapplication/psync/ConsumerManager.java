@@ -24,6 +24,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -37,7 +38,7 @@ import memphis.myapplication.tasks.FetchingTaskParams;
 public class ConsumerManager {
 
     static PSync.Consumer consumer;
-    static ArrayList<PSync.Consumer> consumers = new ArrayList<>();
+    static HashMap<String, PSync.Consumer> consumers = new HashMap<>();
     static Activity activity;
     static Context context;
     static Face face;
@@ -165,13 +166,17 @@ public class ConsumerManager {
 
         Timber.d("Adding friend " + prefix + "as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
-        consumers.add(consumer);
+        consumers.put(prefix, consumer);
         consumer.sendHelloInterest();
     }
 
     public void removeConsumer(String friend) {
         Timber.d("Removing " + friend + " as consumer");
-        // Does nothing yet. Need to add.
+        PSync.Consumer removedConsumer = consumers.get(friend);
+        consumers.remove(friend);
+        removedConsumer.stop();
+        removedConsumer = null;
+
         }
 
 }

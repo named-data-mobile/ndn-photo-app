@@ -367,6 +367,7 @@ JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_sendHe
 JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_sendSyncInterest
   (JNIEnv *env, jobject, jobject handle)
 {
+    ALOG("%s", "Sending sync interest");
   ConsumerWrapper* consumerWrapper = (ConsumerWrapper*) env->GetDirectBufferAddress(handle);
   consumerWrapper->consumer->sendSyncInterest();
 }
@@ -375,8 +376,17 @@ JNIEXPORT jboolean JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_ad
   (JNIEnv *env, jobject, jobject handle, jstring prefix)
 {
   ConsumerWrapper* consumerWrapper = (ConsumerWrapper*) env->GetDirectBufferAddress(handle);
-  ALOG("%s", "Trying to add subscription for consumer");
   return consumerWrapper->consumer->addSubscription(ndn::Name(env->GetStringUTFChars(prefix, nullptr)));
+}
+
+JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_stop
+  (JNIEnv *env, jobject, jobject handle)
+{
+    ConsumerWrapper* consumerWrapper = (ConsumerWrapper*) env->GetDirectBufferAddress(handle);
+    consumerWrapper->consumer->stop();
+    delete consumerWrapper;
+    ALOG("%s", "Stopping consumer");
+
 }
 
 JNIEXPORT jobject JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_getSubscriptionList

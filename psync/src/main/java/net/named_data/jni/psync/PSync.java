@@ -79,8 +79,8 @@ public class PSync {
             removeUserNode(m_buffer, prefix);
         }
 
-        public long getSeqNo(String prefix) {
-            return getSeqNo(m_buffer, prefix);
+        public void getSeqNo(String prefix) {
+            getSeqNo(m_buffer, prefix);
         }
 
         public void publishName(String prefix) {
@@ -132,6 +132,8 @@ public class PSync {
         public long getSeqNo(String prefix) {
             return getSeqNo(m_buffer, prefix);
         }
+
+        public void stop() {stop(m_buffer);}
 
         public void publishName(String prefix) {
             publishName(m_buffer, prefix);
@@ -198,6 +200,10 @@ public class PSync {
             return getSeqNo(m_buffer, prefix);
         }
 
+        public void stop() {
+            stop(m_buffer);
+        }
+
         private native ByteBuffer initializeConsumer(String syncPrefix, int count, double falsePositive, long helloInterestLifetimeMillis, long syncInterestLifetimeMillis);
 
         private native void sendHelloInterest(ByteBuffer buffer);
@@ -212,7 +218,7 @@ public class PSync {
 
         private native long getSeqNo(ByteBuffer buffer, String prefix);
 
-        // private native void stop(ByteBuffer);
+        private native void stop(ByteBuffer buffer);
 
         private void onSyncData(ArrayList<MissingDataInfo> updates) {
             m_onSyncDataCallBack.onSyncDataCallBack(updates);
