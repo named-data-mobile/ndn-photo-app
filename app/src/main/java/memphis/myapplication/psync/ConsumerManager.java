@@ -176,7 +176,5 @@ public class ConsumerManager {
         consumers.remove(friend);
         removedConsumer.stop();
         removedConsumer = null;
-
         }
-
 }

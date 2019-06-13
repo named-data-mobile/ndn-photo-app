@@ -79,8 +79,8 @@ public class PSync {
             removeUserNode(m_buffer, prefix);
         }
 
-        public void getSeqNo(String prefix) {
-            getSeqNo(m_buffer, prefix);
+        public long getSeqNo(String prefix) {
+            return getSeqNo(m_buffer, prefix);
         }
 
         public void publishName(String prefix) {
