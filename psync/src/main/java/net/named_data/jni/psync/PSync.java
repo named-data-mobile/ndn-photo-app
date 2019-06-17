@@ -133,7 +133,9 @@ public class PSync {
             return getSeqNo(m_buffer, prefix);
         }
 
-        public void stop() {stop(m_buffer);}
+        public void stop() {
+            stop(m_buffer);
+        }
 
         public void publishName(String prefix) {
             publishName(m_buffer, prefix);

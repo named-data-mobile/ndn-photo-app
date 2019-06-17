@@ -80,10 +80,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
             message.setText(friendsMessage);
         }
-
         realm.close();
-
-
 
         // Radio buttons
         RadioButton rdb1 = findViewById(R.id.radioMutualFriend);
@@ -109,7 +106,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
                     friendsMessage = friendsMessage + f + "\n";
                 }
                 message.setText(friendsMessage);
-
+                realm.close();
             }
         });
 
@@ -121,7 +118,6 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
         });
 
-        realm.close();
     }
 
     @Override
