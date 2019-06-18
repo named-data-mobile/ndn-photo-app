@@ -29,7 +29,7 @@ android {
             abi {
                 enable true // enable ABI split feature to create one APK per ABI
                 reset()
-                include "armeabi-v7a", "arm64-v8a", "x86"
+                include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
                 universalApk false // don't generate an additional APK that targets all the ABIs
             }
         }

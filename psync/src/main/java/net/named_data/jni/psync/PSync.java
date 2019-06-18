@@ -7,7 +7,7 @@ public class PSync {
     private static PSync s_psync;
 
     static {
-        System.loadLibrary("psync");
+        System.loadLibrary("psync-jni");
     }
 
     public interface OnSyncDataCallBack {
