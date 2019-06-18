@@ -47,10 +47,10 @@ add_library(libsql SHARED IMPORTED)
 set_target_properties(libsql PROPERTIES IMPORTED_LOCATION ${SQLITE_LIBS}/libsqlite3.so)
 
 # Add JNI
-add_library(psync SHARED psync-wrapper.cpp)
-target_include_directories(psync PUBLIC ${NDN_CXX_INCLUDE} ${Boost_INCLUDE_DIR} ${PSYNC_INCLUDE})
+add_library(psync-jni SHARED psync-wrapper.cpp)
+target_include_directories(psync-jni PUBLIC ${NDN_CXX_INCLUDE} ${Boost_INCLUDE_DIR} ${PSYNC_INCLUDE})
 
-target_link_libraries(psync libndn-cxx ${Boost_LIBRARIES} libsql libcrypto libssl android log libPSync)
+target_link_libraries(psync-jni libndn-cxx ${Boost_LIBRARIES} libsql libcrypto libssl android log libPSync)
 
 #-----------------------------------------------------------------------------------------------
 # Copy library files to src/main/lib so that gradle can pick them up to package in the apk
