@@ -59,26 +59,28 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         message = findViewById(R.id.trustTypeMessage);
 
         String friendsMessage = "";
-        friend = potentialFriends.get(0).getUsername();
-        User newFriend = realm.where(User.class).equalTo("username", friend).findFirst();
-        ArrayList<String> newFriendsList = newFriend.getFriends();
-        RealmResults<User> myFriends = realm.where(User.class).equalTo("trust", true).findAll();
-        ArrayList<String> myFriendsList = new ArrayList<>();
-        for (User u : myFriends) {
-            myFriendsList.add(u.getNamespace());
+        if (potentialFriends.isEmpty()) {
+            friend = "";
+        } else {
+            friend = potentialFriends.get(0).getUsername();
+            User newFriend = realm.where(User.class).equalTo("username", friend).findFirst();
+            ArrayList<String> newFriendsList = newFriend.getFriends();
+            RealmResults<User> myFriends = realm.where(User.class).equalTo("trust", true).findAll();
+            ArrayList<String> myFriendsList = new ArrayList<>();
+            for (User u : myFriends) {
+                myFriendsList.add(u.getNamespace());
+            }
+            myFriendsList.retainAll(newFriendsList);
+            if (myFriendsList.isEmpty()) {
+                friendsMessage = "No mutual friends";
+            }
+            for (String f : myFriendsList) {
+                mutualFriend = f.substring(f.lastIndexOf("/")+1);
+                friendsMessage = friendsMessage + f + "\n";
+            }
+            message.setText(friendsMessage);
         }
-        myFriendsList.retainAll(newFriendsList);
-        if (myFriendsList.isEmpty()) {
-            friendsMessage = "No mutual friends";
-        }
-        for (String f : myFriendsList) {
-            mutualFriend = f.substring(f.lastIndexOf("/")+1);
-            friendsMessage = friendsMessage + f + "\n";
-        }
-        message.setText(friendsMessage);
         realm.close();
-
-
 
         // Radio buttons
         RadioButton rdb1 = findViewById(R.id.radioMutualFriend);
@@ -104,7 +106,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
                     friendsMessage = friendsMessage + f + "\n";
                 }
                 message.setText(friendsMessage);
-
+                realm.close();
             }
         });
 
@@ -116,7 +118,6 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
         });
 
-        realm.close();
     }
 
     @Override

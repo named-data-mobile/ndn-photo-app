@@ -77,9 +77,9 @@ public class ViewFriendsActivity extends AppCompatActivity implements ListDispla
                 // Temporary for testing purposes
                 user.setTrust(false);
                 realm.commitTransaction();
-                realm.close();
-                Globals.consumerManager.removeConsumer(friend);
+                Globals.consumerManager.removeConsumer(user.getNamespace());
                 Globals.producerManager.updateFriendsList();
+                realm.close();
             }
         });
 

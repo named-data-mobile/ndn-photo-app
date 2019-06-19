@@ -63,6 +63,14 @@ JNIEXPORT jboolean JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_is
 JNIEXPORT jlong JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_getSeqNo
   (JNIEnv *, jobject, jobject, jstring);
 
+/*
+ * Class:     net_named_data_jni_psync_PSync_Consumer
+ * Method:    stop
+ * Signature: (Ljava/nio/ByteBuffer;Ljava/lang/String;)J
+ */
+JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024Consumer_stop
+  (JNIEnv *env, jobject obj, jobject handle);
+
 #ifdef __cplusplus
 }
 #endif
