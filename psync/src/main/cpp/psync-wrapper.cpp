@@ -70,8 +70,13 @@ JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_initialize
   if (!g_thread) {
     g_thread = std::make_unique<std::thread>([] {
         ALOG("%s", "Starting process events thread");
-        // If keepThread is not passed as true, then PSync does not seem to set the interest filter in NFD
-        g_facePtr->processEvents(ndn::time::milliseconds::zero(), true);
+        try {
+          // If keepThread is not passed as true, then PSync does not seem to set the interest filter in NFD
+          g_facePtr->processEvents(ndn::time::milliseconds::zero(), true);
+        }
+        catch (const std::exception &e) {
+          ALOG("%s", e.what());
+        }
     });
   }
 

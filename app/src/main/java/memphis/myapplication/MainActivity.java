@@ -270,9 +270,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            keyChain = new KeyChain(pibPath, m_pib.getTpmLocator());
+            keyChain = new KeyChain(m_pib, m_tpm);
         }
-        catch(SecurityException | IOException | PibImpl.Error | KeyChain.Error e) {
+        catch(PibImpl.Error e) {
             e.printStackTrace();
         }
 
