@@ -1,9 +1,0 @@
-cmake_minimum_required(VERSION 3.4.1)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(SQLITE_JDBC_VERSION 3.25.2)
-set(SQLITE_JDBC_LIBS ${ANDROID_NDK}/packages/libsqlitejdbc/${SQLITE_JDBC_VERSION}/libs/${ANDROID_ABI})
-
-file(COPY ${SQLITE_JDBC_LIBS}/libsqlitejdbc.so
-       DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/)

@@ -17,7 +17,7 @@ NFD is not needed unless you plan to build [NFD-android](https://github.com/name
 Being in the ndk-bundle directory, execute the following commands:
 
     CREW_OWNER=named-data-mobile crew.dir/crew install target/sqlite target/openssl
-    CREW_OWNER=named-data-mobile crew.dir/crew install target/boost target/ndn-cxx
+    CREW_OWNER=named-data-mobile crew.dir/crew install target/boost target/ndn_cxx
     CREW_OWNER=named-data-mobile crew.dir/crew install target/psync
 
 Use `--no-check-shasum` if there are problems with shasum.

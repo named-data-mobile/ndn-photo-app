@@ -12,5 +12,3 @@ app/app.iml
 # CMake
 psync/.externalNativeBuild/
 psync/src/main/libs/
-app/.externalNativeBuild/
-app/src/main/jniLibs/
