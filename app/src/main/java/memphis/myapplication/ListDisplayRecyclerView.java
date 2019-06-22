@@ -1,8 +1,10 @@
 package memphis.myapplication;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +12,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class ListDisplayRecyclerView extends android.support.v7.widget.RecyclerView.Adapter<ListDisplayRecyclerView.ViewHolder> {
+public class ListDisplayRecyclerView extends RecyclerView.Adapter<ListDisplayRecyclerView.ViewHolder> {
 
     // This ListDisplayRecyclerView can be used to display a text in a cardView.
     // One Example where it is used in the Project is to display FriendsList.
@@ -47,7 +49,7 @@ public class ListDisplayRecyclerView extends android.support.v7.widget.RecyclerV
     }
 
     // stores and recycles views as they are scrolled off screen
-    public class ViewHolder extends android.support.v7.widget.RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView textView;
         CardView cardView;
         ViewHolder(View itemView) {

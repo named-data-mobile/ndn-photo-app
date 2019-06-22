@@ -2,9 +2,10 @@ package memphis.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import timber.log.Timber;
 import android.view.View;
 import android.widget.Toast;
@@ -31,7 +32,7 @@ public class NewContentActivity extends AppCompatActivity implements ListDisplay
     private void listReceivedContent() {
         FileManager manager = new FileManager(getApplicationContext());
         userContent = manager.getReceivedPhotos();
-        android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+        RecyclerView recyclerView = findViewById(R.id.friendList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         // if empty, tell the user there are "No new photos"
         if (userContent.isEmpty()) {

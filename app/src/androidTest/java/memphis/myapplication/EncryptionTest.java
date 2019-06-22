@@ -1,6 +1,6 @@
 package memphis.myapplication;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import net.named_data.jndn.util.Blob;
 

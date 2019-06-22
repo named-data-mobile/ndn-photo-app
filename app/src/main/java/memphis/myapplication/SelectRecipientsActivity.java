@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import timber.log.Timber;
 import android.view.View;
 import android.widget.Button;
@@ -70,7 +72,7 @@ public class SelectRecipientsActivity extends AppCompatActivity implements ListD
             ArrayList<String> friendsList = intent.getStringArrayListExtra("friendsList");
             m_sendButton = findViewById(R.id.send_button);
 
-            android.support.v7.widget.RecyclerView recyclerView = findViewById(R.id.friendList);
+            RecyclerView recyclerView = findViewById(R.id.friendList);
             recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
             adapter = new ListDisplayRecyclerView(this, friendsList);

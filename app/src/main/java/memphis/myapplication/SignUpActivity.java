@@ -1,25 +1,9 @@
 package memphis.myapplication;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import timber.log.Timber;
-import android.view.View;
-import android.widget.Toast;
-
-import com.google.zxing.common.BitMatrix;
-
-import java.security.KeyPair;
-
-import memphis.myapplication.FileManager;
-import memphis.myapplication.QRExchange;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 public class SignUpActivity extends AppCompatActivity {
 
