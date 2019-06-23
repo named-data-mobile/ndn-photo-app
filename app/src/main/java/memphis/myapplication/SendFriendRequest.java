@@ -1,9 +1,16 @@
 package memphis.myapplication;
 
 import android.content.Intent;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -19,24 +26,25 @@ import io.realm.RealmResults;
 import memphis.myapplication.RealmObjects.User;
 import timber.log.Timber;
 
-public class SendFriendRequest extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class SendFriendRequest extends Fragment implements AdapterView.OnItemSelectedListener {
     Spinner newFriendSpinner;
     String mutualFriend;
     EditText mEdit;
     String friend;
     TextView message;
+    private View sendFriendRequestView;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_send_friend_request);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        sendFriendRequestView = inflater.inflate(R.layout.fragment_send_friend_request, container, false);
         Realm realm = Realm.getDefaultInstance();
 
         // Edit text
-        mEdit = findViewById(R.id.add_remote_friend_edit_text);
+        mEdit = sendFriendRequestView.findViewById(R.id.add_remote_friend_edit_text);
 
         // New Friend Spinner element
-        newFriendSpinner = findViewById(R.id.spinnerNewFriends);
+        newFriendSpinner = sendFriendRequestView.findViewById(R.id.spinnerNewFriends);
 
         // New Friend Spinner click listener
         newFriendSpinner.setOnItemSelectedListener(this);
@@ -48,7 +56,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             potentialFriendsList.add(f.getUsername());
 
         // Creating adapter for spinner
-        ArrayAdapter<String> newFriendDataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, potentialFriendsList);
+        ArrayAdapter<String> newFriendDataAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_item, potentialFriendsList);
 
         // Drop down layout style - list view with radio button
         newFriendDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -56,7 +64,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         // attaching data adapter to spinner
         newFriendSpinner.setAdapter(newFriendDataAdapter);
 
-        message = findViewById(R.id.trustTypeMessage);
+        message = sendFriendRequestView.findViewById(R.id.trustTypeMessage);
 
         String friendsMessage = "";
         if (potentialFriends.isEmpty()) {
@@ -83,7 +91,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
         realm.close();
 
         // Radio buttons
-        RadioButton rdb1 = findViewById(R.id.radioMutualFriend);
+        RadioButton rdb1 = sendFriendRequestView.findViewById(R.id.radioMutualFriend);
         rdb1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,7 +118,7 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
         });
 
-        RadioButton rdb2 = findViewById(R.id.radioDomain);
+        RadioButton rdb2 = sendFriendRequestView.findViewById(R.id.radioDomain);
         rdb2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,6 +126,19 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
             }
         });
 
+        sendFriendRequestView.findViewById(R.id.sendRemoteFriendRequest).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (friend == null)
+                    friend = mEdit.getText().toString();
+                Timber.d("Sending friend request to " + friend + " using mutual friend " + mutualFriend);
+                FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, getActivity());
+                friendRequest.send();
+                Navigation.findNavController(sendFriendRequestView).popBackStack();
+            }
+        });
+
+        return sendFriendRequestView;
     }
 
     @Override
@@ -129,15 +150,5 @@ public class SendFriendRequest extends AppCompatActivity implements AdapterView.
     }
     public void onNothingSelected(AdapterView<?> arg0) {
         // TODO Auto-generated method stub
-    }
-
-    public void sendRemoteFriendRequest(View view) {
-        if (friend == null)
-            friend = mEdit.getText().toString();
-        Timber.d("Sending friend request to " + friend + " using mutual friend " + mutualFriend);
-        FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, this);
-        friendRequest.send();
-        Intent intent = new Intent(this, AddFriendActivity.class);
-        startActivity(intent);
     }
 }

@@ -5,7 +5,8 @@
     android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="memphis.myapplication.MainActivity">
+    android:background="@color/white"
+    tools:context="memphis.myapplication.DisplayQRFragment">
 
     <ImageView
         android:id="@+id/QRImage"

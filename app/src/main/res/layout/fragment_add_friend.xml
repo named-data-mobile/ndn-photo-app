@@ -11,11 +11,10 @@
         layout="@layout/toolbar"/>
 
     <Button
-        android:id="@+id/add_friend"
+        android:id="@+id/showYourCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
-        android:onClick="displayMyQR"
         android:text="@string/display_qr"
         android:textColor="#FFFFFF"
         android:padding="@dimen/margin_10dp"
@@ -29,7 +28,6 @@
         android:id="@+id/scanFriendButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="scanFriendQR"
         android:text="@string/scan_qr"
         android:background="@drawable/rounded_button"
         android:textColor="#FFFFFF"
@@ -46,7 +44,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
-        android:onClick="viewFriendsList"
         android:text="@string/view_friends"
         android:textColor="#FFFFFF"
         android:padding="@dimen/margin_10dp"
@@ -58,11 +55,10 @@
         app:layout_constraintHorizontal_bias="0.5" />
 
     <Button
-        android:id="@+id/showYourCode"
+        android:id="@+id/addFriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
-        android:onClick="addFriend"
         android:text="Add friend"
         android:textColor="#FFFFFF"
         android:padding="@dimen/margin_10dp"
@@ -78,7 +74,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/rounded_button"
-        android:onClick="sendFriendRequest"
         android:text="@string/send_friend_request"
         android:textColor="#FFFFFF"
         android:padding="@dimen/margin_10dp"

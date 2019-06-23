@@ -3,18 +3,27 @@ package memphis.myapplication;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
-public class AboutActivity extends AppCompatActivity {
+public class AboutFragment extends Fragment {
 
+    private View aboutView;
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_about);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        aboutView = inflater.inflate(R.layout.fragment_about, container, false);
         setupToolbar();
-        findViewById(R.id.source_link).setOnClickListener(new View.OnClickListener() {
+        aboutView.findViewById(R.id.source_link).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -22,7 +31,7 @@ public class AboutActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
-        findViewById(R.id.license_link).setOnClickListener(new View.OnClickListener() {
+        aboutView.findViewById(R.id.license_link).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(Intent.ACTION_VIEW);
@@ -30,12 +39,14 @@ public class AboutActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+
+        return aboutView;
     }
 
     private void setupToolbar() {
-        ToolbarHelper toolbarHelper = new ToolbarHelper(this, "About");
+        ToolbarHelper toolbarHelper = new ToolbarHelper(getActivity(), "About", aboutView);
         Toolbar toolbar = toolbarHelper.setupToolbar();
-        setSupportActionBar(toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 
 }

@@ -11,11 +11,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import android.util.DisplayMetrics;
 import timber.log.Timber;
+
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -34,7 +42,7 @@ import java.io.InputStream;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
-public class FilesActivity extends AppCompatActivity {
+public class FilesFragment extends Fragment {
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
     private final int FILE_QR_REQUEST_CODE = 1;
@@ -44,51 +52,115 @@ public class FilesActivity extends AppCompatActivity {
     private FileManager m_manager;
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
+    private View filesView;
 
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_files);
-        m_manager = new FileManager(getApplicationContext());
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        filesView = inflater.inflate(R.layout.fragment_files, container, false);
 
+        m_manager = new FileManager(getActivity().getApplicationContext());
         setupToolbar();
         setButtonWidth();
+        
+        setupListeners();
+        return filesView;
+    }
+
+    private void setupListeners() {
+        /*
+          Choose a file to share.
+         */
+        filesView.findViewById(R.id.fileSelectButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
+                // browser.
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                // To search for all documents available via installed storage providers,
+                // it would be "*/*".
+                intent.setType("*/*");
+                startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
+            }
+        });
+
+        /*
+          initiate scan for QR codes upon button press
+         */
+        filesView.findViewById(R.id.scanFileQR).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator scanner = new IntentIntegrator(getActivity());
+                // only want QR code scanner
+                scanner.setDesiredBarcodeFormats(QR_CODE_TYPES);
+                scanner.setOrientationLocked(true);
+                // back facing camera id
+                scanner.setCameraId(0);
+                Intent intent = scanner.createScanIntent();
+                startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
+            }
+        });
+
+        /*
+          Start a file selection activity to find a QR image to display. getActivity() is triggered by pressing
+          the "Display QR" button.
+         */
+        filesView.findViewById(R.id.QRButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // ACTION_GET_CONTENT is used for reading; no modifications
+                // We're going to find a png file of our choosing (should be used for displaying QR codes,
+                // but it can display any image)
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                File appDir = new File(m_manager.getFilesDir());
+                Timber.d(appDir.toString());
+                // Uri uri = Uri.fromFile(appDir);
+                Uri uri = Uri.parse(appDir.toString());
+                // start in app's file directory and limit allowable selections to .png files
+                intent.setDataAndType(uri, "image/png");
+                startActivityForResult(intent, FILE_QR_REQUEST_CODE);
+            }
+        });
+
+        // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
+        // file explorer and opener. getActivity() is intended for testing.
+        filesView.findViewById(R.id.viewRcvdButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                File rcvFilesDir = new File(m_manager.getRcvdFilesDir());
+                //Uri uri = Uri.fromFile(rcvFilesDir);
+                Uri uri = Uri.parse(rcvFilesDir.toString());
+                Timber.d("browse: %s", uri.toString());
+                // start in app's file directory and limit allowable selections to .png files
+                intent.setDataAndType(uri, "*/*");
+                startActivityForResult(intent, VIEW_FILE);
+            }
+        });
     }
 
     private void setupToolbar() {
-        toolbarHelper = new ToolbarHelper(this, getString(R.string.files));
+        toolbarHelper = new ToolbarHelper(getActivity(), getString(R.string.files), filesView);
         toolbar = toolbarHelper.setupToolbar();
-        setSupportActionBar(toolbar);
+//        setSupportActionBar(toolbar);
     }
 
     private void setButtonWidth() {
-        DisplayMetrics metrics = this.getResources().getDisplayMetrics();
+        DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
-        Button btn1 = findViewById(R.id.fileSelectButton);
+        Button btn1 = filesView.findViewById(R.id.fileSelectButton);
+        Timber.i(btn1+"");
         btn1.setWidth(width);
-        Button btn2 = findViewById(R.id.scanFileQR);
+        Button btn2 = filesView.findViewById(R.id.scanFileQR);
         btn2.setWidth(width);
-        Button btn3 = findViewById(R.id.QRButton);
+        Button btn3 = filesView.findViewById(R.id.QRButton);
         btn3.setWidth(width);
-        Button btn4 = findViewById(R.id.viewRcvdButton);
+        Button btn4 = filesView.findViewById(R.id.viewRcvdButton);
         btn4.setWidth(width);
     }
 
     public FileManager getFileManager() {
         return m_manager;
-    }
-
-    /**
-     * Choose a file to share.
-     */
-    public void select_files(View view) {
-        // ACTION_OPEN_DOCUMENT is the intent to choose a file via the system's file
-        // browser.
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        // To search for all documents available via installed storage providers,
-        // it would be "*/*".
-        intent.setType("*/*");
-        startActivityForResult(intent, FILE_SELECT_REQUEST_CODE);
     }
 
     @Override
@@ -104,11 +176,11 @@ public class FilesActivity extends AppCompatActivity {
                 String path = getFilePath(uri);
 
                 if (path != null) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
                     builder.setTitle("You selected a file").setMessage(path).show();
                     byte[] bytes;
                     try {
-                        InputStream is = this.getContentResolver().openInputStream(uri);
+                        InputStream is = getActivity().getContentResolver().openInputStream(uri);
                         bytes = IOUtils.toByteArray(is);
                         Timber.d("select file activity: %s", "file byte array size: " + bytes.length);
                     } catch (IOException e) {
@@ -129,34 +201,35 @@ public class FilesActivity extends AppCompatActivity {
                 }
                 else {
                     String msg = "File path could not be resolved";
-                    runOnUiThread(makeToast(msg));
+                    getActivity().runOnUiThread(makeToast(msg));
                 }
             }
             // We received a request to display a QR image
             else if (requestCode == FILE_QR_REQUEST_CODE) {
                 try {
-                    // set up a new Activity for displaying. This way the back button brings us back
+                    // set up a new Activity for displaying. getActivity() way the back button brings us back
                     // to main activity.
-                    Intent display = new Intent(this, DisplayQRActivity.class);
-                    display.setData(resultData.getData());
-                    startActivity(display);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("uri", resultData.getData().toString());
+                    Navigation.findNavController(filesView).navigate(R.id.action_filesActivity_to_displayQRFragment, bundle);
+
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
             } else if (requestCode == SCAN_QR_REQUEST_CODE) {
                 IntentResult result = IntentIntegrator.parseActivityResult(IntentIntegrator.REQUEST_CODE, resultCode, resultData);
                 if (result == null) {
-                    runOnUiThread(makeToast("Null"));
+                    getActivity().runOnUiThread(makeToast("Null"));
                 }
                 if (result != null) {
                     // check resultCode to determine what type of code we're scanning, file or friend
 
                     if (result.getContents() == null) {
-                        runOnUiThread(makeToast("Nothing is here"));
+                        getActivity().runOnUiThread(makeToast("Nothing is here"));
                     } else {
                         String content = result.getContents();
-                        // need to check this content to determine if we are scanning file or friend code
-                        runOnUiThread(makeToast(content));
+                        // need to check getActivity() content to determine if we are scanning file or friend code
+                        getActivity().runOnUiThread(makeToast(content));
                         final Interest interest = new Interest(new Name(content));
                         fetch_data(interest);
                     }
@@ -165,7 +238,7 @@ public class FilesActivity extends AppCompatActivity {
                 }
             }
             else if (requestCode == VIEW_FILE){
-                ContentResolver cr = getContentResolver();
+                ContentResolver cr = getActivity().getContentResolver();
                 try {
                     uri = resultData.getData();
                     // cr.openInputStream(uri);
@@ -175,7 +248,7 @@ public class FilesActivity extends AppCompatActivity {
                     startActivity(intent);
                 } catch (NullPointerException e) {
                     e.printStackTrace();
-                    runOnUiThread(makeToast("Unable to open file."));
+                    getActivity().runOnUiThread(makeToast("Unable to open file."));
                 }
             }
             else {
@@ -194,7 +267,7 @@ public class FilesActivity extends AppCompatActivity {
     public String getFilePath(Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
-        if (DocumentsContract.isDocumentUri(getApplicationContext(), uri)) {
+        if (DocumentsContract.isDocumentUri(getActivity().getApplicationContext(), uri)) {
             if (uri.getAuthority().equals("com.android.externalstorage.documents")) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 Timber.d("file selection: %s", "docId: " + docId);
@@ -226,7 +299,7 @@ public class FilesActivity extends AppCompatActivity {
             String[] projection = {MediaStore.Images.Media.DATA};
             Cursor cursor = null;
             try {
-                cursor = getApplicationContext().getContentResolver().query(uri, projection, selection, selectionArgs, null);
+                cursor = getActivity().getApplicationContext().getContentResolver().query(uri, projection, selection, selectionArgs, null);
                 int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
                 if (cursor.moveToFirst()) {
                     return cursor.getString(column_index);
@@ -242,58 +315,12 @@ public class FilesActivity extends AppCompatActivity {
     }
 
     /**
-     * Start a file selection activity to find a QR image to display. This is triggered by pressing
-     * the "Display QR" button.
-     * @param view The view of MainActivity passed by our button press.
-     */
-    public void lookup_file_QR(View view) {
-        // ACTION_GET_CONTENT is used for reading; no modifications
-        // We're going to find a png file of our choosing (should be used for displaying QR codes,
-        // but it can display any image)
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        File appDir = new File(m_manager.getFilesDir());
-        Timber.d(appDir.toString());
-        // Uri uri = Uri.fromFile(appDir);
-        Uri uri = Uri.parse(appDir.toString());
-        // start in app's file directory and limit allowable selections to .png files
-        intent.setDataAndType(uri, "image/png");
-        startActivityForResult(intent, FILE_QR_REQUEST_CODE);
-    }
-
-    /**
-     * initiate scan for QR codes upon button press
-     */
-    public void scanFileQR(View view) {
-        IntentIntegrator scanner = new IntentIntegrator(this);
-        // only want QR code scanner
-        scanner.setDesiredBarcodeFormats(QR_CODE_TYPES);
-        scanner.setOrientationLocked(true);
-        // back facing camera id
-        scanner.setCameraId(0);
-        Intent intent = scanner.createScanIntent();
-        startActivityForResult(intent, SCAN_QR_REQUEST_CODE);
-    }
-
-    // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
-    // file explorer and opener. This is intended for testing.
-    public void browseRcvdFiles(View view) {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        File rcvFilesDir = new File(m_manager.getRcvdFilesDir());
-        //Uri uri = Uri.fromFile(rcvFilesDir);
-        Uri uri = Uri.parse(rcvFilesDir.toString());
-        Timber.d("browse: %s", uri.toString());
-        // start in app's file directory and limit allowable selections to .png files
-        intent.setDataAndType(uri, "*/*");
-        startActivityForResult(intent, VIEW_FILE);
-    }
-
-    /**
      * Runs FetchingTask, which will use the SegmentFetcher to retrieve data using the provided Interest
      * @param interest the interest for the data we want
      */
     public void fetch_data(final Interest interest) {
         // /tasks/FetchingTask
-//        new FetchingTask(this).execute(interest);
+//        new FetchingTask(getActivity()).execute(interest);
     }
 
     /**
@@ -303,7 +330,7 @@ public class FilesActivity extends AppCompatActivity {
     public Runnable makeToast(final String s) {
         return new Runnable() {
             public void run() {
-                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+                Toast.makeText(getActivity().getApplicationContext(), s, Toast.LENGTH_LONG).show();
             }
         };
     }

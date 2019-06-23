@@ -3,8 +3,17 @@ package memphis.myapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import timber.log.Timber;
+
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
@@ -13,7 +22,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- * This class is used to view received photos. This differs from the DisplayQRActivity (which also
+ * This class is used to view received photos. This differs from the DisplayQRFragment (which also
  * displays an image) because we want the user to be able to skip past a photo without having to
  * wait for the timer to end by tapping the screen. We do not want this behavior when displaying
  * a QR code to someone. One can view one or more photos and will be started from two different
@@ -21,20 +30,28 @@ import java.util.ArrayList;
  * from the Story page, containing friends' Stories.
  */
 
-public class ViewPhotosActivity extends AppCompatActivity {
+public class ViewPhotosFragment extends Fragment {
 
     private ImageView m_imgView;
     private int m_index;
+    private View viewPhotosView;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_photos);
-        m_imgView = findViewById(R.id.photoImgView);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        viewPhotosView = inflater.inflate(R.layout.fragment_view_photos, container, false);
+
+        m_imgView = viewPhotosView.findViewById(R.id.photoImgView);
         // get content from Intent; should be an ArrayList of Files
-        Intent intent = getIntent();
-        ArrayList<String> photos = intent.getStringArrayListExtra("photos");
-        viewPhotos(photos);
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+            bundle.getSerializable("photos");
+            ArrayList<String> photos = (ArrayList<String>) bundle.getSerializable("photos");
+            if (photos == null)
+                Navigation.findNavController(viewPhotosView).popBackStack();
+           else viewPhotos(photos);
+        }else  Navigation.findNavController(viewPhotosView).popBackStack();
+        return viewPhotosView;
     }
 
     /**
@@ -78,7 +95,7 @@ public class ViewPhotosActivity extends AppCompatActivity {
                 String photoToDelete = photos.get(m_index-1);
                 File fileToDelete = new File(photoToDelete);
                 fileToDelete.delete();
-                finish();
+                Navigation.findNavController(viewPhotosView).popBackStack();
             }
 
         }.start();

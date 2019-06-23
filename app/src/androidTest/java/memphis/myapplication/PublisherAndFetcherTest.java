@@ -10,7 +10,7 @@ import android.util.Log;
 
 import junit.framework.Assert;
 
-import memphis.myapplication.MainActivity;
+import memphis.myapplication.MainFragment;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;
@@ -72,8 +72,8 @@ class LooperThread extends Thread {
 @RunWith(AndroidJUnit4.class)
 public class PublisherAndFetcherTest {
     @Rule
-    public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
-            MainActivity.class);
+    public ActivityTestRule<MainFragment> mActivityRule = new ActivityTestRule<>(
+            MainFragment.class);
 
     /*@Test
     public void checkCacheContent() {

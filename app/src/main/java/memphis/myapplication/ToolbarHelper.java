@@ -1,6 +1,8 @@
 package memphis.myapplication;
 
 import androidx.appcompat.widget.Toolbar;
+
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.app.Activity;
@@ -14,21 +16,29 @@ public class ToolbarHelper {
 
     public Activity activity;
     private String title;
+    private View view;
 
-    public ToolbarHelper(Activity _activity, String title) {
-        this.activity = _activity;
+//    public ToolbarHelper(Activity _activity, String title) {
+//        this.activity = _activity;
+//        this.title = title;
+//    }
+
+    public ToolbarHelper(Activity activity, String title, View view) {
+        this.activity = activity;
         this.title = title;
+        this.view = view;
     }
+
     public ToolbarHelper(Activity _activity) {
         this.activity = _activity;
     }
 
     public Toolbar setupToolbar() {
         FileManager m_manager = new FileManager(this.activity.getApplicationContext());
-        Toolbar toolbar = this.activity.findViewById(R.id.toolbar);
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle("");
-        ImageView imageView = this.activity.findViewById(R.id.toolbar_main_photo);
-        TextView textView = this.activity.findViewById(R.id.main_title);
+        ImageView imageView = view.findViewById(R.id.toolbar_main_photo);
+        TextView textView = view.findViewById(R.id.main_title);
         textView.setText(this.title);
         File file = m_manager.getProfilePhoto();
         if(file == null || file.length() == 0) {
@@ -41,7 +51,7 @@ public class ToolbarHelper {
     }
 
     public void setupToolbarImage(String photoUri) {
-        ImageView imageView = this.activity.findViewById(R.id.toolbar_main_photo);
+        ImageView imageView = view.findViewById(R.id.toolbar_main_photo);
         Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(imageView);
     }
 }

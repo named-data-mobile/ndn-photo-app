@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/blankFragment">
+
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="memphis.myapplication.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" >
+        <action
+            android:id="@+id/action_mainFragment_to_addFriendFragment"
+            app:destination="@id/addFriendFragment"
+            />
+        <action
+            android:id="@+id/action_mainFragment_to_settingsActivity"
+            app:destination="@id/settingsActivity" />
+        <action
+            android:id="@+id/action_mainFragment_to_aboutActivity"
+            app:destination="@id/aboutActivity" />
+        <action
+            android:id="@+id/action_mainFragment_to_newContentActivity"
+            app:destination="@id/newContentActivity" />
+        <action
+            android:id="@+id/action_mainFragment_to_filesActivity"
+            app:destination="@id/filesActivity" />
+        <action
+            android:id="@+id/action_mainFragment_to_selectRecipientsActivity"
+            app:destination="@id/selectRecipientsActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/blankFragment"
+        android:name="memphis.myapplication.BlankFragment"
+        android:label="fragment_blank"
+        tools:layout="@layout/fragment_blank" >
+        <action
+            android:id="@+id/action_blankFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@+id/blankFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_blankFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@+id/blankFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/addFriendFragment"
+        android:name="memphis.myapplication.AddFriendFragment"
+        android:label="fragment_add_friend"
+        tools:layout="@layout/fragment_add_friend" >
+        <action
+            android:id="@+id/action_addFriendFragment_to_displayQRFragment"
+            app:destination="@id/displayQRFragment" />
+        <action
+            android:id="@+id/action_addFriendFragment_to_viewFriendsFragment"
+            app:destination="@id/viewFriendsFragment" />
+        <action
+            android:id="@+id/action_addFriendFragment_to_sendFriendRequest"
+            app:destination="@id/sendFriendRequest" />
+    </fragment>
+    <fragment
+        android:id="@+id/displayQRFragment"
+        android:name="memphis.myapplication.DisplayQRFragment"
+        android:label="fragment_display_qr"
+        tools:layout="@layout/fragment_display_qr" />
+    <fragment
+        android:id="@+id/settingsActivity"
+        android:name="memphis.myapplication.SettingsActivity"
+        android:label="fragment_settings"
+        tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/aboutActivity"
+        android:name="memphis.myapplication.AboutFragment"
+        android:label="fragment_about"
+        tools:layout="@layout/fragment_about" />
+    <fragment
+        android:id="@+id/viewFriendsFragment"
+        android:name="memphis.myapplication.ViewFriendsFragment"
+        android:label="fragment_with_list"
+        tools:layout="@layout/fragment_with_list" />
+    <fragment
+        android:id="@+id/sendFriendRequest"
+        android:name="memphis.myapplication.SendFriendRequest"
+        android:label="fragment_send_friend_request"
+        tools:layout="@layout/fragment_send_friend_request" />
+    <fragment
+        android:id="@+id/newContentActivity"
+        android:name="memphis.myapplication.NewContentFragment"
+        android:label="fragment_with_list"
+        tools:layout="@layout/fragment_with_list" >
+        <action
+            android:id="@+id/action_newContentActivity_to_viewPhotosActivity"
+            app:destination="@id/viewPhotosActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/viewPhotosActivity"
+        android:name="memphis.myapplication.ViewPhotosFragment"
+        android:label="fragment_view_photos"
+        tools:layout="@layout/fragment_view_photos" />
+    <fragment
+        android:id="@+id/filesActivity"
+        android:name="memphis.myapplication.FilesFragment"
+        android:label="fragment_files"
+        tools:layout="@layout/fragment_files" >
+        <action
+            android:id="@+id/action_filesActivity_to_displayQRFragment"
+            app:destination="@id/displayQRFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/selectRecipientsActivity"
+        android:name="memphis.myapplication.SelectRecipientsActivity"
+        android:label="fragment_select_recipients"
+        tools:layout="@layout/fragment_select_recipients" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="memphis.myapplication.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@+id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+</navigation>

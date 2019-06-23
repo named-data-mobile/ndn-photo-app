@@ -3,30 +3,40 @@ package memphis.myapplication;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginFragment extends Fragment {
 
     final private int MISSING_ELEMENT = 1;
     private String username, password, domain;
     private ProgressBar loginProgressBar;
     private Button loginButton;
+    private View loginView;
+
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        loginProgressBar = findViewById(R.id.login_progress_bar);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        loginView = inflater.inflate(R.layout.fragment_login, container, false);
+
+        loginProgressBar = loginView.findViewById(R.id.login_progress_bar);
         loginProgressBar.setVisibility(View.GONE);
-        loginButton = findViewById(R.id.login_button);
+        loginButton = loginView.findViewById(R.id.login_button);
         setButtonWidth();
-        EditText pass = findViewById(R.id.password_text);
+        EditText pass = loginView.findViewById(R.id.password_text);
         pass.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
@@ -37,6 +47,15 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         // setBackgroundImage();
+
+        loginButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                login(v);
+            }
+        });
+     
+        return loginView;
     }
 
     private void setButtonWidth() {
@@ -50,7 +69,7 @@ public class LoginActivity extends AppCompatActivity {
     // background. If not, just delete this function.
     /*private void setBackgroundImage() {
         try {
-            ImageView backImg = findViewById(R.id.backImg);
+            ImageView backImg = loginView.findViewById(R.id.backImg);
             Picasso.get().load(R.drawable.hotel).rotate(90f).fit().centerCrop().into(backImg);
         }
         catch(Exception e) {
@@ -73,9 +92,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        EditText dom = findViewById(R.id.domain_text);
-        EditText name = findViewById(R.id.username_text);
-        EditText pass = findViewById(R.id.password_text);
+        EditText dom = loginView.findViewById(R.id.domain_text);
+        EditText name = loginView.findViewById(R.id.username_text);
+        EditText pass = loginView.findViewById(R.id.password_text);
         domain = dom.getText().toString();
         username = name.getText().toString();
         password = pass.getText().toString();
@@ -86,10 +105,10 @@ public class LoginActivity extends AppCompatActivity {
             new LoginTask().execute();
         }
         else if(attempt == MISSING_ELEMENT) {
-            Toast.makeText(this, "Please fill out form completely", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "Please fill out form completely", Toast.LENGTH_LONG).show();
         }
         else {
-            Toast.makeText(this, "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -107,15 +126,14 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(Void... voids) {
             // save username and go to mainpage
-            SharedPrefsManager.getInstance(LoginActivity.this).setCredentials(username, password, domain);
+            SharedPrefsManager.getInstance(getActivity()).setCredentials(username, password, domain);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
+            Navigation.findNavController(loginView).navigate(R.id.action_loginFragment_to_mainFragment);
         }
     }
 }

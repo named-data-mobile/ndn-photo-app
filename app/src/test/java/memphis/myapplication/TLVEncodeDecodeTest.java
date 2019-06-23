@@ -24,7 +24,7 @@ public class TLVEncodeDecodeTest {
         String filename = "/test/filename.jpg";
         byte[] iv = new byte[16];
         String[] users = {"testUser"};
-        Activity activity = new MainActivity();
+        Activity activity = new MainFragment();
         SecretKey secretKey = activity.;
         ArrayList<String> recipients = new ArrayList<String>(Arrays.asList(users));
         Blob syncData =

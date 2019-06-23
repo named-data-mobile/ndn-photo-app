@@ -6,7 +6,7 @@
     android:background="@color/colorPrimaryDark"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="memphis.myapplication.MainActivity">
+    tools:context="memphis.myapplication.MainFragment">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/app_toolbar"

@@ -46,6 +46,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
@@ -65,4 +66,10 @@ dependencies {
     implementation 'com.googlecode.json-simple:json-simple:1.1'
     // Timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    // Navigation
+    def nav_version = "2.1.0-alpha05"
+
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
 }

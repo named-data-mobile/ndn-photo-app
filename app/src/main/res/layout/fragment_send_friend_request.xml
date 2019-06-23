@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     android:padding="16dp">
 
     <TextView
@@ -78,6 +79,7 @@
         />
 
     <Button
+        android:id="@+id/sendRemoteFriendRequest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
@@ -87,5 +89,5 @@
         android:paddingRight="70dp"
         android:text="Send Friend Request"
         android:textColor="#fff"
-        android:onClick="sendRemoteFriendRequest"/>
+        />
 </LinearLayout>

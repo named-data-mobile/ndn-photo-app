@@ -7,7 +7,7 @@ import android.os.IBinder;
 
 /**
  * This will be needed when we implement PSync. Until then, we will just use the Network Thread in
- * MainActivity.
+ * MainFragment.
  */
 public class NetworkService extends Service {
 
