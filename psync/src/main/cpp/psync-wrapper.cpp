@@ -62,14 +62,14 @@ JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_initialize
         (JNIEnv *env, jobject thisObject, jstring homePath)
 {
   if (!g_facePtr) {
-    ALOG("%s", "Initialising face");
+    ALOG("%s", "Initializing face");
     ::setenv("HOME", env->GetStringUTFChars(homePath, 0), true);
     g_facePtr = std::make_unique<ndn::Face>("127.0.0.1");
   }
 
   if (!g_thread) {
     g_thread = std::make_unique<std::thread>([] {
-        ALOG("%s", "Starting proces events thread");
+        ALOG("%s", "Starting process events thread");
         try {
           // If keepThread is not passed as true, then PSync does not seem to set the interest filter in NFD
           g_facePtr->processEvents(ndn::time::milliseconds::zero(), true);
