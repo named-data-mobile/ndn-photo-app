@@ -13,6 +13,9 @@ import java.util.Arrays;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.utilities.Decrypter;
+import memphis.myapplication.utilities.Encrypter;
+
 import static org.junit.Assert.assertTrue;
 
 public class EncryptionTest {

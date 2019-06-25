@@ -5,7 +5,7 @@ import android.content.Context;
 
 import android.util.Base64;
 
-import memphis.myapplication.FriendsList;
+import memphis.myapplication.data.FriendsList;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -30,10 +30,10 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import memphis.myapplication.Globals;
-import memphis.myapplication.SharedPrefsManager;
-import memphis.myapplication.SyncData;
-import memphis.myapplication.tasks.FetchingTask;
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import memphis.myapplication.utilities.SyncData;
+import memphis.myapplication.data.tasks.FetchingTask;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
 
 public class ConsumerManager {
 

@@ -13,8 +13,9 @@ import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.UI.MainFragment;
 import memphis.myapplication.psync.ConsumerManager;
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
 
 import static org.junit.Assert.assertThat;
 

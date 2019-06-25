@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="memphis.myapplication.MainFragment">
+    tools:context="memphis.myapplication.UI.MainFragment">
 
     <!-- insert a drawable here so we can have white dots -->
     <item

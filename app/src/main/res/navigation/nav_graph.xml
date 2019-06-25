@@ -8,7 +8,7 @@
 
     <fragment
         android:id="@+id/mainFragment"
-        android:name="memphis.myapplication.MainFragment"
+        android:name="memphis.myapplication.UI.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main" >
         <action
@@ -33,7 +33,7 @@
     </fragment>
     <fragment
         android:id="@+id/blankFragment"
-        android:name="memphis.myapplication.BlankFragment"
+        android:name="memphis.myapplication.UI.BlankFragment"
         android:label="fragment_blank"
         tools:layout="@layout/fragment_blank" >
         <action
@@ -49,7 +49,7 @@
     </fragment>
     <fragment
         android:id="@+id/addFriendFragment"
-        android:name="memphis.myapplication.AddFriendFragment"
+        android:name="memphis.myapplication.UI.AddFriendFragment"
         android:label="fragment_add_friend"
         tools:layout="@layout/fragment_add_friend" >
         <action
@@ -64,32 +64,32 @@
     </fragment>
     <fragment
         android:id="@+id/displayQRFragment"
-        android:name="memphis.myapplication.DisplayQRFragment"
+        android:name="memphis.myapplication.UI.DisplayQRFragment"
         android:label="fragment_display_qr"
         tools:layout="@layout/fragment_display_qr" />
     <fragment
         android:id="@+id/settingsActivity"
-        android:name="memphis.myapplication.SettingsActivity"
+        android:name="memphis.myapplication.UI.SettingsFragment"
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" />
     <fragment
         android:id="@+id/aboutActivity"
-        android:name="memphis.myapplication.AboutFragment"
+        android:name="memphis.myapplication.UI.AboutFragment"
         android:label="fragment_about"
         tools:layout="@layout/fragment_about" />
     <fragment
         android:id="@+id/viewFriendsFragment"
-        android:name="memphis.myapplication.ViewFriendsFragment"
+        android:name="memphis.myapplication.UI.ViewFriendsFragment"
         android:label="fragment_with_list"
         tools:layout="@layout/fragment_with_list" />
     <fragment
         android:id="@+id/sendFriendRequest"
-        android:name="memphis.myapplication.SendFriendRequest"
+        android:name="memphis.myapplication.UI.SendFriendRequestFragment"
         android:label="fragment_send_friend_request"
         tools:layout="@layout/fragment_send_friend_request" />
     <fragment
         android:id="@+id/newContentActivity"
-        android:name="memphis.myapplication.NewContentFragment"
+        android:name="memphis.myapplication.UI.NewContentFragment"
         android:label="fragment_with_list"
         tools:layout="@layout/fragment_with_list" >
         <action
@@ -98,12 +98,12 @@
     </fragment>
     <fragment
         android:id="@+id/viewPhotosActivity"
-        android:name="memphis.myapplication.ViewPhotosFragment"
+        android:name="memphis.myapplication.UI.ViewPhotosFragment"
         android:label="fragment_view_photos"
         tools:layout="@layout/fragment_view_photos" />
     <fragment
         android:id="@+id/filesActivity"
-        android:name="memphis.myapplication.FilesFragment"
+        android:name="memphis.myapplication.UI.FilesFragment"
         android:label="fragment_files"
         tools:layout="@layout/fragment_files" >
         <action
@@ -112,12 +112,12 @@
     </fragment>
     <fragment
         android:id="@+id/selectRecipientsActivity"
-        android:name="memphis.myapplication.SelectRecipientsActivity"
+        android:name="memphis.myapplication.UI.SelectRecipientsFragment"
         android:label="fragment_select_recipients"
         tools:layout="@layout/fragment_select_recipients" />
     <fragment
         android:id="@+id/loginFragment"
-        android:name="memphis.myapplication.LoginFragment"
+        android:name="memphis.myapplication.UI.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
         <action

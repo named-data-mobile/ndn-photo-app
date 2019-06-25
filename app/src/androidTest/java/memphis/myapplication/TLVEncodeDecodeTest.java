@@ -14,7 +14,10 @@ import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
+import memphis.myapplication.utilities.Decrypter;
+import memphis.myapplication.utilities.Encrypter;
+import memphis.myapplication.utilities.FileManager;
 
 import static org.junit.Assert.assertEquals;
 

@@ -19,8 +19,8 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
         <provider
-            android:name=".UriFileProvider"
-            android:authorities="memphis.myapplication.UriFileProvider"
+            android:name=".utilities.UriFileProvider"
+            android:authorities="memphis.myapplication.utilities.UriFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -28,7 +28,7 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".services.NetworkService" />
+        <service android:name=".utilities.services.NetworkService" />
 
         <activity
             android:name=".IntroActivity">
@@ -39,7 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SignUpActivity"
+            android:name=".UI.SignUpActivity"
             android:exported="true"
             android:label="ndn-snapchat"
             android:theme="@style/AppTheme.NoActionBar">

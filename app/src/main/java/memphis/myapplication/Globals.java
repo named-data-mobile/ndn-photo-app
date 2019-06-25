@@ -2,33 +2,19 @@ package memphis.myapplication;
 
 import android.app.Application;
 
-import com.intel.jndn.management.ManagementException;
-import com.intel.jndn.management.Nfdc;
-
-import io.realm.Realm;
-import memphis.myapplication.RealmObjects.SelfCertificate;
-import memphis.myapplication.RealmObjects.User;
+import memphis.myapplication.utilities.MemoryCache;
+import memphis.myapplication.data.NSDHelper;
 import timber.log.Timber;
 
-import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
-import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
-import net.named_data.jndn.OnData;
-import net.named_data.jndn.OnTimeout;
-import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.KeyChain;
-import net.named_data.jndn.security.SecurityException;
-import net.named_data.jndn.security.VerificationHelpers;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
 import net.named_data.jndn.security.pib.PibIdentity;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;

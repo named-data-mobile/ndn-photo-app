@@ -10,7 +10,7 @@ import android.util.Log;
 
 import junit.framework.Assert;
 
-import memphis.myapplication.MainFragment;
+import memphis.myapplication.UI.MainFragment;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Interest;

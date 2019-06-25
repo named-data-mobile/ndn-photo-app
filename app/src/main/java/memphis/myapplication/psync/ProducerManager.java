@@ -1,7 +1,7 @@
 package memphis.myapplication.psync;
 import android.util.Base64;
 
-import memphis.myapplication.FriendsList;
+import memphis.myapplication.data.FriendsList;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;

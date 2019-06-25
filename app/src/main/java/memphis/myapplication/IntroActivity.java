@@ -7,12 +7,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import timber.log.Timber;
+import memphis.myapplication.utilities.SharedPrefsManager;
 
 public class IntroActivity extends AppCompatActivity {
 
@@ -26,7 +25,7 @@ public class IntroActivity extends AppCompatActivity {
         if(navController.getCurrentDestination().getId()!=R.id.blankFragment) return;
         // Check if NDN Forwarding Daemon is installed.
         // If installed -> Continue Regular Onboarding
-        // If not installed -> Show a Message and request memphis.myapplication.RealmObjects.User to install NDN Forwarding Daemon.
+        // If not installed -> Show a Message and request memphis.myapplication.data.RealmObjects.User to install NDN Forwarding Daemon.
         final String nfdAppPackageName = getString(R.string.nfd_package);
         Context context = getApplicationContext();
         PackageManager pm = context.getPackageManager();
