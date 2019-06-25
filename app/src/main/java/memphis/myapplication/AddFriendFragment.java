@@ -298,7 +298,7 @@ public class AddFriendFragment extends Fragment {
                                 @Override
                                 public void run() {
                                     try {
-                                        Globals.generateCertificateInterest(friendName);
+                                        Common.generateCertificateInterest(friendName);
                                     } catch (SecurityException e) {
                                         e.printStackTrace();
                                     } catch (IOException e) {

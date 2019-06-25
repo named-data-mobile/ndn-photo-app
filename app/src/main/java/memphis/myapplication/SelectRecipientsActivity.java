@@ -138,7 +138,7 @@ public class SelectRecipientsActivity extends Fragment implements ListDisplayRec
                             String path = bundle.getString("photo");
                             Intent data = new Intent();
                             data.putExtra("photo", path);
-                            encryptAndPublish(data);
+                            Common.encryptAndPublish(data, getActivity());
                             Navigation.findNavController(selectReceipientsView).popBackStack();
                         }
                     } catch (Exception e) {
@@ -184,7 +184,7 @@ public class SelectRecipientsActivity extends Fragment implements ListDisplayRec
                             Intent data = new Intent();
                             data.putStringArrayListExtra("recipients", m_selectedFriends);
                             data.putExtra("photo", path);
-                            encryptAndPublish(data);
+                            Common.encryptAndPublish(data, getActivity());
                             Navigation.findNavController(selectReceipientsView).popBackStack();
                         }
                     } catch (Exception e) {
@@ -205,122 +205,6 @@ public class SelectRecipientsActivity extends Fragment implements ListDisplayRec
             });
 
             question.show();
-        }
-    }
-
-    /**
-     * encodes sync data, encrypts photo, and publishes filename and symmetric keys
-     * @param resultData: intent with filename and recipients list
-     */
-    public void encryptAndPublish(Intent resultData) {
-        try {
-            final String path = resultData.getStringExtra("photo");
-            final File photo = new File(path);
-            Timber.d("File size: " + photo.length());
-            final Uri uri = UriFileProvider.getUriForFile(getActivity(),
-                    getActivity().getApplicationContext().getPackageName() +
-                            ".UriFileProvider", photo);
-            final Encrypter encrypter = new Encrypter(getActivity().getApplicationContext());
-
-
-            ArrayList<String> recipients;
-            try {
-                recipients = resultData.getStringArrayListExtra("recipients");
-                SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(getActivity());
-
-                String name = sharedPrefsManager.getNamespace() + "/data";
-                final String filename = sharedPrefsManager.getNamespace() + "/file" + path;
-
-                // Generate symmetric key
-                final SecretKey secretKey = encrypter.generateKey();
-                final byte[] iv = encrypter.generateIV();
-
-                // Encode sync data
-                SyncData syncData = new SyncData();
-                syncData.setFilename(filename);
-
-                final boolean feed = (recipients == null);
-                if (feed) {
-                    Timber.d("For feed");
-                    syncData.setFeed(true);
-                }
-                else {
-                    syncData.setFeed(false);
-                    Timber.d( "For friends");
-                    Realm realm = Realm.getDefaultInstance();
-                    for (String friend : recipients) {
-                        Blob friendKey = realm.where(User.class).equalTo("username", friend).findFirst().getCert().getPublicKey();
-                        byte[] encryptedKey = RsaAlgorithm.encrypt
-                                (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
-                        syncData.addFriendKey(friend, encryptedKey);
-                    }
-                }
-                // Stringify sync data
-                producerManager.setDataSeqMap(syncData.stringify());
-                Timber.d("Publishing file: %s", filename);
-
-                byte[] bytes;
-                try {
-                    InputStream is = getActivity().getContentResolver().openInputStream(uri);
-                    bytes = IOUtils.toByteArray(is);
-                    Timber.d("select file activity: %s", "file byte array size: " + bytes.length);
-                } catch (IOException e) {
-                    Timber.d("onItemClick: failed to byte");
-                    e.printStackTrace();
-                    bytes = new byte[0];
-                }
-                Timber.d("file selection result: %s", "file path: " + path);
-                try {
-                    String prefixApp = "/" + sharedPrefsManager.getNamespace();
-
-                    final String prefix = prefixApp + "/file" + path;
-                    Timber.d(prefix);
-                    Realm realm = Realm.getDefaultInstance();
-                    realm.beginTransaction();
-                    PublishedContent contentKey = realm.createObject(PublishedContent.class, path);
-                    if (!feed) {
-                        Timber.d("Publishing to friend(s)");
-                        contentKey.addKey(secretKey);
-                        realm.commitTransaction();
-                        realm.close();
-
-                        Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                        Common.publishData(encryptedBlob, new Name(prefix));
-                    }
-                    else {
-                        Timber.d("Publishing to feed");
-                        realm.commitTransaction();
-                        realm.close();
-                        Blob unencryptedBlob = new Blob(bytes);
-                        Common.publishData(unencryptedBlob, new Name(prefix));
-
-                    }
-                    final FileManager manager = new FileManager(getActivity().getApplicationContext());
-                    Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                    manager.saveFileQR(bitmap, prefix);
-                    getActivity().runOnUiThread(makeToast("Sending photo"));
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (NoSuchPaddingException e) {
-                    e.printStackTrace();
-                } catch (BadPaddingException e) {
-                    e.printStackTrace();
-                } catch (InvalidKeyException e) {
-                    e.printStackTrace();
-                } catch (IllegalBlockSizeException e) {
-                    e.printStackTrace();
-                } catch (InvalidAlgorithmParameterException e) {
-                    e.printStackTrace();
-                }
-                producerManager.publishFile(name);
-            }
-            catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            getActivity().runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
         }
     }
 

@@ -882,10 +882,10 @@ public class MainFragment extends Fragment {
                             Timber.d("Adding friend to friendslist %s", f.getUsername());
                             friendsList.add(f.getUsername());
                         }
-                        m_curr_photo_file = null;
                         Bundle bundle = new Bundle();
                         bundle.putString("photo", m_curr_photo_file.toString());
                         bundle.putSerializable("friendsList", friendsList);
+                        m_curr_photo_file = null;
                         Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_selectRecipientsActivity, bundle);
                     }
                 });
