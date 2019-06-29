@@ -1,12 +1,16 @@
 package memphis.myapplication.UI;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +18,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import memphis.myapplication.R;
 import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
 import android.view.LayoutInflater;
@@ -34,7 +39,15 @@ public class NewContentFragment extends Fragment implements ListDisplayRecyclerV
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         newContentView = inflater.inflate(R.layout.fragment_with_list, container, false);
-        setupToolbar();
+        UserModel userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new UserModel(getActivity());
+            }
+        }).get(UserModel.class);
+
+        setupToolbar(userModel.getUserImage().getValue());
         listReceivedContent();
 
         return newContentView;
@@ -76,9 +89,9 @@ public class NewContentFragment extends Fragment implements ListDisplayRecyclerV
 //        }
     }
 
-    private void setupToolbar() {
-        ToolbarHelper toolbarHelper = new ToolbarHelper(getActivity(), "Photos", newContentView);
-        Toolbar toolbar = toolbarHelper.setupToolbar();
+    private void setupToolbar(Uri uri) {
+        ToolbarHelper toolbarHelper = new ToolbarHelper("Photos", newContentView);
+        Toolbar toolbar = toolbarHelper.setupToolbar(uri);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 

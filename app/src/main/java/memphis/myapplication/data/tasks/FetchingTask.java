@@ -1,10 +1,14 @@
 package memphis.myapplication.data.tasks;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+
+import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 import android.widget.Toast;
+
+import androidx.lifecycle.MutableLiveData;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -35,19 +39,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import io.realm.Realm;
 import memphis.myapplication.utilities.Decrypter;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
-import memphis.myapplication.data.RealmObjects.User;
 
 import static java.lang.Thread.sleep;
 
 // revisit params
 public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
-    private Activity m_parentActivity;
+    private final MutableLiveData<String> toastData;
     private Context m_currContext;
     private Face m_face;
     private Blob m_content;
@@ -64,9 +66,9 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private SecretKey m_secretKey;
 
-    public FetchingTask(Activity activity) {
-        m_parentActivity = activity;
-        m_currContext = activity.getApplicationContext();
+    public FetchingTask(Context applicationContext, MutableLiveData<String> toastData) {
+        m_currContext = applicationContext;
+        this.toastData = toastData;
         m_appPrefix = "/" + m_currContext.getResources().getString(R.string.app_name);
         m_face = new Face();
         Timber.d("Face Check: %s", "m_face: " + m_face.toString() + " globals: " + Globals.face);
@@ -164,12 +166,14 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
      */
     private void getUserInfo(String user) {
         m_user = user;
-        Realm realm = Realm.getDefaultInstance();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User m_user = realmRepository.getFriend(user);
+        realmRepository.close();
         // we have the user, check if we're friends. If so, retrieve their key from file.
         Timber.d("username&PubKey: %s", "user: " + m_user);
-        if(realm.where(User.class).equalTo("username", m_user).findFirst().isFriend()) {
+        if(m_user.isFriend()) {
             try {
-                m_pubKey = new PublicKey(realm.where(User.class).equalTo("username", m_user).findFirst().getCert().getPublicKey());
+                m_pubKey = new PublicKey(m_user.getCert().getPublicKey());
             }
             catch(UnrecognizedKeyFormatException e) {
                 e.printStackTrace();
@@ -213,7 +217,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             Timber.d("onPostExecute: not received");
         }
         if (m_received) {
-            // FileManager manager = new FileManager(m_parentActivity.getApplicationContext());
+            // FileManager manager = new FileManager(applicationContext);
             Timber.d("m_content size; " + m_content.size());
 
             boolean wasSaved;
@@ -252,15 +256,15 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             if (wasSaved) {
                 m_resultMsg = "We got content.";
                 Timber.d( "Data saved");
-                m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
+                toastData.postValue(m_resultMsg);
             } else {
                 m_resultMsg = "Failed to save retrieved content";
-                m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
+                toastData.postValue(m_resultMsg);
             }
         }
         else {
             Timber.d(" onError: %s", m_resultMsg);
-            m_parentActivity.runOnUiThread(makeToast(m_resultMsg));
+            toastData.postValue(m_resultMsg);
         }
     }
 

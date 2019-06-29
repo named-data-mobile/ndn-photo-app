@@ -7,21 +7,21 @@ import android.net.Uri;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
 
-import io.realm.Realm;
 import memphis.myapplication.Globals;
-import memphis.myapplication.data.RealmObjects.PublishedContent;
-import memphis.myapplication.data.RealmObjects.SelfCertificate;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.SyncData;
 import memphis.myapplication.utilities.Encrypter;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.utilities.SharedPrefsManager;
-import memphis.myapplication.utilities.UriFileProvider;
+import memphis.myapplication.viewmodels.RealmViewModel;
 import timber.log.Timber;
 
 import net.named_data.jndn.ContentType;
@@ -160,8 +160,9 @@ public class Common {
      * @param friend: name of friend who has our certificate
      */
     public static void generateCertificateInterest(String friend) throws SecurityException, IOException {
-        Realm realm = Realm.getDefaultInstance();
-        User user = realm.where(User.class).equalTo("username", friend).findFirst();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User user = realmRepository.getFriend(friend);
+        realmRepository.close();
         Name name =  new Name(user.getNamespace());
         name.append("cert");
         Name certName = Globals.keyChain.getDefaultCertificateName();
@@ -179,13 +180,11 @@ public class Common {
         name.append(newCertName);
         Interest interest = new Interest(name);
         Timber.d("Expressing interest for our cert %s", name.toUri());
-        registerUser(friend);
+        registerUser(user);
         Globals.face.expressInterest(interest, onCertData, onCertTimeOut);
     }
 
-    public static void registerUser(String friendName) {
-        Realm realm = Realm.getDefaultInstance();
-        User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
+    public static void registerUser(User friend) {
         try {
             Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
         } catch (ManagementException e) {
@@ -201,10 +200,10 @@ public class Common {
         @Override
         public void onData(Interest interest, Data data) {
             Timber.d("Getting our certificate back from friend");
-            Realm realm = Realm.getDefaultInstance();
+            RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
 
             String friendName = interest.getName().getSubName(-2, 1).toUri().substring(1);
-            User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
+            User friend = realmRepository.getFriend(friendName);
             Blob interestData = data.getContent();
             byte[] certBytes = interestData.getImmutableArray();
 
@@ -214,16 +213,11 @@ public class Common {
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
-            realm.beginTransaction();
-            SelfCertificate realmCertificate = realm.where(SelfCertificate.class).equalTo("username", friendName).findFirst();
-            if (realmCertificate == null) {
-                realmCertificate = realm.createObject(SelfCertificate.class, friendName);
-            }
-            realmCertificate.setCert(certificateV2);
+            realmRepository.setFriendCertificate(friendName, certificateV2);
 
             VerificationHelpers verificationHelpers = new VerificationHelpers();
             try {
-                boolean verified = verificationHelpers.verifyDataSignature(certificateV2, realm.where(User.class).equalTo("username", friendName).findFirst().getCert());
+                boolean verified = verificationHelpers.verifyDataSignature(certificateV2, realmRepository.getFriend(friendName).getCert());
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
@@ -233,15 +227,16 @@ public class Common {
             friend.setFriend(true);
             friend.setTrust(true);
             consumerManager.createConsumer(friend.getNamespace());
-            realm.commitTransaction();
 
             // Share friend's list
             producerManager.updateFriendsList();
 
             if (!Globals.useMulticast) {
-                Globals.nsdHelper.registerUser(friendName);
+                Globals.nsdHelper.registerUser(friend);
+                realmRepository.close();
             } else {
-                User user = realm.where(User.class).equalTo("username", friendName).findFirst();
+                User user = realmRepository.getFriend(friendName);
+                realmRepository.close();
                 try {
                     Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(user.getNamespace()), 0);
                 } catch (ManagementException e) {
@@ -249,7 +244,6 @@ public class Common {
                 }
 
             }
-            realm.close();
         }
     };
 
@@ -279,14 +273,15 @@ public class Common {
      * @param resultData: intent with filename and recipients list
      */
     public static void encryptAndPublish(Intent resultData, Context context) {
+        RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity)context).get(RealmViewModel.class);
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
             Timber.d("File size: " + photo.length());
-            final Uri uri = UriFileProvider.getUriForFile(context,
+            final Uri uri = FileProvider.getUriForFile(context,
                     context.getApplicationContext().getPackageName() +
-                            ".UriFileProvider", photo);
-            final Encrypter encrypter = new Encrypter(context.getApplicationContext());
+                            ".fileProvider", photo);
+            final Encrypter encrypter = new Encrypter();
 
 
             ArrayList<String> recipients;
@@ -313,9 +308,8 @@ public class Common {
                 else {
                     syncData.setFeed(false);
                     Timber.d( "For friends");
-                    Realm realm = Realm.getDefaultInstance();
                     for (String friend : recipients) {
-                        Blob friendKey = realm.where(User.class).equalTo("username", friend).findFirst().getCert().getPublicKey();
+                        Blob friendKey = databaseViewModel.getFriend(friend).getCert().getPublicKey();
                         byte[] encryptedKey = RsaAlgorithm.encrypt
                                 (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
                         syncData.addFriendKey(friend, encryptedKey);
@@ -341,22 +335,15 @@ public class Common {
 
                     final String prefix = prefixApp + "/file" + path;
                     Timber.d(prefix);
-                    Realm realm = Realm.getDefaultInstance();
-                    realm.beginTransaction();
-                    PublishedContent contentKey = realm.createObject(PublishedContent.class, path);
                     if (!feed) {
                         Timber.d("Publishing to friend(s)");
-                        contentKey.addKey(secretKey);
-                        realm.commitTransaction();
-                        realm.close();
+                        databaseViewModel.addKey(path, secretKey);
 
                         Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                         Common.publishData(encryptedBlob, new Name(prefix));
                     }
                     else {
                         Timber.d("Publishing to feed");
-                        realm.commitTransaction();
-                        realm.close();
                         Blob unencryptedBlob = new Blob(bytes);
                         Common.publishData(unencryptedBlob, new Name(prefix));
 

@@ -7,44 +7,44 @@ import net.named_data.jndn.security.v2.CertificateV2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import io.realm.RealmList;
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-import io.realm.annotations.Required;
+public class User {
 
-public class User extends RealmObject {
-
-    @PrimaryKey
-    @Required
     private String username;
-
-    @Required
     private String domain;
-
-    private RealmList<String> friends = new RealmList<>();
+    private ArrayList<String> friends = new ArrayList<>();
 
     private byte[] cert;
     private boolean friend;
     private boolean trust;
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public ArrayList<String> getFriends() {
+        return friends;
+    }
+
+    public void setFriends(ArrayList<String> friends) {
+        this.friends = friends;
+    }
+
     public void setCert(CertificateV2 c) {
         TlvEncoder tlvEncodedDataContent = new TlvEncoder();
         tlvEncodedDataContent.writeBuffer(c.wireEncode().buf());
         cert = tlvEncodedDataContent.getOutput().array();
-    }
-
-    public void setFriend(boolean b) {
-        friend = b;
-    }
-
-    public void setTrust(boolean b) {
-        trust = b;
-    }
-
-    public void setDomain(String d) { domain = d; }
-
-    public String getUsername() {
-        return username;
     }
 
     public CertificateV2 getCert() throws EncodingException {
@@ -53,28 +53,26 @@ public class User extends RealmObject {
         return certObj;
     }
 
+    public void setCert(byte[] cert) {
+        this.cert = cert;
+    }
+
     public boolean isFriend() {
         return friend;
+    }
+
+    public void setFriend(boolean friend) {
+        this.friend = friend;
     }
 
     public boolean haveTrust() {
         return trust;
     }
 
+    public void setTrust(boolean trust) {
+        this.trust = trust;
+    }
+
     public String getNamespace() { return domain + "/npChat/" + username; }
-
-    public void addFriend(String f) {
-        if (friends.contains(f)) {
-            return;
-        }
-        friends.add(f);
-    }
-
-    public ArrayList<String> getFriends() {
-        ArrayList<String> friendsArray = new ArrayList<>();
-        friendsArray.addAll(friends);
-        return friendsArray;
-    }
-
 
 }

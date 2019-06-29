@@ -3,18 +3,9 @@ package memphis.myapplication.data.RealmObjects;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-import io.realm.annotations.Required;
+public class PublishedContent {
 
-public class PublishedContent extends RealmObject {
-
-    @PrimaryKey
-    @Required
     private String filename;
-
-//    @Required
-//    private Date date;
 
     private byte[] key;
 
@@ -22,12 +13,21 @@ public class PublishedContent extends RealmObject {
         key = sk.getEncoded();
     }
 
-    public String getFilename() { return filename; }
+    public String getFilename() {
+        return filename;
+    }
 
     public SecretKey getKey() {
         if (key == null)
             return null;
-        return  new SecretKeySpec(key, 0, key.length, "AES");
+        return new SecretKeySpec(key, 0, key.length, "AES");
     }
 
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public void setKey(byte[] key) {
+        this.key = key;
+    }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
+import memphis.myapplication.data.RealmObjects.User;
 import timber.log.Timber;
 
 import com.intel.jndn.management.ManagementException;
@@ -17,12 +18,9 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.realm.Realm;
-import io.realm.RealmResults;
-import memphis.myapplication.data.RealmObjects.User;
 
 public class NSDHelper {
     private String serviceName = "npchat";
@@ -204,18 +202,10 @@ public class NSDHelper {
                 String domain = serviceName.substring(("npchat-").length(), index - 7);
                 Timber.d(username + " and " + domain);
 
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
-                User user = realm.where(User.class).equalTo("username", username).findFirst();
-                if (user == null) {
-                    user = realm.createObject(User.class, username);
-                    user.setDomain(domain);
-                    realm.commitTransaction();
-                } else {
-                    realm.cancelTransaction();
-                }
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                realmRepository.saveNewFriend(username, domain, null);
+                realmRepository.close();
 
-                realm.close();
             } catch (ManagementException e) {
                 e.printStackTrace();
             }
@@ -223,8 +213,9 @@ public class NSDHelper {
     }
 
     public void registerFriends() {
-        Realm realm = Realm.getDefaultInstance();
-        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        ArrayList<User> friends = realmRepository.getAllFriends();
+        realmRepository.close();
         for (User u : friends) {
             Integer faceid = serviceNameToFaceId.get("npchat-" + u.getNamespace());
             if (faceid != null) {
@@ -236,12 +227,9 @@ public class NSDHelper {
             } else {
             }
         }
-        realm.close();
     }
 
-    public void registerUser(String username) {
-        Realm realm = Realm.getDefaultInstance();
-        User user = realm.where(User.class).equalTo("username", username).findFirst();
+    public void registerUser(User user) {
         Integer faceid = serviceNameToFaceId.get("npchat-" + user.getNamespace());
         if (faceid != null) {
             try {
@@ -251,7 +239,5 @@ public class NSDHelper {
             }
         } else {
         }
-        realm.close();
-
     }
 }

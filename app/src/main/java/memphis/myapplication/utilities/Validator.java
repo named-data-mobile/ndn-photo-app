@@ -1,7 +1,5 @@
 package memphis.myapplication.utilities;
 
-import android.content.Context;
-
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
@@ -14,13 +12,11 @@ import net.named_data.jndn.security.v2.InterestValidationFailureCallback;
 import net.named_data.jndn.security.v2.InterestValidationSuccessCallback;
 import net.named_data.jndn.security.v2.ValidationError;
 
-import io.realm.Realm;
 import memphis.myapplication.Globals;
-import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 public class Validator {
-        private static Context context;
         private String rules;
         private boolean validData;
         private boolean validInterest;
@@ -62,9 +58,8 @@ public class Validator {
 
         }
 
-        public Validator(Data data, String mutual_friend, Interest interest, Context _context)
+        public Validator(Data data, String mutual_friend, Interest interest)
         {
-            context = _context;
             face = Globals.face;
             valConfig = new ValidatorConfig(face);
             rules = "validator\n" +
@@ -206,12 +201,13 @@ public class Validator {
 
 
             try {
-                Realm realm = Realm.getDefaultInstance();
                 keyChain = Globals.keyChain;
                 // We already trust this friend (friend is self-signed in this example)
                 // In real app, we would load the certificate from C into valConfig upon verification
 //                valConfig.loadAnchor("test", SharedPrefsManager.getInstance(context).getFriendCert("self_" + mutual_friend));
-                valConfig.loadAnchor("test", realm.where(User.class).equalTo("username", mutual_friend).findFirst().getCert());
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                valConfig.loadAnchor("test", realmRepository.getFriend(mutual_friend).getCert());
+                realmRepository.close();
                 valConfig.load(rules, "simple");
                 ValidationCallbacks callbacks = new ValidationCallbacks(valConfig);
                 Timber.d("Pending friend cert: %s", data.toString());
@@ -226,9 +222,8 @@ public class Validator {
             }
         }
 
-    public Validator(Data data, String mutual_friend, Context _context)
+    public Validator(Data data, String mutual_friend)
     {
-        context = _context;
         face = Globals.face;
         valConfig = new ValidatorConfig(face);
         rules = "validator\n" +
@@ -369,9 +364,10 @@ public class Validator {
                 "}";
 
         try {
-            Realm realm = Realm.getDefaultInstance();
             keyChain = Globals.keyChain;
-            valConfig.loadAnchor("test", realm.where(User.class).equalTo("username", mutual_friend).findFirst().getCert());
+            RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+            valConfig.loadAnchor("test", realmRepository.getFriend(mutual_friend).getCert());
+            realmRepository.close();
             valConfig.load(rules, "simple");
             ValidationCallbacks callbacks = new ValidationCallbacks(valConfig);
             Timber.d("Pending friend cert: %s", data.toString());

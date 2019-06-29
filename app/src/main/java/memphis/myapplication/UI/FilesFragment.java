@@ -14,8 +14,12 @@ import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
 import android.util.DisplayMetrics;
@@ -24,6 +28,7 @@ import memphis.myapplication.data.Common;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.R;
+import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
 import android.view.LayoutInflater;
@@ -65,7 +70,15 @@ public class FilesFragment extends Fragment {
         filesView = inflater.inflate(R.layout.fragment_files, container, false);
 
         m_manager = new FileManager(getActivity().getApplicationContext());
-        setupToolbar();
+        UserModel userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new UserModel(getActivity());
+            }
+        }).get(UserModel.class);
+
+        setupToolbar(userModel.getUserImage().getValue());
         setButtonWidth();
         
         setupListeners();
@@ -144,17 +157,16 @@ public class FilesFragment extends Fragment {
         });
     }
 
-    private void setupToolbar() {
-        toolbarHelper = new ToolbarHelper(getActivity(), getString(R.string.files), filesView);
-        toolbar = toolbarHelper.setupToolbar();
-//        setSupportActionBar(toolbar);
+    private void setupToolbar(Uri uri) {
+        toolbarHelper = new ToolbarHelper(getString(R.string.files), filesView);
+        toolbar = toolbarHelper.setupToolbar(uri);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 
     private void setButtonWidth() {
         DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
         Button btn1 = filesView.findViewById(R.id.fileSelectButton);
-        Timber.i(btn1+"");
         btn1.setWidth(width);
         Button btn2 = filesView.findViewById(R.id.scanFileQR);
         btn2.setWidth(width);

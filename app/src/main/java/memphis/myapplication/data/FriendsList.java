@@ -4,8 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import io.realm.Realm;
-import io.realm.RealmResults;
 import memphis.myapplication.data.RealmObjects.User;
 import timber.log.Timber;
 
@@ -15,25 +13,25 @@ import timber.log.Timber;
  */
 
 public class FriendsList {
-    RealmResults<User> friends;
+    ArrayList<User> friends;
     ArrayList<String> friendsPrefixesList;
     ArrayList<String> friendsNameList;
-
     /**
      * The default constructor creates a FriendsList instance with the user's friends/trusted users
      */
     public FriendsList() {
         friendsPrefixesList = new ArrayList<>();
         friendsNameList = new ArrayList<>();
-        Realm realm = Realm.getDefaultInstance();
-        friends = realm.where(User.class).equalTo("friend", true).findAll();
+
+        RealmRepository realmRepository = RealmRepository.getInstance();
+        friends = realmRepository.getAllFriends();
+        realmRepository.close();
 
         for (User f : friends) {
             friendsPrefixesList.add(f.getNamespace());
             friendsNameList.add(f.getUsername());
         }
 
-        realm.close();
     }
 
     /**
@@ -77,10 +75,9 @@ public class FriendsList {
      * @param myPrefix: the user's prefix
      */
     public void addNew(FriendsList fl, String friendName, String myPrefix) {
-        Realm realm = Realm.getDefaultInstance();
         ArrayList<String> newFriends = new ArrayList<String>(fl.friendsPrefixesList);
         newFriends.removeAll(friendsPrefixesList);
-
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         // Remove our username from the friends list
         if (newFriends.contains("/" + myPrefix)) {
             Timber.d("We're still friends");
@@ -89,32 +86,18 @@ public class FriendsList {
         // them from our friends list
         } else {
             Timber.d("We're not friends. Removing %s from our friends list", friendName);
-            realm.beginTransaction();
-            User user = realm.where(User.class).equalTo("username", friendName).findFirst();
-            user.setFriend(false);
-            realm.commitTransaction();
+            realmRepository.deleteFriendship(friendName);
         }
-
-
-
 
         for (String f : newFriends) {
-            realm.beginTransaction();
             String username = f.substring(f.lastIndexOf("/")+1);
-            Timber.d("Adding user: %s", username);
-            User user = realm.where(User.class).equalTo("username", username).findFirst();
-            if (user == null) {
-                user = realm.createObject(User.class, username);
-                Timber.d(f.substring(0, f.indexOf("/npChat")));
-                user.setDomain(f.substring(0, f.indexOf("/npChat")));
-            }
-            User sharingUser = realm.where(User.class).equalTo("username", friendName).findFirst();
-            user.addFriend(sharingUser.getNamespace());
-            sharingUser.addFriend(f);
-            realm.commitTransaction();
+            Timber.d("Adding userRealm: %s", username);
 
+            realmRepository.saveNewFriend(username, f.substring(0, f.indexOf("/npChat")), null);
+            User sharingUser = realmRepository.addFriendToUser(friendName, f);
+            realmRepository.addFriendToUser(username, sharingUser.getNamespace());
+            realmRepository.close();
         }
-        realm.close();
 
     }
 }

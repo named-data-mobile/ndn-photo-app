@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -18,26 +19,25 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.viewmodels.RealmViewModel;
 
 public class ViewFriendsFragment extends Fragment implements ListDisplayRecyclerView.ItemClickListener {
 
     ListDisplayRecyclerView adapter;
     private View friendsView;
+    private RealmViewModel databaseViewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         friendsView = inflater.inflate(R.layout.fragment_with_list, container, false);
 
-        Realm realm = Realm.getDefaultInstance();
-        RealmResults<User> friends = realm.where(User.class).equalTo("friend", true).findAll();
-        realm.close();
+        databaseViewModel = ViewModelProviders.of(getActivity()).get(RealmViewModel.class);
+        ArrayList<User> friends =databaseViewModel.getAllFriends();
         List<String> friendsList = new ArrayList<>();
         for (User f : friends)
             friendsList.add(f.getUsername());
@@ -80,16 +80,9 @@ public class ViewFriendsFragment extends Fragment implements ListDisplayRecycler
         alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // Continue with delete operation
-                Realm realm = Realm.getDefaultInstance();
-                realm.beginTransaction();
-                User user = realm.where(User.class).equalTo("username", friend).findFirst();
-                user.setFriend(false);
-                // Temporary for testing purposes
-                user.setTrust(false);
-                realm.commitTransaction();
+                User user = databaseViewModel.deleteFriendship(friend);
                 Globals.consumerManager.removeConsumer(user.getNamespace());
                 Globals.producerManager.updateFriendsList();
-                realm.close();
             }
         });
 

@@ -1,9 +1,10 @@
 package memphis.myapplication.psync;
 
-import android.app.Activity;
 import android.content.Context;
 
 import android.util.Base64;
+
+import androidx.lifecycle.MutableLiveData;
 
 import memphis.myapplication.data.FriendsList;
 import timber.log.Timber;
@@ -39,14 +40,13 @@ public class ConsumerManager {
 
     static PSync.Consumer consumer;
     static HashMap<String, PSync.Consumer> consumers = new HashMap<>();
-    static Activity activity;
+    static MutableLiveData<String> toastData;
     static Context context;
     static Face face;
 
 
-
-    public ConsumerManager(Activity _activity, Context _context) {
-        this.activity = _activity;
+    public ConsumerManager(Context _context, MutableLiveData<String> toastData) {
+        this.toastData = toastData;
         this.context = _context;
     }
 
@@ -80,7 +80,7 @@ public class ConsumerManager {
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");
-                    new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
@@ -92,7 +92,7 @@ public class ConsumerManager {
                             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }

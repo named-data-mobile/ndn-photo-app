@@ -3,6 +3,7 @@ package memphis.myapplication.UI;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
 import android.os.Bundle;
@@ -19,11 +20,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.realm.Realm;
-import io.realm.RealmResults;
+import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FriendRequest;
 import memphis.myapplication.R;
-import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.viewmodels.RealmViewModel;
 import timber.log.Timber;
 
 public class SendFriendRequestFragment extends Fragment implements AdapterView.OnItemSelectedListener {
@@ -33,12 +33,14 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
     String friend;
     TextView message;
     private View sendFriendRequestView;
+    private RealmViewModel databaseViewModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         sendFriendRequestView = inflater.inflate(R.layout.fragment_send_friend_request, container, false);
-        Realm realm = Realm.getDefaultInstance();
+
+        databaseViewModel = ViewModelProviders.of(getActivity()).get(RealmViewModel.class);
 
         // Edit text
         mEdit = sendFriendRequestView.findViewById(R.id.add_remote_friend_edit_text);
@@ -50,7 +52,7 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
         newFriendSpinner.setOnItemSelectedListener(this);
 
         // New Friend Spinner Drop down elements
-        RealmResults<User> potentialFriends = realm.where(User.class).equalTo("friend", false).findAll();
+        ArrayList<User> potentialFriends = databaseViewModel.getPotentialFriends();
         List<String> potentialFriendsList = new ArrayList<>();
         for (User f : potentialFriends)
             potentialFriendsList.add(f.getUsername());
@@ -71,9 +73,8 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
             friend = "";
         } else {
             friend = potentialFriends.get(0).getUsername();
-            User newFriend = realm.where(User.class).equalTo("username", friend).findFirst();
-            ArrayList<String> newFriendsList = newFriend.getFriends();
-            RealmResults<User> myFriends = realm.where(User.class).equalTo("trust", true).findAll();
+            ArrayList<String> newFriendsList = databaseViewModel.getFriendsofFriend(friend);
+            ArrayList<User> myFriends = databaseViewModel.getTrustedFriends();
             ArrayList<String> myFriendsList = new ArrayList<>();
             for (User u : myFriends) {
                 myFriendsList.add(u.getNamespace());
@@ -88,7 +89,6 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
             }
             message.setText(friendsMessage);
         }
-        realm.close();
 
         // Radio buttons
         RadioButton rdb1 = sendFriendRequestView.findViewById(R.id.radioMutualFriend);
@@ -97,10 +97,8 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
             public void onClick(View v) {
                 // Iterate through our mutual friends
                 String friendsMessage = "";
-                Realm realm = Realm.getDefaultInstance();
-                User newFriend = realm.where(User.class).equalTo("username", friend).findFirst();
-                ArrayList<String> newFriendsList = newFriend.getFriends();
-                RealmResults<User> myFriends = realm.where(User.class).equalTo("trust", true).findAll();
+                ArrayList<String> newFriendsList = databaseViewModel.getFriendsofFriend(friend);
+                ArrayList<User> myFriends = databaseViewModel.getTrustedFriends();
                 ArrayList<String> myFriendsList = new ArrayList<>();
                 for (User u : myFriends) {
                     myFriendsList.add(u.getNamespace());
@@ -114,7 +112,6 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
                     friendsMessage = friendsMessage + f + "\n";
                 }
                 message.setText(friendsMessage);
-                realm.close();
             }
         });
 

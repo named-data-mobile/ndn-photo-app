@@ -19,8 +19,8 @@
         android:theme="@style/AppTheme.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
         <provider
-            android:name=".utilities.UriFileProvider"
-            android:authorities="memphis.myapplication.utilities.UriFileProvider"
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="memphis.myapplication.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

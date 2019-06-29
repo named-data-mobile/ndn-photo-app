@@ -19,6 +19,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -37,14 +40,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import io.realm.Realm;
 import memphis.myapplication.data.Common;
+import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.Globals;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.R;
-import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.SharedPrefsManager;
+import memphis.myapplication.viewmodels.RealmViewModel;
+import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
@@ -59,12 +63,11 @@ public class AddFriendFragment extends Fragment {
     private final int SCAN_QR = -1;
     private final int NONE = 0;
 
-    private FileManager m_manager;
+    private RealmViewModel databaseViewModel;
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
     private String friendName;
     private String friendDomain;
-    private Realm mRealm;
     private View addFriendView;
     private int nextState = 0;
 
@@ -73,10 +76,18 @@ public class AddFriendFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         addFriendView = inflater.inflate(R.layout.fragment_add_friend, container, false);
 
-        m_manager = new FileManager(getActivity().getApplicationContext());
-        setupToolbar();
+        databaseViewModel = ViewModelProviders.of(getActivity()).get(RealmViewModel.class);
+
+        UserModel userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new UserModel(getActivity());
+            }
+        }).get(UserModel.class);
+
+        setupToolbar(userModel.getUserImage().getValue());
         setButtonWidth();
-        mRealm = Realm.getDefaultInstance();
 
         setListeners();
 
@@ -96,7 +107,6 @@ public class AddFriendFragment extends Fragment {
         addFriendView.findViewById(R.id.scanFriendButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Timber.i("clicked");
                 scanFriendQR(v);
             }
         });
@@ -154,9 +164,9 @@ public class AddFriendFragment extends Fragment {
         });
     }
 
-    private void setupToolbar() {
-        toolbarHelper = new ToolbarHelper(getActivity(), getString(R.string.friends_title), addFriendView);
-        toolbar = toolbarHelper.setupToolbar();
+    private void setupToolbar(Uri uri) {
+        toolbarHelper = new ToolbarHelper(getString(R.string.friends_title), addFriendView);
+        toolbar = toolbarHelper.setupToolbar(uri);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 
@@ -223,20 +233,8 @@ public class AddFriendFragment extends Fragment {
                     }
                 }
 
-                mRealm.beginTransaction();
-                User friend = mRealm.where(User.class).equalTo("username", friendName).findFirst();
-                if (friend == null) {
-                    friend = mRealm.createObject(User.class, friendName);
-                    friend.setDomain(friendDomain);
-                } else if (friend.isFriend()) {
-                    mRealm.cancelTransaction();
-                    mRealm.close();
-                    return 1;
-                } else if (friend.haveTrust()) {
-                    mRealm.cancelTransaction();
-                    mRealm.close();
-                    return 3;
-                }
+                int result = databaseViewModel.saveFriend(friendName);
+                if(result != -1) return result;
                 // A friend's filename will be their username. Another reason why we must ensure uniqueness
 
 
@@ -262,8 +260,7 @@ public class AddFriendFragment extends Fragment {
 
                 // Store friend's cert signed by us
 //            SharedPrefsManager.getInstance(getActivity()).storeFriendCert(friendName, certificateV2);
-                friend.setCert(certificateV2);
-                mRealm.commitTransaction();
+                databaseViewModel.saveNewFriend(friendName, friendDomain, certificateV2);
                 return 0;
             } catch (PibImpl.Error error) {
                 error.printStackTrace();
@@ -327,13 +324,8 @@ public class AddFriendFragment extends Fragment {
                         Toast.makeText(getActivity(), "Already have certificate.", Toast.LENGTH_LONG).show();
                         if (content.length() > 0) {
                             Timber.d("Friend result ok");
-                            Realm realm = Realm.getDefaultInstance();
-                            realm.beginTransaction();
-                            User friend = realm.where(User.class).equalTo("username", friendName).findFirst();
-                            friend.setFriend(true);
-                            realm.commitTransaction();
+                            User friend = databaseViewModel.setFriendship(friendName);
                             Globals.consumerManager.createConsumer(friend.getNamespace());
-                            realm.close();
                             Navigation.findNavController(addFriendView).popBackStack();
 
                         } else {

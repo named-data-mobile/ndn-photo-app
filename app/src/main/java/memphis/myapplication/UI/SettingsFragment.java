@@ -1,20 +1,21 @@
 package memphis.myapplication.UI;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 
 import memphis.myapplication.R;
-import memphis.myapplication.UI.ToolbarHelper;
-import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
 import android.view.LayoutInflater;
@@ -25,31 +26,34 @@ import android.widget.ImageView;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.IOException;
-
 public class SettingsFragment extends Fragment {
 
     final int PICK_PHOTO = 0;
     private ImageView m_imageView;
-    FileManager manager;
     private View settingsView;
+    private UserModel userModel;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         settingsView = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        setupToolbar();
+        userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new UserModel(getActivity());
+            }
+        }).get(UserModel.class);
         m_imageView = settingsView.findViewById(R.id.profilePhoto);
-        manager = new FileManager(getActivity().getApplicationContext());
-        File file = manager.getProfilePhoto();
-        if(file.length() == 0) {
-            Picasso.get().load(R.drawable.avatar).into(m_imageView);
-        }
-        else {
-            Picasso.get().load(file).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
-        }
+
+        userModel.getUserImage().observe(this, new Observer<Uri>() {
+            @Override
+            public void onChanged(Uri uri) {
+                Picasso.get().load(uri).placeholder(R.drawable.avatar).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
+                setupToolbar(uri);
+            }
+        });
 
         settingsView.findViewById(R.id.changePhotoButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,22 +80,14 @@ public class SettingsFragment extends Fragment {
         if(resultData != null) {
             Uri photoUri = resultData.getData();
             if (photoUri != null && requestCode == PICK_PHOTO) {
-                try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), photoUri);
-                    FileManager manager = new FileManager(getActivity().getApplicationContext());
-                    manager.setProfilePhoto(bitmap);
-                } catch (IOException e) {
-                    Timber.d("profilePhoto: %s", "Problem making bitmap from chosen photo");
-                }
-                Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
-                ToolbarHelper toolbarHelper = new ToolbarHelper(getActivity(), "Settings", settingsView);
-                toolbarHelper.setupToolbarImage(String.valueOf(photoUri));
+                Timber.i("changing: "+photoUri);
+                userModel.updateImage(photoUri, getActivity());
             }
         }
     }
-    private void setupToolbar() {
-        ToolbarHelper toolbarHelper = new ToolbarHelper(getActivity(), "Settings", settingsView);
-        Toolbar toolbar = toolbarHelper.setupToolbar();
+    private void setupToolbar(Uri uri) {
+        ToolbarHelper toolbarHelper = new ToolbarHelper("Settings", settingsView);
+        Toolbar toolbar = toolbarHelper.setupToolbar(uri);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 }

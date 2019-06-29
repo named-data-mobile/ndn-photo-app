@@ -27,13 +27,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Observable;
 
-import io.realm.Realm;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
-import memphis.myapplication.data.RealmObjects.SelfCertificate;
 import memphis.myapplication.data.RealmObjects.User;
-import memphis.myapplication.utilities.SharedPrefsManager;
-import memphis.myapplication.utilities.Validator;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 public class FriendRequest extends Observable {
@@ -58,12 +55,9 @@ public class FriendRequest extends Observable {
     }
 
     public void send() {
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-        if ((user == null) || !(user.haveTrust())) {
-            if (user == null)
-                user = realm.createObject(User.class, m_newFriend);
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User user = realmRepository.saveNewFriend(m_newFriend, null, null);
+        if (!user.haveTrust()) {
             Timber.d("new friend");
             String userPrefix = user.getNamespace();
             if (Globals.useMulticast) {
@@ -73,12 +67,10 @@ public class FriendRequest extends Observable {
                     e.printStackTrace();
                 }
             } else {
-                Globals.nsdHelper.registerUser(m_newFriend);
+                Globals.nsdHelper.registerUser(user);
             }
-            realm.commitTransaction();
-            realm.close();
             try {
-                CertificateV2 certificate = realm.where(SelfCertificate.class).equalTo("username", m_mutualFriend).findFirst().getCert();
+                CertificateV2 certificate = realmRepository.getFriendCert(m_mutualFriend).getCert();
                 Name name = new Name(userPrefix + "/friend-request/mutual-friend/");
                 Timber.d("KeyName: " + Globals.pubKeyName +
                         ", CertName: " + certificate.getName());
@@ -105,10 +97,8 @@ public class FriendRequest extends Observable {
         } else if (user.isFriend()) {
             // Already friends. Do nothing
             Timber.d("already friends");
-            realm.cancelTransaction();
-            realm.close();
         }
-
+        realmRepository.close();
     }
 
     OnData onCertData = new OnData() {
@@ -116,7 +106,7 @@ public class FriendRequest extends Observable {
         @Override
         public void onData(Interest interest, Data data) {
             Timber.d("Got data packet with name %s", data.getName().toUri());
-            Realm realm = Realm.getDefaultInstance();
+            final RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
             try {
                 Blob interestData = data.getContent();
                 if (data.getContent().toString().equals("Rejected")) {
@@ -129,15 +119,11 @@ public class FriendRequest extends Observable {
 
                     CertificateV2 certificateV2 = new CertificateV2();
                     certificateV2.wireDecode(ByteBuffer.wrap(certBytes));
-                    Validator validator = new Validator(certificateV2, m_mutualFriend, context);
+                    Validator validator = new Validator(certificateV2, m_mutualFriend);
                     // If valid, then save their cert and get our cert signed by them
                     if (validator.valid()) {
                         // Save their cert
-                        realm.beginTransaction();
-                        User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-                        user.setCert(certificateV2);
-                        user.setTrust(true);
-                        realm.commitTransaction();
+                        User user = realmRepository.saveNewFriend(m_newFriend, true, certificateV2);
 
                         // Get name for new cert
                         Name name = new Name(user.getNamespace());
@@ -150,7 +136,6 @@ public class FriendRequest extends Observable {
                         newCertName.append(certName.getSubName(-1, 1));
                         name.append(newCertName);
                         Interest certInterest = new Interest(name);
-                        realm.close();
 
                         Globals.face.expressInterest(certInterest, new OnData() {
                             @Override
@@ -165,27 +150,17 @@ public class FriendRequest extends Observable {
                                 } catch (EncodingException e) {
                                     e.printStackTrace();
                                 }
-                                Realm realm = Realm.getDefaultInstance();
-                                realm.beginTransaction();
-                                SelfCertificate selfCertificate = realm.where(SelfCertificate.class).equalTo("username", m_newFriend).findFirst();
-                                if (selfCertificate == null) {
-                                    selfCertificate = realm.createObject(SelfCertificate.class, m_newFriend);
-                                }
-                                selfCertificate.setCert(certificateV2);
-                                User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-                                user.setFriend(true);
-                                Globals.consumerManager.createConsumer(user.getNamespace());
 
-                                realm.commitTransaction();
-                                realm.close();
+                                realmRepository.setFriendCertificate(m_newFriend, certificateV2);
+
+                                User user = realmRepository.setFriendship(m_newFriend);
+                                Globals.consumerManager.createConsumer(user.getNamespace());
 
                                 Globals.producerManager.m_producer.publishName(sharedPrefsManager.getNamespace() + "/friends");
 
                             }
                         }, onCertTimeOut);
                     }
-
-
 
                 }
 
@@ -196,8 +171,7 @@ public class FriendRequest extends Observable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
+            realmRepository.close();
 
         }
 
@@ -211,8 +185,6 @@ public class FriendRequest extends Observable {
     }
 
     public void receive() {
-        Realm realm = Realm.getDefaultInstance();
-
         Name interestName = m_signedInterest.getName();
         int friendComp = 0;
         for (int i = 0; i < interestName.size(); ++i) {
@@ -226,10 +198,9 @@ public class FriendRequest extends Observable {
         final String mutual_friend = interestName.getSubName(friendComp + 3, 1).toUri().substring(1);
         m_mutualFriend = mutual_friend;
         Timber.d("Pending friend name: %s", friend);
-        realm.beginTransaction();
-        User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-        if (user == null)
-            user = realm.createObject(User.class, m_newFriend);
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User user = realmRepository.saveNewFriend(m_newFriend, null, null);
+        realmRepository.close();
 
         if (user.isFriend()) {
             setUpdateCode(UPDATE_FRIEND);
@@ -244,12 +215,10 @@ public class FriendRequest extends Observable {
                     e.printStackTrace();
                 }
             } else {
-                Globals.nsdHelper.registerUser(m_newFriend);
+                Globals.nsdHelper.registerUser(user);
             }
 
             String userPrefix = user.getNamespace();
-            realm.commitTransaction();
-            realm.close();
 
             int start = 0;
             int end = 0;
@@ -288,17 +257,13 @@ public class FriendRequest extends Observable {
 
                         Timber.d("Pending friend certificate: %s", certificateV2.getName().toUri());
 
-                        Validator validator = new Validator(certificateV2, m_mutualFriend, m_signedInterest, context);
+                        Validator validator = new Validator(certificateV2, m_mutualFriend, m_signedInterest);
                         if (validator.valid()) {
                             Timber.d("Everything verified, saving friend's cert");
-                            Realm realm = Realm.getDefaultInstance();
-                            realm.beginTransaction();
-                            User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-                            user.setCert(certificateV2);
-                            user.setTrust(true);
-                            realm.commitTransaction();
-                            realm.close();
 
+                            RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                            realmRepository.saveNewFriend(m_newFriend, true, certificateV2);
+                            realmRepository.close();
                             // Send friend request response and our cert signed by mutual friend
                             setUpdateCode(UPDATE_NEW);
                         } else {
@@ -317,8 +282,9 @@ public class FriendRequest extends Observable {
 
     public void accept() throws EncodingException {
         Timber.d("Accepting request and sending our cert back");
-        Realm realm = Realm.getDefaultInstance();
-        CertificateV2 myCert = realm.where(SelfCertificate.class).equalTo("username", m_mutualFriend).findFirst().getCert();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        CertificateV2 myCert = realmRepository.getFriendCert(m_mutualFriend).getCert();
+        realmRepository.close();
         Timber.d(myCert.toString());
 
         Data certData = new Data(m_signedInterest.getName());
@@ -329,7 +295,6 @@ public class FriendRequest extends Observable {
         certData.setContent(d);
         certData.setMetaInfo(new MetaInfo());
         certData.getMetaInfo().setFreshnessPeriod(31536000000.0);
-        realm.close();
 
         try {
             Globals.face.putData(certData);
@@ -346,10 +311,10 @@ public class FriendRequest extends Observable {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
                         // Get name for new cert
-                        Realm realm = Realm.getDefaultInstance();
-                        User user = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-                        Name name =  new Name(user.getNamespace());
+                        User user = realmRepository.getFriend(m_newFriend);
+                        Name name = new Name(user.getNamespace());
                         name.append(context.getString(R.string.certificate_prefix));
                         Name certName = null;
                         try {
@@ -381,19 +346,10 @@ public class FriendRequest extends Observable {
                                     } catch (EncodingException e) {
                                         e.printStackTrace();
                                     }
-                                    Realm realm = Realm.getDefaultInstance();
-                                    realm.beginTransaction();
-                                    SelfCertificate realmCertificate = realm.where(SelfCertificate.class).equalTo("username", m_newFriend).findFirst();
-                                    if (realmCertificate == null)
-                                        realmCertificate = realm.createObject(SelfCertificate.class, m_newFriend);
+                                    RealmRepository.getInstance().setFriendCertificate(m_newFriend, certificateV2);
 
-                                    realmCertificate.setCert(certificateV2);
-                                    User friend = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-                                    friend.setFriend(true);
+                                    User friend = RealmRepository.getInstance().setFriendship(m_newFriend);
                                     Globals.consumerManager.createConsumer(friend.getNamespace());
-                                    realm.commitTransaction();
-                                    realm.close();
-
 
 
                                 }
@@ -406,6 +362,7 @@ public class FriendRequest extends Observable {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                        realmRepository.close();
                         handler.removeCallbacks(this);
                         Looper.myLooper().quit();
                     }
@@ -417,7 +374,7 @@ public class FriendRequest extends Observable {
         thread.start();
     }
 
-    public void reject()  {
+    public void reject() {
         Timber.d("Rejecting request");
         Data data = new Data(m_signedInterest.getName());
         data.setContent(new Blob("Rejected"));
@@ -431,14 +388,10 @@ public class FriendRequest extends Observable {
     }
 
     public void acceptTrusted() {
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        User friend = realm.where(User.class).equalTo("username", m_newFriend).findFirst();
-        friend.setFriend(true);
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User friend = realmRepository.setFriendship(m_newFriend);
+        realmRepository.close();
         Globals.consumerManager.createConsumer(friend.getNamespace());
-        realm.commitTransaction();
-        realm.close();
-
     }
 
     private void setUpdateCode(int c) {
@@ -468,7 +421,7 @@ public class FriendRequest extends Observable {
         }
     };
 
-    public String getPendingFriend(){
+    public String getPendingFriend() {
         return m_newFriend;
     }
 

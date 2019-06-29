@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -29,10 +30,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.realm.Realm;
-import memphis.myapplication.data.RealmObjects.SelfCertificate;
-import memphis.myapplication.data.RealmObjects.User;
-
 public class FileManager {
 
     private String m_appName;
@@ -46,7 +43,6 @@ public class FileManager {
     private File m_rcvdPhotosDir;
     private static Context mContext;
     public static boolean dirsCreated = false;
-    private static Realm mRealm;
 
     public FileManager(Context context) {
         /* Eventually, we will set m_appRootPath to getFilesDir(). This is the internal storage of
@@ -370,7 +366,6 @@ public class FileManager {
     public static final OnInterestCallback onCertInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
-            mRealm = Realm.getDefaultInstance();
             Timber.d("Called onCertInterest with Interest: %s", interest.getName().toUri());
             String issuer = interest.getName().getSubName(-5, 1).toString().substring(1);
             String signer = interest.getName().getSubName(-2, 1).toString().substring(1);
@@ -407,7 +402,9 @@ public class FileManager {
                 Timber.d("Friend name %s", friend);
                 CertificateV2 friendCert = null;
                 try {
-                    friendCert = mRealm.where(User.class).equalTo("username", friend).findFirst().getCert();
+                    RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                    friendCert = realmRepository.getFriend(friend).getCert();
+                    realmRepository.close();
                     Data data = new Data(interest.getName());
                     TlvEncoder tlvEncodedDataContent = new TlvEncoder();
                     tlvEncodedDataContent.writeBuffer(friendCert.wireEncode().buf());
@@ -438,7 +435,9 @@ public class FileManager {
                         }
                     }
                     String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
-                    CertificateV2 cert = mRealm.where(SelfCertificate.class).equalTo("username", friend).findFirst().getCert();
+                    RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                    CertificateV2 cert = RealmRepository.getInstance().getFriendCert(friend).getCert();
+                    realmRepository.close();
                     Timber.d(cert.getName().toUri());
 
                     Data data = new Data(interest.getName());

@@ -1,6 +1,6 @@
 package memphis.myapplication.utilities;
 
-import android.content.Context;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import net.named_data.jndn.encoding.EncodingException;
@@ -28,9 +28,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-import io.realm.Realm;
-import memphis.myapplication.data.RealmObjects.User;
-
 public class Encrypter {
     private final int filenameType = 100;
     private final int friendNameType = 101;
@@ -38,11 +35,8 @@ public class Encrypter {
     private final int syncDataType = 999;
     private final int nameAndKeyType = 104;
     private final int ivType = 105;
-    private Context context;
 
-    public Encrypter (Context context) {
-        this.context = context;
-
+    public Encrypter () {
     }
 
     /**
@@ -81,7 +75,6 @@ public class Encrypter {
      */
     public Blob encodeSyncData(ArrayList<String> recipients, String filename, SecretKey secretKey) throws CertificateV2.Error, EncodingException {
         TlvEncoder encoder = new TlvEncoder();
-        Realm realm = Realm.getDefaultInstance();
         int saveLength;
 
         // Encode filename
@@ -93,7 +86,9 @@ public class Encrypter {
             for (String friend : recipients) {
 
                 // Get friend's public key
-                Blob friendKey = realm.where(User.class).equalTo("username", friend).findFirst().getCert().getPublicKey();
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                Blob friendKey = realmRepository.getFriend(friend).getCert().getPublicKey();
+                realmRepository.close();
 
                 // Encrypt secret key with friend's public key
                 Blob encryptedKey = null;

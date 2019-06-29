@@ -2,7 +2,10 @@ package memphis.myapplication.utilities;
 
 import android.content.Context;
 
+import memphis.myapplication.R;
 import memphis.myapplication.data.Common;
+import memphis.myapplication.data.RealmObjects.PublishedContent;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -30,9 +33,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-
-import io.realm.Realm;
-import memphis.myapplication.data.RealmObjects.PublishedContent;
 
 /**
  * MemoryCache is a class that works with MemoryContentCache class from jndn library that caches
@@ -68,8 +68,9 @@ public class MemoryCache {
      */
     public void process(String filename) {
         SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(m_currContext);
-        Realm realm = Realm.getDefaultInstance();
-        SecretKey secretKey = realm.where(PublishedContent.class).equalTo("filename", filename).findFirst().getKey();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        SecretKey secretKey = realmRepository.getPublishedContent(filename).getKey();
+        realmRepository.close();
         Name iName = new Name(filename);
 
         Timber.d("Called process in FaceProxy");
@@ -95,11 +96,10 @@ public class MemoryCache {
             e.printStackTrace();
             bytes = new byte[0];
         }
-        FileManager manager = new FileManager(m_currContext);
         String prefixApp = "/" + sharedPrefsManager.getNamespace();
         String prefix = prefixApp + "/file" + filename;
 
-        Encrypter encrypter = new Encrypter(m_currContext);
+        Encrypter encrypter = new Encrypter();
         if (secretKey != null) {
             byte[] iv = encrypter.generateIV();
             try {
@@ -154,8 +154,11 @@ public class MemoryCache {
             Timber.d("What is the filename? %s", filename);
 
             // If file has been previously published, republish it
-            Realm realm = Realm.getDefaultInstance();
-            if (realm.where(PublishedContent.class).equalTo("filename", filename).findFirst() != null) {
+            RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+            PublishedContent publishedContent = realmRepository.getPublishedContent(filename);
+            realmRepository.close();
+
+            if (publishedContent != null) {
                 process(filename);
             } else {
                 Timber.d("Can't find file. Ignoring");
