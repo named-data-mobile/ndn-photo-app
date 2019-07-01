@@ -228,7 +228,7 @@ public class FilesFragment extends Fragment {
                     // to main activity.
                     Bundle bundle = new Bundle();
                     bundle.putString("uri", resultData.getData().toString());
-                    Navigation.findNavController(filesView).navigate(R.id.action_filesActivity_to_displayQRFragment, bundle);
+                    Navigation.findNavController(filesView).navigate(R.id.action_filesFragment_to_displayQRFragment, bundle);
 
                 } catch (NullPointerException e) {
                     e.printStackTrace();

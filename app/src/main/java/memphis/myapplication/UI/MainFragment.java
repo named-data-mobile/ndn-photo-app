@@ -43,6 +43,7 @@ import memphis.myapplication.R;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.SharedPrefsManager;
+import memphis.myapplication.viewmodels.BackgroundViewModel;
 import memphis.myapplication.viewmodels.RealmViewModel;
 import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
@@ -73,6 +74,14 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mainView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        ViewModelProviders.of(this, new ViewModelProvider.Factory() {
+            @NonNull
+            @Override
+            public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+                return (T) new BackgroundViewModel(getActivity().getApplicationContext());
+            }
+        }).get(BackgroundViewModel.class);
+
         UserModel userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
             @NonNull
             @Override
@@ -100,7 +109,6 @@ public class MainFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_addFriendFragment);
-                Timber.i("calling things after navigating");
             }
         });
 
@@ -124,14 +132,14 @@ public class MainFragment extends Fragment {
         mainView.findViewById(R.id.rcvdImages).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_newContentActivity);
+                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_newContentFragment);
             }
         });
 
         mainView.findViewById(R.id.files).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_filesActivity);
+                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_filesFragment);
             }
         });
     }
@@ -171,10 +179,10 @@ public class MainFragment extends Fragment {
         Timber.d("item: " + item.toString());
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_settingsActivity);
+                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_settingsFragment);
                 return true;
             case R.id.action_about:
-                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_aboutActivity);
+                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_aboutFragment);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -217,7 +225,7 @@ public class MainFragment extends Fragment {
                         bundle.putString("photo", m_curr_photo_file.toString());
                         bundle.putSerializable("friendsList", friendsList);
                         m_curr_photo_file = null;
-                        Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_selectRecipientsActivity, bundle);
+                        Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_selectRecipientsFragment, bundle);
                     }
                 });
                 builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {

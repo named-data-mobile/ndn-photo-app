@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel;
 import net.named_data.jndn.Interest;
 
 import memphis.myapplication.data.BackgroundJobs;
-import timber.log.Timber;
 
 public class BackgroundViewModel extends ViewModel {
 

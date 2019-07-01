@@ -150,7 +150,7 @@ public class AddFriendFragment extends Fragment {
         addFriendView.findViewById(R.id.remoteFriend).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Navigation.findNavController(addFriendView).navigate(R.id.action_addFriendFragment_to_sendFriendRequest);
+                Navigation.findNavController(addFriendView).navigate(R.id.action_addFriendFragment_to_sendFriendRequestFragment);
             }
         });
 

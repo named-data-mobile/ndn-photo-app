@@ -33,7 +33,6 @@ import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -347,7 +346,6 @@ public class BackgroundJobs {
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
                             Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
-                            Timber.i(toastData + "");
                             toastData.postValue(msg);
                         }
                     }
@@ -367,8 +365,7 @@ public class BackgroundJobs {
                         public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
                             Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
                             String msg = "Successfully registered prefix: " + prefix.toUri();
-                            Timber.i(toastData + "");
-                            toastData.setValue(msg);
+                            toastData.postValue(msg);
                         }
                     }, Globals.memoryCache.onNoDataInterest
             );

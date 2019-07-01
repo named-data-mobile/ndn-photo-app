@@ -203,7 +203,6 @@ public class Common {
             RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
 
             String friendName = interest.getName().getSubName(-2, 1).toUri().substring(1);
-            User friend = realmRepository.getFriend(friendName);
             Blob interestData = data.getContent();
             byte[] certBytes = interestData.getImmutableArray();
 
@@ -213,7 +212,7 @@ public class Common {
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
-            realmRepository.setFriendCertificate(friendName, certificateV2);
+            User friend = realmRepository.saveNewFriend(friendName, true, certificateV2);
 
             VerificationHelpers verificationHelpers = new VerificationHelpers();
             try {
@@ -223,9 +222,6 @@ public class Common {
             }
 
             Timber.d("Saved our certificate back signed by friend and adding them as a consumer");
-
-            friend.setFriend(true);
-            friend.setTrust(true);
             consumerManager.createConsumer(friend.getNamespace());
 
             // Share friend's list

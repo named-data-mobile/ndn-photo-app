@@ -16,20 +16,20 @@
             app:destination="@id/addFriendFragment"
             />
         <action
-            android:id="@+id/action_mainFragment_to_settingsActivity"
-            app:destination="@id/settingsActivity" />
+            android:id="@+id/action_mainFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
         <action
-            android:id="@+id/action_mainFragment_to_aboutActivity"
-            app:destination="@id/aboutActivity" />
+            android:id="@+id/action_mainFragment_to_aboutFragment"
+            app:destination="@id/aboutFragment" />
         <action
-            android:id="@+id/action_mainFragment_to_newContentActivity"
-            app:destination="@id/newContentActivity" />
+            android:id="@+id/action_mainFragment_to_newContentFragment"
+            app:destination="@id/newContentFragment" />
         <action
-            android:id="@+id/action_mainFragment_to_filesActivity"
-            app:destination="@id/filesActivity" />
+            android:id="@+id/action_mainFragment_to_filesFragment"
+            app:destination="@id/filesFragment" />
         <action
-            android:id="@+id/action_mainFragment_to_selectRecipientsActivity"
-            app:destination="@id/selectRecipientsActivity" />
+            android:id="@+id/action_mainFragment_to_selectRecipientsFragment"
+            app:destination="@id/selectRecipientsFragment" />
     </fragment>
     <fragment
         android:id="@+id/blankFragment"
@@ -59,8 +59,8 @@
             android:id="@+id/action_addFriendFragment_to_viewFriendsFragment"
             app:destination="@id/viewFriendsFragment" />
         <action
-            android:id="@+id/action_addFriendFragment_to_sendFriendRequest"
-            app:destination="@id/sendFriendRequest" />
+            android:id="@+id/action_addFriendFragment_to_sendFriendRequestFragment"
+            app:destination="@id/sendFriendRequestFragment" />
     </fragment>
     <fragment
         android:id="@+id/displayQRFragment"
@@ -68,12 +68,12 @@
         android:label="fragment_display_qr"
         tools:layout="@layout/fragment_display_qr" />
     <fragment
-        android:id="@+id/settingsActivity"
+        android:id="@+id/settingsFragment"
         android:name="memphis.myapplication.UI.SettingsFragment"
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" />
     <fragment
-        android:id="@+id/aboutActivity"
+        android:id="@+id/aboutFragment"
         android:name="memphis.myapplication.UI.AboutFragment"
         android:label="fragment_about"
         tools:layout="@layout/fragment_about" />
@@ -83,35 +83,35 @@
         android:label="fragment_with_list"
         tools:layout="@layout/fragment_with_list" />
     <fragment
-        android:id="@+id/sendFriendRequest"
+        android:id="@+id/sendFriendRequestFragment"
         android:name="memphis.myapplication.UI.SendFriendRequestFragment"
         android:label="fragment_send_friend_request"
         tools:layout="@layout/fragment_send_friend_request" />
     <fragment
-        android:id="@+id/newContentActivity"
+        android:id="@+id/newContentFragment"
         android:name="memphis.myapplication.UI.NewContentFragment"
         android:label="fragment_with_list"
         tools:layout="@layout/fragment_with_list" >
         <action
-            android:id="@+id/action_newContentActivity_to_viewPhotosActivity"
-            app:destination="@id/viewPhotosActivity" />
+            android:id="@+id/action_newContentFragment_to_viewPhotosFragment"
+            app:destination="@id/viewPhotosFragment" />
     </fragment>
     <fragment
-        android:id="@+id/viewPhotosActivity"
+        android:id="@+id/viewPhotosFragment"
         android:name="memphis.myapplication.UI.ViewPhotosFragment"
         android:label="fragment_view_photos"
         tools:layout="@layout/fragment_view_photos" />
     <fragment
-        android:id="@+id/filesActivity"
+        android:id="@+id/filesFragment"
         android:name="memphis.myapplication.UI.FilesFragment"
         android:label="fragment_files"
         tools:layout="@layout/fragment_files" >
         <action
-            android:id="@+id/action_filesActivity_to_displayQRFragment"
+            android:id="@+id/action_filesFragment_to_displayQRFragment"
             app:destination="@id/displayQRFragment" />
     </fragment>
     <fragment
-        android:id="@+id/selectRecipientsActivity"
+        android:id="@+id/selectRecipientsFragment"
         android:name="memphis.myapplication.UI.SelectRecipientsFragment"
         android:label="fragment_select_recipients"
         tools:layout="@layout/fragment_select_recipients" />

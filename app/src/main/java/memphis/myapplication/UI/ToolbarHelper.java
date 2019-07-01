@@ -11,7 +11,6 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import memphis.myapplication.R;
-import timber.log.Timber;
 
 public class ToolbarHelper {
 
@@ -24,7 +23,6 @@ public class ToolbarHelper {
     }
 
     public Toolbar setupToolbar(Uri uri) {
-        Timber.i("Got avatar uri: "+uri);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle("");
         ImageView imageView = view.findViewById(R.id.toolbar_main_photo);

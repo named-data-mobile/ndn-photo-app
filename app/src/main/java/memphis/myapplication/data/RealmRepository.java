@@ -92,6 +92,7 @@ public class RealmRepository {
 
         if (certificateV2 != null)
             friend.setCert(certificateV2);
+        friend.setFriend(true);
         friend.setTrust(trust);
 
         User user = userRealmToUser(friend);
@@ -146,7 +147,6 @@ public class RealmRepository {
         UserRealm userRealm = realm.where(UserRealm.class).equalTo("username", friend).findFirst();
         userRealm.setFriend(false);
         // Temporary for testing purposes
-        userRealm.setTrust(false);
         User user = userRealmToUser(userRealm);
         realm.commitTransaction();
         return user;

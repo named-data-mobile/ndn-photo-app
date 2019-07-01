@@ -101,7 +101,7 @@ public class NewContentFragment extends Fragment implements ListDisplayRecyclerV
         Bundle bundle = new Bundle();
         bundle.putSerializable("photos", userContent.get(adapter.getItem(position)));
         Timber.d("content: " + userContent.get(adapter.getItem(position)));
-        Navigation.findNavController(newContentView).navigate(R.id.action_newContentActivity_to_viewPhotosActivity, bundle);
+        Navigation.findNavController(newContentView).navigate(R.id.action_newContentFragment_to_viewPhotosFragment, bundle);
 //        startActivityForResult(intent, VIEW_PHOTOS);
     }
 }
