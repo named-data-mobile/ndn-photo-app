@@ -23,7 +23,7 @@ public class FriendsList {
         friendsPrefixesList = new ArrayList<>();
         friendsNameList = new ArrayList<>();
 
-        RealmRepository realmRepository = RealmRepository.getInstance();
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         friends = realmRepository.getAllFriends();
         realmRepository.close();
 
