@@ -5,6 +5,7 @@ import net.named_data.jndn.encoding.tlv.TlvEncoder;
 import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -77,5 +78,9 @@ public class UserRealm extends RealmObject {
 
     public void setCert(byte[] cert) {
         this.cert = cert;
+    }
+
+    public ArrayList<String> getFriends() {
+        return new ArrayList<>(friends);
     }
 }

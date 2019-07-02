@@ -36,6 +36,14 @@ public class RealmViewModel extends ViewModel {
         repository.saveNewFriend(friendName, friendDomain, certificateV2);
     }
 
+    public void saveNewFriend(String friendName, boolean trust, CertificateV2 certificateV2) {
+        repository.saveNewFriend(friendName, trust, certificateV2);
+    }
+
+    public void addFriendToUser(String username, String friend) {
+        repository.addFriendToUser(username, friend);
+    }
+
     public ArrayList<User> getAllFriends() {
         return repository.getAllFriends();
     }

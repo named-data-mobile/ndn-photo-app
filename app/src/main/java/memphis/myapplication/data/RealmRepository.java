@@ -234,6 +234,7 @@ public class RealmRepository {
         user.setDomain(userRealm.getDomain());
         user.setCert(userRealm.getCertByreArray());
         user.setFriend(userRealm.isFriend());
+        user.setFriends(userRealm.getFriends());
         return user;
     }
 

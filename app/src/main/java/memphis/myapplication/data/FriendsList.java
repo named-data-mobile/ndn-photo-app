@@ -96,8 +96,7 @@ public class FriendsList {
             realmRepository.saveNewFriend(username, f.substring(0, f.indexOf("/npChat")), null);
             User sharingUser = realmRepository.addFriendToUser(friendName, f);
             realmRepository.addFriendToUser(username, sharingUser.getNamespace());
-            realmRepository.close();
         }
-
+        realmRepository.close();
     }
 }
