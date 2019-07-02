@@ -122,24 +122,23 @@ public class AddFriendFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Display or scan QR code first?").setCancelable(false);
+                builder.setTitle("Display or scan QR code first?").setCancelable(true);
                 final View tempView = view;
 
                 builder.setPositiveButton("Display QR code", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // Send them to a new page to select friends to send photo to
-                        scanFriendQR(tempView);
-                        nextState = DISPLAY_QR;
-//                        displayMyQR(tempView);
-
-                    }
-                });
-                builder.setNegativeButton("Scan QR code", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         displayMyQR(tempView);
                         nextState = SCAN_QR;
 //                        scanFriendQR(tempView);
 
+                    }
+                });
+                builder.setNegativeButton("Scan QR code", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Send them to a new page to select friends to send photo to
+                        scanFriendQR(tempView);
+                        nextState = DISPLAY_QR;
+//                        displayMyQR(tempView);
                     }
                 });
 

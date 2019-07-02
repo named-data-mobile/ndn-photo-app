@@ -1,10 +1,12 @@
 package memphis.myapplication.viewmodels;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
 import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -36,6 +38,10 @@ public class RealmViewModel extends ViewModel {
 
     public ArrayList<User> getAllFriends() {
         return repository.getAllFriends();
+    }
+
+    public LiveData<List<String>> observeAllFriends() {
+        return repository.observeAllFriends();
     }
 
     public ArrayList<User> getPotentialFriends() {

@@ -1,8 +1,12 @@
 package memphis.myapplication.data;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -19,6 +23,7 @@ public class RealmRepository {
 
     private static RealmRepository instance;
     public Realm realm;
+    MutableLiveData<List<String>> friends;
 
     private RealmRepository() {
         realm = Realm.getDefaultInstance();
@@ -97,6 +102,11 @@ public class RealmRepository {
 
         User user = userRealmToUser(friend);
 
+        if (friends != null && friends.getValue() != null) {
+            friends.getValue().add(user.getUsername());
+            friends.setValue(friends.getValue());
+        }
+
         realm.commitTransaction();
         return user;
     }
@@ -110,6 +120,17 @@ public class RealmRepository {
         }
         realm.commitTransaction();
         return users;
+    }
+
+    public LiveData<List<String>> observeAllFriends() {
+        if (friends == null) {
+            friends = new MutableLiveData<>();
+            List<String> friendsList = new ArrayList<>();
+            for (User f : getAllFriends())
+                friendsList.add(f.getUsername());
+            friends.setValue(friendsList);
+        }
+        return friends;
     }
 
     public ArrayList<User> getPotentialFriends() {
@@ -148,6 +169,10 @@ public class RealmRepository {
         userRealm.setFriend(false);
         // Temporary for testing purposes
         User user = userRealmToUser(userRealm);
+        if (friends != null && friends.getValue() != null && friends.getValue().contains(user.getUsername())) {
+            friends.getValue().remove(user.getUsername());
+            friends.setValue(friends.getValue());
+        }
         realm.commitTransaction();
         return user;
     }

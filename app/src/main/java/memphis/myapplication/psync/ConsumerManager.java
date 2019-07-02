@@ -164,7 +164,7 @@ public class ConsumerManager {
      */
     public void createConsumer(String prefix) {
 
-        Timber.d("Adding friend " + prefix + "as consumer");
+        Timber.d("Adding friend " + prefix + " as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.put(prefix, consumer);
         consumer.sendHelloInterest();
