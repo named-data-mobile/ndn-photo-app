@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -68,8 +69,11 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
         newFriendSpinner.setAdapter(newFriendDataAdapter);
 
         message = sendFriendRequestView.findViewById(R.id.trustTypeMessage);
-        friend = friendFriendsList.get(0);
-
+        if (friendFriendsList.isEmpty()) {
+            friend = "";
+        } else {
+            friend = friendFriendsList.get(0);
+        }
         // Radio buttons
         RadioButton rdb1 = sendFriendRequestView.findViewById(R.id.radioMutualFriend);
         rdb1.setOnClickListener(new View.OnClickListener() {
@@ -90,12 +94,14 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
         sendFriendRequestView.findViewById(R.id.sendRemoteFriendRequest).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (friend == null)
-                    friend = mEdit.getText().toString();
-                Timber.d("Sending friend request to " + friend + " using mutual friend " + mutualFriend);
-                FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, getActivity());
-                friendRequest.send();
-                Navigation.findNavController(sendFriendRequestView).popBackStack();
+                if (friendFriendsList.isEmpty() || friend == null)
+                    Toast.makeText(getActivity(), "No friend found", Toast.LENGTH_SHORT).show();
+                else {
+                    Timber.d("Sending friend request to " + friend + " using mutual friend " + mutualFriend);
+                    FriendRequest friendRequest = new FriendRequest(friend, mutualFriend, getActivity());
+                    friendRequest.send();
+                    Navigation.findNavController(sendFriendRequestView).popBackStack();
+                }
             }
         });
 
