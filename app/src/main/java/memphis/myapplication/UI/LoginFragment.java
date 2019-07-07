@@ -8,6 +8,9 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import android.text.Editable;
+import android.text.Selection;
+import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -24,6 +27,8 @@ import memphis.myapplication.utilities.SharedPrefsManager;
 public class LoginFragment extends Fragment {
 
     final private int MISSING_ELEMENT = 1;
+    final private int IMPROPER_DOMAIN = 2;
+    final private String PREFIX = "/";
     private String username, password, domain;
     private ProgressBar loginProgressBar;
     private Button loginButton;
@@ -50,13 +55,35 @@ public class LoginFragment extends Fragment {
         });
         // setBackgroundImage();
 
+        final EditText dom = loginView.findViewById(R.id.domain_text);
+        dom.setText(PREFIX);
+
+        dom.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if(!s.toString().startsWith(PREFIX)){
+                    dom.setText(String.format("%s%s", PREFIX, s.toString()));
+                    Selection.setSelection(dom.getText(), dom.getText().length());
+                }
+            }
+        });
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 login(v);
             }
         });
-     
+
         return loginView;
     }
 
@@ -100,7 +127,7 @@ public class LoginFragment extends Fragment {
         domain = dom.getText().toString();
         username = name.getText().toString();
         password = pass.getText().toString();
-        int attempt = loginAttempt(username, password);
+        int attempt = loginAttempt(domain, username, password);
         if(attempt == 0) {
             loginButton.setVisibility(View.GONE);
             loginProgressBar.setVisibility(View.VISIBLE);
@@ -109,13 +136,19 @@ public class LoginFragment extends Fragment {
         else if(attempt == MISSING_ELEMENT) {
             Toast.makeText(getActivity(), "Please fill out form completely", Toast.LENGTH_LONG).show();
         }
+        else if(attempt == IMPROPER_DOMAIN) {
+            Toast.makeText(getActivity(), "Please enter a valid domain", Toast.LENGTH_LONG).show();
+        }
         else {
             Toast.makeText(getActivity(), "Something went wrong. Please try again", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private int loginAttempt(String username, String password) {
+    private int loginAttempt(String domain, String username, String password) {
         String[] array = {username, password};
+        if(!domain.startsWith(PREFIX) || domain.toLowerCase().contains("/npchat") ||
+                domain.contains(" ") || domain.contains("//"))
+            return IMPROPER_DOMAIN;
         if(username.isEmpty() || password.isEmpty()) {
             return MISSING_ELEMENT;
         }
