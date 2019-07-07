@@ -13,8 +13,9 @@ import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.UI.MainFragment;
 import memphis.myapplication.psync.ConsumerManager;
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
 
 import static org.junit.Assert.assertThat;
 
@@ -24,7 +25,7 @@ public class TLVEncodeDecodeTest {
         String filename = "/test/filename.jpg";
         byte[] iv = new byte[16];
         String[] users = {"testUser"};
-        Activity activity = new MainActivity();
+        Activity activity = new MainFragment();
         SecretKey secretKey = activity.;
         ArrayList<String> recipients = new ArrayList<String>(Arrays.asList(users));
         Blob syncData =

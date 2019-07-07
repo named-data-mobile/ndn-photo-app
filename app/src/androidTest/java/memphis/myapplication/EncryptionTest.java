@@ -1,6 +1,6 @@
 package memphis.myapplication;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import net.named_data.jndn.util.Blob;
 
@@ -12,6 +12,9 @@ import java.util.Arrays;
 
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+
+import memphis.myapplication.utilities.Decrypter;
+import memphis.myapplication.utilities.Encrypter;
 
 import static org.junit.Assert.assertTrue;
 

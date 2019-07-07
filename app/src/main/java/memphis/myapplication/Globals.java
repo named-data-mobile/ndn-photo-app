@@ -1,6 +1,9 @@
 package memphis.myapplication;
 
 import android.app.Application;
+
+import memphis.myapplication.utilities.MemoryCache;
+import memphis.myapplication.data.NSDHelper;
 import timber.log.Timber;
 
 import net.named_data.jndn.Face;

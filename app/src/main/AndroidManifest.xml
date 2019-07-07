@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="memphis.myapplication">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -15,11 +16,11 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/npchat_logo_launcher"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".SendFriendRequest"></activity>
+        android:theme="@style/AppTheme.NoActionBar"
+        tools:ignore="GoogleAppIndexingWarning">
         <provider
-            android:name=".UriFileProvider"
-            android:authorities="memphis.myapplication.UriFileProvider"
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="memphis.myapplication.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -27,29 +28,10 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".services.NetworkService" />
+        <service android:name=".utilities.services.NetworkService" />
 
         <activity
-            android:name=".FilesActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".AddFriendActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".IntroActivity"
-            android:noHistory="true">
+            android:name=".IntroActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -57,27 +39,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
-            android:noHistory="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".NewContentActivity"
-            android:launchMode="singleTask" />
-        <activity
-            android:name=".DisplayQRActivity"
-            android:parentActivityName=".MainActivity" />
-        <activity
-            android:name=".SignUpActivity"
+            android:name=".UI.SignUpActivity"
             android:exported="true"
             android:label="ndn-snapchat"
             android:theme="@style/AppTheme.NoActionBar">
@@ -87,23 +49,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".SettingsActivity" />
-        <activity android:name=".AboutActivity" />
-        <activity android:name=".SelectRecipientsActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ViewFriendsActivity"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".ViewPhotosActivity"
-            android:launchMode="singleTask" />
     </application>
 
 </manifest>

@@ -1,13 +1,12 @@
 package memphis.myapplication;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.util.Blob;
 
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -15,7 +14,10 @@ import java.util.Arrays;
 
 import javax.crypto.SecretKey;
 
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
+import memphis.myapplication.utilities.Decrypter;
+import memphis.myapplication.utilities.Encrypter;
+import memphis.myapplication.utilities.FileManager;
 
 import static org.junit.Assert.assertEquals;
 

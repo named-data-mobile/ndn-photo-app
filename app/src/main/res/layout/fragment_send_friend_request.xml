@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/add_remote_friend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="5dp"
+        android:text="Add remote friend"
+        android:textSize="40sp" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:text="New friend"
+        android:layout_marginBottom="5dp"/>
+
+    <Spinner
+        android:id="@+id/spinnerNewFriends"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+
+    <EditText
+        android:id="@+id/add_remote_friend_edit_text"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:inputType="text"
+        android:visibility="gone"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dip"
+        android:text="Trust type"
+        android:layout_marginBottom="5dp"/>
+
+    <RadioGroup
+        android:id="@+id/radios"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <RadioButton
+            android:id="@+id/radioMutualFriend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mutual friend"
+            android:checked="true"
+            android:onClick="onRadioButtonClicked"/>
+
+        <RadioButton
+            android:id="@+id/radioDomain"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Domain"
+            android:onClick="onRadioButtonClicked"/>
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/trustTypeMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="5dp"
+        android:text=""
+        android:visibility="visible"
+        />
+
+    <Button
+        android:id="@+id/sendRemoteFriendRequest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@color/colorPrimaryDark"
+        android:elevation="4dp"
+        android:paddingLeft="70dp"
+        android:paddingRight="70dp"
+        android:text="Send Friend Request"
+        android:textColor="#fff"
+        />
+</LinearLayout>

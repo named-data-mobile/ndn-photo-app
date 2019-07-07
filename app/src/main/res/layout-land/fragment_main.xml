@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/camera"
+        android:layout_width="@dimen/width_imageview_camera"
+        android:layout_height="@dimen/height_imageview_camera"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:contentDescription="@string/camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/files"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/camera_blue" />
+
+    <ImageView
+        android:id="@+id/files"
+        android:layout_width="@dimen/width_imageview_camera"
+        android:layout_height="@dimen/height_imageview_camera"
+        android:layout_marginStart="@dimen/margin_8dp"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:contentDescription="@string/files"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/friends"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/camera"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/folder" />
+
+    <ImageView
+        android:id="@+id/friends"
+        android:layout_width="@dimen/width_imageview_camera"
+        android:layout_height="@dimen/height_imageview_camera"
+        android:layout_marginStart="@dimen/margin_8dp"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:adjustViewBounds="false"
+        android:contentDescription="@string/friends"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/rcvdImages"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/files"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/add_friend" />
+
+    <ImageView
+        android:id="@+id/rcvdImages"
+        android:layout_width="@dimen/width_imageview_camera"
+        android:layout_height="@dimen/height_imageview_camera"
+        android:layout_marginTop="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:contentDescription="@string/received_images"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/friends"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:srcCompat="@drawable/images_icon" />
+
+
+    <TextView
+        android:id="@+id/camera_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:text="@string/camera"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/camera"
+        app:layout_constraintEnd_toEndOf="@+id/camera"
+        app:layout_constraintStart_toStartOf="@+id/camera" />
+
+    <TextView
+        android:id="@+id/files_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:text="@string/files"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/files"
+        app:layout_constraintEnd_toEndOf="@+id/files"
+        app:layout_constraintStart_toStartOf="@+id/files" />
+
+    <TextView
+        android:id="@+id/friends_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:text="@string/friends"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/friends"
+        app:layout_constraintEnd_toEndOf="@+id/friends"
+        app:layout_constraintStart_toStartOf="@+id/friends" />
+
+    <TextView
+        android:id="@+id/images_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:text="@string/received_images"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@+id/rcvdImages"
+        app:layout_constraintEnd_toEndOf="@+id/rcvdImages"
+        app:layout_constraintStart_toStartOf="@+id/rcvdImages" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

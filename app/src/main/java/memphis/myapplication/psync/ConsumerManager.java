@@ -1,11 +1,12 @@
 package memphis.myapplication.psync;
 
-import android.app.Activity;
 import android.content.Context;
 
 import android.util.Base64;
 
-import memphis.myapplication.FriendsList;
+import androidx.lifecycle.MutableLiveData;
+
+import memphis.myapplication.data.FriendsList;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -30,23 +31,22 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import memphis.myapplication.Globals;
-import memphis.myapplication.SharedPrefsManager;
-import memphis.myapplication.SyncData;
-import memphis.myapplication.tasks.FetchingTask;
-import memphis.myapplication.tasks.FetchingTaskParams;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import memphis.myapplication.utilities.SyncData;
+import memphis.myapplication.data.tasks.FetchingTask;
+import memphis.myapplication.data.tasks.FetchingTaskParams;
 
 public class ConsumerManager {
 
     static PSync.Consumer consumer;
     static HashMap<String, PSync.Consumer> consumers = new HashMap<>();
-    static Activity activity;
+    static MutableLiveData<String> toastData;
     static Context context;
     static Face face;
 
 
-
-    public ConsumerManager(Activity _activity, Context _context) {
-        this.activity = _activity;
+    public ConsumerManager(Context _context, MutableLiveData<String> toastData) {
+        this.toastData = toastData;
         this.context = _context;
     }
 
@@ -80,7 +80,7 @@ public class ConsumerManager {
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");
-                    new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
@@ -92,7 +92,7 @@ public class ConsumerManager {
                             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(activity).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }
@@ -164,7 +164,7 @@ public class ConsumerManager {
      */
     public void createConsumer(String prefix) {
 
-        Timber.d("Adding friend " + prefix + "as consumer");
+        Timber.d("Adding friend " + prefix + " as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.put(prefix, consumer);
         consumer.sendHelloInterest();
