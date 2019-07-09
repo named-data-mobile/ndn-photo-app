@@ -79,9 +79,10 @@ public class FriendsList {
         newFriends.removeAll(friendsPrefixesList);
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         // Remove our username from the friends list
-        if (newFriends.contains("/" + myPrefix)) {
+        Timber.d("My prefix: " + myPrefix);
+        if (newFriends.contains(myPrefix)) {
             Timber.d("We're still friends");
-            newFriends.remove("/" + myPrefix);
+            newFriends.remove(myPrefix);
         // If we don't find our name, then that means we are no longer friends with them. So remove
         // them from our friends list
         } else {
