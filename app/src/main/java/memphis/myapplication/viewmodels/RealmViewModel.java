@@ -69,7 +69,7 @@ public class RealmViewModel extends ViewModel {
     }
 
     public User getFriend(String friendName) {
-        return repository.deleteFriendship(friendName);
+        return repository.getFriend(friendName);
     }
 
     public void addKey(String path, SecretKey secretKey) {
