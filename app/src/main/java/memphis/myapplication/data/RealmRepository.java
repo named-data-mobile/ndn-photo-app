@@ -23,7 +23,7 @@ public class RealmRepository {
 
     private static RealmRepository instance;
     public Realm realm;
-    MutableLiveData<List<String>> friends;
+    private static MutableLiveData<List<String>> friends;
 
     private RealmRepository() {
         realm = Realm.getDefaultInstance();
@@ -104,7 +104,7 @@ public class RealmRepository {
 
         if (friends != null && friends.getValue() != null) {
             friends.getValue().add(user.getUsername());
-            friends.setValue(friends.getValue());
+            friends.postValue(friends.getValue());
         }
 
         realm.commitTransaction();
