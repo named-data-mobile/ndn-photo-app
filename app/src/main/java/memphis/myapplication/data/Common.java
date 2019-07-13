@@ -327,7 +327,7 @@ public class Common {
                 }
                 Timber.d("file selection result: %s", "file path: " + path);
                 try {
-                    String prefixApp = "/" + sharedPrefsManager.getNamespace();
+                    String prefixApp = sharedPrefsManager.getNamespace();
 
                     final String prefix = prefixApp + "/file" + path;
                     Timber.d(prefix);
