@@ -96,7 +96,7 @@ public class MemoryCache {
             e.printStackTrace();
             bytes = new byte[0];
         }
-        String prefixApp = "/" + sharedPrefsManager.getNamespace();
+        String prefixApp = sharedPrefsManager.getNamespace();
         String prefix = prefixApp + "/file" + filename;
 
         Encrypter encrypter = new Encrypter();
@@ -159,6 +159,8 @@ public class MemoryCache {
             realmRepository.close();
 
             if (publishedContent != null) {
+                Timber.i(publishedContent.getFilename());
+                Timber.i(publishedContent.getKey()+"");
                 process(filename);
             } else {
                 Timber.d("Can't find file. Ignoring");
