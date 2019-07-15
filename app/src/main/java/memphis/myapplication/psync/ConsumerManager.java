@@ -2,6 +2,7 @@ package memphis.myapplication.psync;
 
 import android.content.Context;
 
+import android.os.Bundle;
 import android.util.Base64;
 
 import androidx.lifecycle.MutableLiveData;
@@ -80,7 +81,7 @@ public class ConsumerManager {
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null, syncData.isLocation()));
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
@@ -92,7 +93,7 @@ public class ConsumerManager {
                             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, syncData.isLocation()));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }

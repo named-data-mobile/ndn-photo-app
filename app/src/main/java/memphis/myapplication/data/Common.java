@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +47,7 @@ import net.named_data.jndn.util.Blob;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +86,7 @@ public class Common {
                     // it would be null if this file is already in our cache so we do not packetize
                     if (packets != null) {
                         Timber.d("Publishing with prefix: " + prefix);
-                        for (Data data : packetize(blob, prefix)) {
+                        for (Data data : packets) {
                             Globals.keyChain.sign(data);
                             fileData.add(data);
                         }
@@ -273,6 +275,22 @@ public class Common {
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
+            boolean location = false;
+            String latitude = null;
+            String longitude = null;
+            if(resultData.getExtras().getBoolean("location")){
+                location = true;
+                Bundle params = resultData.getExtras();
+                latitude = params.getString("latitude");
+                while(latitude.length() != 8){
+                    latitude+="0";
+                }
+                longitude = params.getString("longitude");
+                while(longitude.length() != 9){
+                    longitude+="0";
+                }
+                Timber.d("Adding location: " + latitude + " : " + longitude);
+            }
             Timber.d("File size: " + photo.length());
             final Uri uri = FileProvider.getUriForFile(context,
                     context.getApplicationContext().getPackageName() +
@@ -295,6 +313,7 @@ public class Common {
                 // Encode sync data
                 SyncData syncData = new SyncData();
                 syncData.setFilename(filename);
+                if (location) syncData.addLocation();
 
                 final boolean feed = (recipients == null);
                 if (feed) {
@@ -318,8 +337,16 @@ public class Common {
                 byte[] bytes;
                 try {
                     InputStream is = context.getContentResolver().openInputStream(uri);
-                    bytes = IOUtils.toByteArray(is);
-                    Timber.d("select file activity: %s", "file byte array size: " + bytes.length);
+                    if(location){
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                        outputStream.write(IOUtils.toByteArray(is));
+                        outputStream.write(latitude.getBytes());
+                        outputStream.write(longitude.getBytes());
+                        bytes = outputStream.toByteArray();
+                    }else {
+                        bytes = IOUtils.toByteArray(is);
+                    }
+                    Timber.d("file byte array size: " + bytes.length);
                 } catch (IOException e) {
                     Timber.d("onItemClick: failed to byte");
                     e.printStackTrace();
@@ -336,6 +363,7 @@ public class Common {
                         databaseViewModel.addKey(path, secretKey);
 
                         Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                        Timber.d("m_content size: " + encryptedBlob.size());
                         Common.publishData(encryptedBlob, new Name(prefix));
                     }
                     else {

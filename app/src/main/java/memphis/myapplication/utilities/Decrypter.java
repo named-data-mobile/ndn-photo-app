@@ -101,7 +101,7 @@ public class Decrypter {
         }
 
         if (recipient == null) {
-            return new FetchingTaskParams(new Interest(new Name(filename.toString())), null);
+            return new FetchingTaskParams(new Interest(new Name(filename.toString())), null, false);
         }
 
         if (recipient.toString().equals(sharedPrefsManager.getUsername())) {
@@ -112,7 +112,7 @@ public class Decrypter {
             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
             Timber.d("Filename : %s", filename);
-            return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey);
+            return new FetchingTaskParams(new Interest(new Name(filename.toString())), secretKey, false);
         }
 
         decoder.finishNestedTlvs(endOffset);

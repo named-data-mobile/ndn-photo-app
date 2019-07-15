@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -165,10 +166,11 @@ public class FileManager {
      * separately later for viewing and subsequent destruction.
      * @param content The blob of content we received upon Interest.
      * @param path The path of the file we will save it to.
+     * @param location The location data with the file
      * @return whether the file operation was successful or not.
      */
 
-    public boolean saveContentToFile(Blob content, Name path) {
+    public boolean saveContentToFile(Blob content, Name path, boolean location) {
         String filename = path.getSubName(-1).toUri().substring(1);
         Timber.d( "Saving " + filename);
         File dir;
@@ -208,7 +210,20 @@ public class FileManager {
                 }
             }
         }
-        byte[] byteContent = content.getImmutableArray();
+
+        String latitude = "";
+        String longitude = "";
+        byte[] byteContent;
+
+        if (location) {
+            byteContent = content.getImmutableArray();
+            latitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 17, byteContent.length - 9));
+            longitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 9, byteContent.length));
+            byteContent = Arrays.copyOfRange(byteContent, 0, byteContent.length - 17);
+            Timber.d("Fetched latitude: " + latitude + " longitude: " + longitude);
+        }else {
+            byteContent = content.getImmutableArray();
+        }
         try {
             FileOutputStream fostream = new FileOutputStream(file);
             fostream.write(byteContent);

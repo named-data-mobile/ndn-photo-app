@@ -29,6 +29,14 @@ public class SyncData {
         jo.put("filename", f);
     }
 
+    public void addLocation() throws JSONException{
+        jo.put("location", true);
+    }
+
+    public boolean isLocation() throws JSONException{
+        return jo.getBoolean("location");
+    }
+
     public void addFriendKey (String friend, byte[] key) throws JSONException{
         jo.put(friend, Base64.encodeToString(key, 0));
     }

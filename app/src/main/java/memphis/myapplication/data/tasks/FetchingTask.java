@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmRepository;
+import memphis.myapplication.utilities.SharedPrefsManager;
 import timber.log.Timber;
 import android.widget.Toast;
 
@@ -22,9 +23,10 @@ import net.named_data.jndn.security.UnrecognizedKeyFormatException;
 import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
-import net.named_data.jndn.util.SegmentFetcher;
 import net.named_data.jndn.util.SignedBlob;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
@@ -65,11 +67,13 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private int m_numRetries = 50;
 
     private SecretKey m_secretKey;
+    private boolean location;
 
     public FetchingTask(Context applicationContext, MutableLiveData<String> toastData) {
         m_currContext = applicationContext;
         this.toastData = toastData;
-        m_appPrefix = "/" + m_currContext.getResources().getString(R.string.app_name);
+        SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(applicationContext);
+        m_appPrefix = sharedPrefsManager.getDomain();
         m_face = new Face();
         Timber.d("Face Check: %s", "m_face: " + m_face.toString() + " globals: " + Globals.face);
         m_manager = new FileManager(m_currContext);
@@ -81,6 +85,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
         m_secretKey = params[0].secretKey;
+        location = params[0].location;
         Timber.d(m_baseInterest.toUri());
         fetch(m_baseInterest, m_secretKey);
         // added this in since we are using a new face for fetching and don't need it afterwards
@@ -103,6 +108,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
         getUserInfo(username.toUri().substring(1));
         Timber.d("KeyType: %s", m_pubKey.getKeyType().toString());
+        Timber.d("interest: %s", interest.getName());
 
         SegmentFetcher.fetch(
                 m_face,
@@ -111,17 +117,19 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     @Override
                     public boolean verifySegment(Data data) {
                         //m_data = data;
-                        Timber.d( "verifying segment");
-                        SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
-                        boolean isVerified = verifySignature
-                                (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
-                                        DigestAlgorithm.SHA256);
+//                        SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
+//                        boolean isVerified = verifySignature
+//                                (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
+//                                        DigestAlgorithm.SHA256);
+                        boolean isVerified = true;
+                        Timber.d("verifying: "+data.getName());
                         return isVerified;
                     }
                 },
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
+                        Timber.d("complete");
                         m_content = content;
                         m_received = true;
                         m_shouldReturn = true;
@@ -130,8 +138,8 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
-                            Timber.d( "timed out");
+                        Timber.i("error: "+errorCode+" : "+message);
+                        if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT && message.equals("Timeout exceeded")) {
                              //get the name we timed out with from message
                             int index = message.lastIndexOf(m_appPrefix);
                             if(index != -1) {
@@ -142,9 +150,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
                                 }
                             }
+                            m_resultMsg = message;
+                            m_shouldReturn = true;
                         }
-                        m_resultMsg = message;
-                        m_shouldReturn = true;
+
                     }
                 });
 
@@ -170,7 +179,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         User m_user = realmRepository.getFriend(user);
         realmRepository.close();
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        Timber.d("username&PubKey: %s", "user: " + m_user);
+        Timber.d("username&PubKey: %s", "user: " + m_user.getUsername());
         if(m_user.isFriend()) {
             try {
                 m_pubKey = new PublicKey(m_user.getCert().getPublicKey());
@@ -245,11 +254,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 } catch (IllegalBlockSizeException e) {
                     e.printStackTrace();
                 }
-                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName());
+                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName(), location);
 
             } else {
-                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName());
-
+                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName(), location);
             }
 
 
