@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
+import memphis.myapplication.data.RealmObjects.FilesInfo;
 import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
@@ -166,11 +167,10 @@ public class FileManager {
      * separately later for viewing and subsequent destruction.
      * @param content The blob of content we received upon Interest.
      * @param path The path of the file we will save it to.
-     * @param location The location data with the file
      * @return whether the file operation was successful or not.
      */
 
-    public boolean saveContentToFile(Blob content, Name path, boolean location) {
+    public boolean saveContentToFile(Blob content, Name path) {
         String filename = path.getSubName(-1).toUri().substring(1);
         Timber.d( "Saving " + filename);
         File dir;
@@ -211,16 +211,22 @@ public class FileManager {
             }
         }
 
-        String latitude = "";
-        String longitude = "";
         byte[] byteContent;
 
-        if (location) {
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName().substring(file.getName().indexOf('_') + 1));
+        filesInfo.filePath = file.getPath();
+
+        Timber.d("location?: "+filesInfo.location);
+
+        if (filesInfo.location) {
             byteContent = content.getImmutableArray();
-            latitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 17, byteContent.length - 9));
-            longitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 9, byteContent.length));
+            String latitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 17, byteContent.length - 9));
+            String longitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 9, byteContent.length));
             byteContent = Arrays.copyOfRange(byteContent, 0, byteContent.length - 17);
             Timber.d("Fetched latitude: " + latitude + " longitude: " + longitude);
+            filesInfo.latitude =  Double.parseDouble(latitude);
+            filesInfo.longitude =  Double.parseDouble(longitude);
         }else {
             byteContent = content.getImmutableArray();
         }
@@ -228,6 +234,8 @@ public class FileManager {
             FileOutputStream fostream = new FileOutputStream(file);
             fostream.write(byteContent);
             fostream.close();
+            realmRepository.saveNewFile(filesInfo);
+            realmRepository.close();
             return true;
         }
         catch(IOException e) {

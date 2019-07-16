@@ -8,6 +8,7 @@ import android.util.Base64;
 import androidx.lifecycle.MutableLiveData;
 
 import memphis.myapplication.data.FriendsList;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -72,16 +73,19 @@ public class ConsumerManager {
                 String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
                 Timber.d(interestData);
 
-
-
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
                 Timber.d("Filename: " + filename);
 
+                String fileName = filename.substring(filename.lastIndexOf('/') + 1).trim();
+                String producer = filename.substring(0, filename.indexOf("/file"));
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                realmRepository.saveNewFile(fileName, syncData.isFeed(), syncData.isLocation(), producer);
+                realmRepository.close();
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null, syncData.isLocation()));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
@@ -93,7 +97,7 @@ public class ConsumerManager {
                             byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
                             SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, syncData.isLocation()));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }

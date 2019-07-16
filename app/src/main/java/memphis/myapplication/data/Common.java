@@ -313,7 +313,7 @@ public class Common {
                 // Encode sync data
                 SyncData syncData = new SyncData();
                 syncData.setFilename(filename);
-                if (location) syncData.addLocation();
+                syncData.addLocation(location);
 
                 final boolean feed = (recipients == null);
                 if (feed) {

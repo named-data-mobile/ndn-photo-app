@@ -402,7 +402,8 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        locationManager.removeUpdates(this);
+        if(locationManager != null)
+            locationManager.removeUpdates(this);
     }
 }
 

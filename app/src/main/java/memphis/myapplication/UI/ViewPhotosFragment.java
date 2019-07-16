@@ -9,12 +9,15 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import memphis.myapplication.R;
+import memphis.myapplication.data.RealmObjects.FilesInfo;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 public class ViewPhotosFragment extends Fragment {
 
     private ImageView m_imgView;
+    private TextView m_location;
     private int m_index;
     private View viewPhotosView;
 
@@ -42,6 +46,7 @@ public class ViewPhotosFragment extends Fragment {
         viewPhotosView = inflater.inflate(R.layout.fragment_view_photos, container, false);
 
         m_imgView = viewPhotosView.findViewById(R.id.photoImgView);
+        m_location = viewPhotosView.findViewById(R.id.location);
         // get content from Intent; should be an ArrayList of Files
         Bundle bundle = this.getArguments();
         if (bundle != null) {
@@ -74,6 +79,16 @@ public class ViewPhotosFragment extends Fragment {
                     String photo = photos.get(m_index);
                     File photoFile = new File(photo);
                     Picasso.get().load(photoFile).fit().centerCrop().into(m_imgView);
+
+                    Timber.d("Displating: "+photo.substring(photo.lastIndexOf('_')+ 1));
+                    FilesInfo filesInfo = RealmRepository.getInstance().getFileInfo(photo.substring(photo.lastIndexOf('_')+ 1));
+                    if(filesInfo.location){
+                        m_location.setVisibility(View.VISIBLE);
+                        m_location.setText(filesInfo.latitude + " : "+filesInfo.longitude);
+                    }else{
+                        m_location.setVisibility(View.GONE);
+                        m_location.setText("");
+                    }
                     // check that we are not deleting the first one otherwise it would be 0 - 1 and we
                     // would delete the last one. So we don't want to delete it while viewing
                     if (m_index - 1 >= 0) {
@@ -82,6 +97,9 @@ public class ViewPhotosFragment extends Fragment {
                         String photoToDelete = photos.get(m_index - 1);
                         File fileToDelete = new File(photoToDelete);
                         boolean wasDeleted = fileToDelete.delete();
+                        if(wasDeleted){
+                            RealmRepository.getInstance().deleteFileInfo(photoToDelete.substring(photoToDelete.lastIndexOf('_')+ 1));
+                        }
                         Timber.d("file with path: " + photoToDelete + " was deleted? " + wasDeleted);
                     }
                     Timber.d("We set the imageURI with index number: " + m_index);

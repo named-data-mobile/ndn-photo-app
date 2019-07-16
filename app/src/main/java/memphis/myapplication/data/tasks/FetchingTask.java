@@ -67,7 +67,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private int m_numRetries = 50;
 
     private SecretKey m_secretKey;
-    private boolean location;
 
     public FetchingTask(Context applicationContext, MutableLiveData<String> toastData) {
         m_currContext = applicationContext;
@@ -85,7 +84,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
         m_secretKey = params[0].secretKey;
-        location = params[0].location;
         Timber.d(m_baseInterest.toUri());
         fetch(m_baseInterest, m_secretKey);
         // added this in since we are using a new face for fetching and don't need it afterwards
@@ -254,10 +252,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 } catch (IllegalBlockSizeException e) {
                     e.printStackTrace();
                 }
-                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName(), location);
+                wasSaved = m_manager.saveContentToFile(decryptedContent, m_baseInterest.getName());
 
             } else {
-                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName(), location);
+                wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName());
             }
 
 

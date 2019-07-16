@@ -8,11 +8,9 @@ public class FetchingTaskParams
 {
     Interest interest;
     SecretKey secretKey;
-    boolean location;
 
-    public FetchingTaskParams(Interest interest, SecretKey secretKey, boolean location) {
+    public FetchingTaskParams(Interest interest, SecretKey secretKey) {
         this.interest = interest;
         this.secretKey = secretKey;
-        this.location = location;
     }
 }

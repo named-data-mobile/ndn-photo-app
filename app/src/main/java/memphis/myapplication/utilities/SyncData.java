@@ -29,8 +29,8 @@ public class SyncData {
         jo.put("filename", f);
     }
 
-    public void addLocation() throws JSONException{
-        jo.put("location", true);
+    public void addLocation(Boolean b) throws JSONException{
+        jo.put("location", b);
     }
 
     public boolean isLocation() throws JSONException{
