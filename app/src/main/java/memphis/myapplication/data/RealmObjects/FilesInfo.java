@@ -7,21 +7,16 @@ public class FilesInfo {
 
     public String producer;
     public boolean feed;
-
     public boolean location;
-    public double latitude;
-    public double longitude;
 
     public FilesInfo() {
     }
 
-    public FilesInfo(String filename, String filePath, String producer, boolean feed, boolean location, double latitude, double longitude) {
+    public FilesInfo(String filename, String filePath, String producer, boolean feed, boolean location) {
         this.filename = filename;
         this.filePath = filePath;
         this.producer = producer;
         this.feed = feed;
         this.location = location;
-        this.latitude = latitude;
-        this.longitude = longitude;
     }
 }

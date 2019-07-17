@@ -224,8 +224,8 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                             if (locationAdded) {
                                 data.putExtra("location", true);
                                 Bundle params = new Bundle();
-                                params.putString("latitude", String.format("%.4f", latitude));
-                                params.putString("longitude", String.format("%.4f", longitude));
+                                params.putDouble("latitude", latitude);
+                                params.putDouble("longitude", longitude);
                                 data.putExtras(params);
                             }
                             data.putExtra("photo", path);

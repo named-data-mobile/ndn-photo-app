@@ -218,18 +218,8 @@ public class FileManager {
         filesInfo.filePath = file.getPath();
 
         Timber.d("location?: "+filesInfo.location);
+        byteContent = content.getImmutableArray();
 
-        if (filesInfo.location) {
-            byteContent = content.getImmutableArray();
-            String latitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 17, byteContent.length - 9));
-            String longitude = new String(Arrays.copyOfRange(byteContent, byteContent.length - 9, byteContent.length));
-            byteContent = Arrays.copyOfRange(byteContent, 0, byteContent.length - 17);
-            Timber.d("Fetched latitude: " + latitude + " longitude: " + longitude);
-            filesInfo.latitude =  Double.parseDouble(latitude);
-            filesInfo.longitude =  Double.parseDouble(longitude);
-        }else {
-            byteContent = content.getImmutableArray();
-        }
         try {
             FileOutputStream fostream = new FileOutputStream(file);
             fostream.write(byteContent);

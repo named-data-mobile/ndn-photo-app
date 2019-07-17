@@ -256,11 +256,6 @@ public class RealmRepository {
         filesInfoRealm.setFeed(filesInfo.feed);
         filesInfoRealm.setLocation(filesInfo.location);
 
-        if(filesInfo.location){
-            filesInfoRealm.setLatitude(filesInfo.latitude);
-            filesInfoRealm.setLongitude(filesInfo.longitude);
-        }
-
         realm.commitTransaction();
     }
 
@@ -323,8 +318,6 @@ public class RealmRepository {
         filesInfo.producer = filesInfoRealm.getProducer();
         filesInfo.feed = filesInfoRealm.isFeed();
         filesInfo.location = filesInfoRealm.isLocation();
-        filesInfo.latitude = filesInfoRealm.getLatitude();
-        filesInfo.longitude = filesInfoRealm.getLongitude();
 
         return filesInfo;
     }

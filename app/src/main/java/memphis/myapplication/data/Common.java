@@ -9,21 +9,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
-
-import memphis.myapplication.Globals;
-import memphis.myapplication.data.RealmObjects.User;
-import memphis.myapplication.utilities.SyncData;
-import memphis.myapplication.utilities.Encrypter;
-import memphis.myapplication.utilities.FileManager;
-import memphis.myapplication.utilities.QRExchange;
-import memphis.myapplication.utilities.SharedPrefsManager;
-import memphis.myapplication.viewmodels.RealmViewModel;
-import timber.log.Timber;
 
 import net.named_data.jndn.ContentType;
 import net.named_data.jndn.Data;
@@ -33,7 +24,6 @@ import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
 import net.named_data.jndn.OnTimeout;
 import net.named_data.jndn.encoding.EncodingException;
-
 import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
 import net.named_data.jndn.encrypt.algo.EncryptParams;
 import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
@@ -47,12 +37,10 @@ import net.named_data.jndn.util.Blob;
 
 import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -63,6 +51,16 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.Globals;
+import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.utilities.Encrypter;
+import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.utilities.QRExchange;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import memphis.myapplication.utilities.SyncData;
+import memphis.myapplication.viewmodels.RealmViewModel;
+import timber.log.Timber;
+
 import static memphis.myapplication.Globals.consumerManager;
 import static memphis.myapplication.Globals.producerManager;
 
@@ -70,10 +68,10 @@ import static memphis.myapplication.Globals.producerManager;
 public class Common {
 
 
-
     /**
      * Starts a new thread to publish the file/photo data.
-     * @param blob Blob of content
+     *
+     * @param blob   Blob of content
      * @param prefix Name of the file (currently absolute path)
      */
     public static void publishData(final Blob blob, final Name prefix) {
@@ -104,6 +102,7 @@ public class Common {
 
     /**
      * This takes a Blob and divides it into NDN data packets
+     *
      * @param raw_blob The full content of data in Blob format
      * @param prefix
      * @return returns an ArrayList of all the data packets
@@ -159,18 +158,19 @@ public class Common {
 
     /**
      * Generates and expresses interest for our certificate signed by friend
+     *
      * @param friend: name of friend who has our certificate
      */
     public static void generateCertificateInterest(String friend) throws SecurityException, IOException {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         User user = realmRepository.getFriend(friend);
         realmRepository.close();
-        Name name =  new Name(user.getNamespace());
+        Name name = new Name(user.getNamespace());
         name.append("cert");
         Name certName = Globals.keyChain.getDefaultCertificateName();
         Name newCertName = new Name();
         int end = 0;
-        for (int i = 0; i<= certName.size(); i++) {
+        for (int i = 0; i <= certName.size(); i++) {
             if (certName.getSubName(i, 1).toUri().equals("/self")) {
                 newCertName.append(certName.getPrefix(i));
                 end = i;
@@ -178,7 +178,7 @@ public class Common {
             }
         }
         newCertName.append(friend);
-        newCertName.append(certName.getSubName(end+1));
+        newCertName.append(certName.getSubName(end + 1));
         name.append(newCertName);
         Interest interest = new Interest(name);
         Timber.d("Expressing interest for our cert %s", name.toUri());
@@ -252,7 +252,7 @@ public class Common {
 
         @Override
         public void onTimeout(Interest interest) {
-            Timber.d( "Timeout for interest " + interest.toUri());
+            Timber.d("Timeout for interest " + interest.toUri());
             String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
             Timber.d("Resending interest to " + friend);
             try {
@@ -268,35 +268,43 @@ public class Common {
 
     /**
      * encodes sync data, encrypts photo, and publishes filename and symmetric keys
+     *
      * @param resultData: intent with filename and recipients list
      */
     public static void encryptAndPublish(Intent resultData, Context context) {
-        RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity)context).get(RealmViewModel.class);
+        RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity) context).get(RealmViewModel.class);
         try {
             final String path = resultData.getStringExtra("photo");
             final File photo = new File(path);
             boolean location = false;
-            String latitude = null;
-            String longitude = null;
-            if(resultData.getExtras().getBoolean("location")){
+            double latitude;
+            double longitude;
+            if (resultData.getExtras().getBoolean("location")) {
                 location = true;
                 Bundle params = resultData.getExtras();
-                latitude = params.getString("latitude");
-                while(latitude.length() != 8){
-                    latitude+="0";
-                }
-                longitude = params.getString("longitude");
-                while(longitude.length() != 9){
-                    longitude+="0";
-                }
+                latitude = params.getDouble("latitude");
+                longitude = params.getDouble("longitude");
                 Timber.d("Adding location: " + latitude + " : " + longitude);
+
+                ExifInterface exif;
+                try {
+                    exif = new ExifInterface(photo.getAbsolutePath());
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, convert(latitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, latitude < 0.0d ? "S" : "N");
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, convert(longitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, longitude < 0.0d ? "W" : "E");
+                    exif.saveAttributes();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(context, "Error in sending location", Toast.LENGTH_SHORT).show();
+                }
             }
             Timber.d("File size: " + photo.length());
             final Uri uri = FileProvider.getUriForFile(context,
                     context.getApplicationContext().getPackageName() +
                             ".fileProvider", photo);
             final Encrypter encrypter = new Encrypter();
-
 
             ArrayList<String> recipients;
             try {
@@ -319,10 +327,9 @@ public class Common {
                 if (feed) {
                     Timber.d("For feed");
                     syncData.setFeed(true);
-                }
-                else {
+                } else {
                     syncData.setFeed(false);
-                    Timber.d( "For friends");
+                    Timber.d("For friends");
                     for (String friend : recipients) {
                         Blob friendKey = databaseViewModel.getFriend(friend).getCert().getPublicKey();
                         byte[] encryptedKey = RsaAlgorithm.encrypt
@@ -337,16 +344,7 @@ public class Common {
                 byte[] bytes;
                 try {
                     InputStream is = context.getContentResolver().openInputStream(uri);
-                    if(location){
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                        outputStream.write(IOUtils.toByteArray(is));
-                        outputStream.write(latitude.getBytes());
-                        outputStream.write(longitude.getBytes());
-                        bytes = outputStream.toByteArray();
-                    }else {
-                        bytes = IOUtils.toByteArray(is);
-                    }
-                    Timber.d("file byte array size: " + bytes.length);
+                    bytes = IOUtils.toByteArray(is);
                 } catch (IOException e) {
                     Timber.d("onItemClick: failed to byte");
                     e.printStackTrace();
@@ -365,8 +363,7 @@ public class Common {
                         Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                         Timber.d("m_content size: " + encryptedBlob.size());
                         Common.publishData(encryptedBlob, new Name(prefix));
-                    }
-                    else {
+                    } else {
                         Timber.d("Publishing to feed");
                         Blob unencryptedBlob = new Blob(bytes);
                         Common.publishData(unencryptedBlob, new Name(prefix));
@@ -375,7 +372,7 @@ public class Common {
                     final FileManager manager = new FileManager(context.getApplicationContext());
                     Bitmap bitmap = QRExchange.makeQRCode(prefix);
                     manager.saveFileQR(bitmap, prefix);
-                    ((AppCompatActivity)context).runOnUiThread(makeToast("Sending photo", context));
+                    ((AppCompatActivity) context).runOnUiThread(makeToast("Sending photo", context));
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
                 } catch (NoSuchPaddingException e) {
@@ -390,15 +387,35 @@ public class Common {
                     e.printStackTrace();
                 }
                 producerManager.publishFile(name);
-            }
-            catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            ((AppCompatActivity)context).runOnUiThread(makeToast("Something went wrong with sending photo. Try resending", context));
+            ((AppCompatActivity) context).runOnUiThread(makeToast("Something went wrong with sending photo. Try resending", context));
         }
+    }
+
+    public static final String convert(double latitude) {
+        latitude = Math.abs(latitude);
+        int degree = (int) latitude;
+        latitude *= 60;
+        latitude -= (degree * 60.0d);
+        int minute = (int) latitude;
+        latitude *= 60;
+        latitude -= (minute * 60.0d);
+        int second = (int) (latitude * 1000.0d);
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.setLength(0);
+        sb.append(degree);
+        sb.append("/1,");
+        sb.append(minute);
+        sb.append("/1,");
+        sb.append(second);
+        sb.append("/1000");
+        return sb.toString();
     }
 
     /**
