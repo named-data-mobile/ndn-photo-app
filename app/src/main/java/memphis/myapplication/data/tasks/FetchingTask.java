@@ -23,6 +23,7 @@ import net.named_data.jndn.security.UnrecognizedKeyFormatException;
 import net.named_data.jndn.security.certificate.PublicKey;
 import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
+import net.named_data.jndn.util.SegmentFetcher;
 import net.named_data.jndn.util.SignedBlob;
 
 import java.io.File;
@@ -115,19 +116,17 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     @Override
                     public boolean verifySegment(Data data) {
                         //m_data = data;
-//                        SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
-//                        boolean isVerified = verifySignature
-//                                (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
-//                                        DigestAlgorithm.SHA256);
-                        boolean isVerified = true;
-                        Timber.d("verifying: "+data.getName());
+                        Timber.d( "verifying segment");
+                        SignedBlob encoding = data.wireEncode(WireFormat.getDefaultWireFormat());
+                        boolean isVerified = verifySignature
+                                (encoding.signedBuf(), data.getSignature().getSignature().getImmutableArray(), m_pubKey,
+                                        DigestAlgorithm.SHA256);
                         return isVerified;
                     }
                 },
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
-                        Timber.d("complete");
                         m_content = content;
                         m_received = true;
                         m_shouldReturn = true;
@@ -136,9 +135,9 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 new SegmentFetcher.OnError() {
                     @Override
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
-                        Timber.i("error: "+errorCode+" : "+message);
-                        if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT && message.equals("Timeout exceeded")) {
-                             //get the name we timed out with from message
+                        if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
+                            Timber.d( "timed out");
+                            //get the name we timed out with from message
                             int index = message.lastIndexOf(m_appPrefix);
                             if(index != -1) {
                                 Interest interest = new Interest(new Name(message.substring(index)));
@@ -148,13 +147,11 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
                                 }
                             }
-                            m_resultMsg = message;
-                            m_shouldReturn = true;
                         }
-
+                        m_resultMsg = message;
+                        m_shouldReturn = true;
                     }
                 });
-
         while(!m_shouldReturn) {
             try {
                 m_face.processEvents();
