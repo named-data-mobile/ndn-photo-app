@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import memphis.myapplication.R;
 import memphis.myapplication.data.Common;
@@ -81,9 +82,10 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
         feed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                friends.setBackground(null);
-                friends.setSelected(false);
                 if (m_selectedFriends.size() <= 0) {
+                    friends.setBackground(null);
+                    friends.setSelected(false);
+
                     if (feed.isSelected()) {
                         m_feedSelected = false;
                         feed.setSelected(false);
@@ -113,11 +115,9 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                 if (friends.isSelected()) {
                     friends.setSelected(false);
                     friends.setBackground(null);
-                    m_sendButton.setVisibility(View.GONE);
                 } else {
                     friends.setBackground(drawable1);
                     friends.setSelected(true);
-                    m_sendButton.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -138,7 +138,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                             if (isChecked) {
                                 locationAdded = true;
-                                work();
+                                getLocation();
                             } else {
                                 latitude = 0;
                                 longitude = 0;
@@ -299,55 +299,61 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
         }
     }
 
-    private void work() {
+    private void getLocation() {
+        locationAdded = true;
+        if (m_feedSelected) {
+            Toast.makeText(getActivity(), "Can't add location to pictures in feed", Toast.LENGTH_SHORT).show();
+            locationCheckView.setChecked(false);
+            return;
+        }
+
         try {
-            locationManager = (LocationManager) getActivity()
-                    .getSystemService(LOCATION_SERVICE);
+            if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
+                    PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        1);
+                return;
+            }
+            if (locationManager == null)
+                locationManager = (LocationManager) getActivity()
+                        .getSystemService(LOCATION_SERVICE);
 
-            // Getting GPS status
-            boolean isGPSEnabled = locationManager
-                    .isProviderEnabled(LocationManager.GPS_PROVIDER);
+            List<String> providers = locationManager.getProviders(true);
+            Location bestLocation = null;
+            boolean enabled = false;
+            for (String provider : providers) {
+                if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    continue;
+                }
+                enabled = true;
 
-            // Getting network status
-            boolean isNetworkEnabled = locationManager
-                    .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+                locationManager.requestLocationUpdates(
+                        provider,
+                        500,
+                        50, this);
 
-            Timber.i(isGPSEnabled + " : " + isNetworkEnabled);
-            if (!isGPSEnabled && !isNetworkEnabled) {
+                location = locationManager.getLastKnownLocation(provider);
+                if (location == null) {
+                    continue;
+                }
+
+                if (bestLocation == null || location.getAccuracy() < bestLocation.getAccuracy()) {
+                    bestLocation = location;
+                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    Timber.d("Got location for service: " + provider);
+                }
+            }
+            Timber.d("Location providers enabled? " + enabled);
+            if (!enabled) {
                 Toast.makeText(getActivity(), "Turn on the location", Toast.LENGTH_SHORT).show();
                 locationCheckView.setChecked(false);
+                locationAdded = false;
                 currentLocation.setText("location off");
             } else {
-                if (isNetworkEnabled) {
-                    if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) !=
-                            PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                1);
-                        return;
-                    }
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            (long) 500,
-                            (float) 50, this);
-                    location = locationManager
-                            .getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                    Timber.d("Network: " + location);
-                    updateLocation(location);
-                }
-                // If GPS enabled, get latitude/longitude using GPS Services
-                if (isGPSEnabled) {
-                    if (location == null) {
-                        Timber.i("here");
-                        locationManager.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                500,
-                                50, this);
-                        location = locationManager
-                                .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        Timber.d("GPS Enabled: " + location);
-                        updateLocation(location);
-                    }
-                }
+                if (bestLocation != null)
+                    updateLocation(bestLocation);
+                else
+                    currentLocation.setText("Updating...");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -357,6 +363,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
 
     private void updateLocation(Location location) {
         if (location != null) {
+            this.location = location;
             latitude = location.getLatitude();
             longitude = location.getLongitude();
             Timber.d("latitude: " + latitude + " longitude: " + longitude);
@@ -366,7 +373,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
 
     @Override
     public void onLocationChanged(Location location) {
-        Timber.d("changed: " + location);
+        Timber.d("new Location: " + location);
         updateLocation(location);
     }
 
@@ -389,9 +396,10 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
             case 1: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    work();
+                    getLocation();
                 } else {
                     locationCheckView.setChecked(false);
+                    locationAdded = false;
                     currentLocation.setText("Denied");
                     Toast.makeText(getActivity(), "Please allow location permission", Toast.LENGTH_SHORT).show();
                 }
@@ -402,7 +410,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if(locationManager != null)
+        if (locationManager != null)
             locationManager.removeUpdates(this);
     }
 }
