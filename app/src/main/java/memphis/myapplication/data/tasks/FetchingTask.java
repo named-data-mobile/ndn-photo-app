@@ -127,6 +127,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
+                        Timber.i("Completed");
                         m_content = content;
                         m_received = true;
                         m_shouldReturn = true;

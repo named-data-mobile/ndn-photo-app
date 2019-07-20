@@ -143,6 +143,7 @@ public class Common {
             meta_info.setType(ContentType.BLOB);
             // not sure what is a good freshness period
             meta_info.setFreshnessPeriod(90000);
+            datas.add(data);
             if (!byteBuffer.hasRemaining()) {
                 // Set the final component to have a final block id.
                 Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
@@ -150,7 +151,6 @@ public class Common {
                 datas.get(0).setMetaInfo(meta_info);
                 data.setMetaInfo(meta_info);
             }
-            datas.add(data);
             segment_number++;
         } while (byteBuffer.hasRemaining());
         return datas;
@@ -214,7 +214,9 @@ public class Common {
             } catch (EncodingException e) {
                 e.printStackTrace();
             }
-            User friend = realmRepository.saveNewFriend(friendName, true, certificateV2);
+
+            User friend = realmRepository.saveNewFriend(friendName, true, null);
+            realmRepository.setFriendCert(friendName, certificateV2);
 
             VerificationHelpers verificationHelpers = new VerificationHelpers();
             try {
@@ -231,17 +233,15 @@ public class Common {
 
             if (!Globals.useMulticast) {
                 Globals.nsdHelper.registerUser(friend);
-                realmRepository.close();
             } else {
                 User user = realmRepository.getFriend(friendName);
-                realmRepository.close();
                 try {
                     Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(user.getNamespace()), 0);
                 } catch (ManagementException e) {
                     e.printStackTrace();
                 }
-
             }
+            realmRepository.close();
         }
     };
 

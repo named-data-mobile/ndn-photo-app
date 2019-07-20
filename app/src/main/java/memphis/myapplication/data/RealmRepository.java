@@ -20,6 +20,7 @@ import memphis.myapplication.data.RealmObjects.SelfCertificate;
 import memphis.myapplication.data.RealmObjects.SelfCertificateRealm;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmObjects.UserRealm;
+import timber.log.Timber;
 
 public class RealmRepository {
 
@@ -191,6 +192,17 @@ public class RealmRepository {
         SelfCertificate selfCertificate = selfCertificateRealmToSelfCertificate(realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst());
         realm.commitTransaction();
         return selfCertificate;
+    }
+
+    public void setFriendCert(String friendName, CertificateV2 certificateV2) {
+        realm.beginTransaction();
+        SelfCertificateRealm realmCertificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
+        if (realmCertificate == null) {
+            realmCertificate = realm.createObject(SelfCertificateRealm.class, friendName);
+        }
+        realmCertificate.setCert(certificateV2);
+
+        realm.commitTransaction();
     }
 
     public PublishedContent getPublishedContent(String filename) {
