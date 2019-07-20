@@ -1,15 +1,20 @@
 package memphis.myapplication.UI;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +32,10 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import memphis.myapplication.R;
 import memphis.myapplication.data.Common;
@@ -364,17 +371,76 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
     private void updateLocation(Location location) {
         if (location != null) {
             this.location = location;
+            boolean noLocation = false;
+            if (latitude == 0 && longitude == 0) noLocation = true;
             latitude = location.getLatitude();
             longitude = location.getLongitude();
             Timber.d("latitude: " + latitude + " longitude: " + longitude);
-            currentLocation.setText(String.format("%.2f", latitude) + " : " + String.format("%.2f", longitude));
+
+            if (noLocation)
+                currentLocation.setText(String.format("%.2f", latitude) + " : " + String.format("%.2f", longitude));
+
+            getAddressFromLocation(latitude, longitude, getActivity(), new GeocoderHandler());
         }
+    }
+
+    private class GeocoderHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            if (currentLocation == null || location == null || !locationAdded) return;
+            switch (message.what) {
+                case 1:
+                    Bundle bundle = message.getData();
+                    currentLocation.setText(bundle.getString("address"));
+                    break;
+                case 2:
+//                    Toast.makeText(getActivity(), "Error in getting location", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    }
+
+    private static void getAddressFromLocation(final double latitude, final double longitude,
+                                               final Context context, final Handler handler) {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+                String result = null;
+                try {
+                    List<Address> addressList = geocoder.getFromLocation(
+                            latitude, longitude, 1);
+                    if (addressList != null && addressList.size() > 0) {
+                        Address fetchedAddress = addressList.get(0);
+                        Timber.d("Fetched address: " + fetchedAddress.getAddressLine(0));
+                        result = fetchedAddress.getAddressLine(0) + " , " + fetchedAddress.getLocality();
+
+                    }
+                } catch (IOException e) {
+                    Timber.d("Unable connect to Geocoder: " + e);
+                } finally {
+                    Message message = Message.obtain();
+                    message.setTarget(handler);
+                    if (result != null) {
+                        message.what = 1;
+                        Bundle bundle = new Bundle();
+                        bundle.putString("address", result);
+                        message.setData(bundle);
+                    } else {
+                        message.what = 2;
+                    }
+                    message.sendToTarget();
+                }
+            }
+        };
+        thread.start();
     }
 
     @Override
     public void onLocationChanged(Location location) {
         Timber.d("new Location: " + location);
-        updateLocation(location);
+        if (currentLocation != null)
+            updateLocation(location);
     }
 
     @Override

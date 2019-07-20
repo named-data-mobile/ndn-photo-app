@@ -1,5 +1,8 @@
 package memphis.myapplication.UI;
 
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 
@@ -14,6 +17,8 @@ import memphis.myapplication.data.RealmObjects.FilesInfo;
 import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +31,8 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * This class is used to view received photos. This differs from the DisplayQRFragment (which also
@@ -42,6 +49,8 @@ public class ViewPhotosFragment extends Fragment {
     private TextView m_location;
     private int m_index;
     private View viewPhotosView;
+    private float latitude = 0;
+    private float longitude = 0;
 
     @Nullable
     @Override
@@ -86,8 +95,6 @@ public class ViewPhotosFragment extends Fragment {
                     Timber.d("Displating: "+photo.substring(photo.lastIndexOf('_')+ 1));
                     FilesInfo filesInfo = RealmRepository.getInstance().getFileInfo(photo.substring(photo.lastIndexOf('_')+ 1));
                     if(filesInfo.location){
-                        float latitude = 0;
-                        float longitude = 0;
                         ExifInterface exif;
 
                         try {
@@ -115,10 +122,11 @@ public class ViewPhotosFragment extends Fragment {
                                     longitude = 0 - convertToDegree(attrLONGITUDE);
                                 }
                             }
-                            
+
                             Timber.d(latitude + " : " + longitude );
                             m_location.setVisibility(View.VISIBLE);
-                            m_location.setText(latitude + " : "+ longitude);
+                            m_location.setText(latitude + " : " + longitude);
+                            getAddressFromLocation(latitude, longitude, getActivity(), new GeocoderHandler());
                         } catch (IOException e) {
                             e.printStackTrace();
                             m_location.setVisibility(View.GONE);
@@ -160,6 +168,64 @@ public class ViewPhotosFragment extends Fragment {
 
         }.start();
     }
+
+    private class GeocoderHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            if(m_location == null ) return;
+            switch (message.what) {
+                case 1:
+                    Bundle bundle = message.getData();
+                    if(latitude == bundle.getFloat("latitude") &&
+                            longitude == bundle.getFloat("longitude") &&
+                            latitude != 0 && longitude != 0)
+                        m_location.setText(bundle.getString("address"));
+                    break;
+                case 2:
+//                    Toast.makeText(getActivity(), "Error in getting location", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    }
+
+    private static void getAddressFromLocation(final float latitude, final float longitude,
+                                               final Context context, final Handler handler) {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+                String result = null;
+                try {
+                    List<Address> addressList = geocoder.getFromLocation(
+                            latitude, longitude, 1);
+                    if (addressList != null && addressList.size() > 0) {
+                        Address fetchedAddress = addressList.get(0);
+                        Timber.d("Fetched address: " + fetchedAddress.getAddressLine(0));
+                        result = fetchedAddress.getAddressLine(0) + " , " + fetchedAddress.getLocality();
+
+                    }
+                } catch (IOException e) {
+                    Timber.d("Unable connect to Geocoder: "+ e);
+                } finally {
+                    Message message = Message.obtain();
+                    message.setTarget(handler);
+                    if (result != null) {
+                        message.what = 1;
+                        Bundle bundle = new Bundle();
+                        bundle.putString("address", result);
+                        bundle.putFloat("latitude", latitude);
+                        bundle.putFloat("longitude", longitude);
+                        message.setData(bundle);
+                    } else {
+                        message.what = 2;
+                    }
+                    message.sendToTarget();
+                }
+            }
+        };
+        thread.start();
+    }
+
     private static float convertToDegree(String stringDMS){
         Float result;
         String[] dms = stringDMS.split(",", 3);
