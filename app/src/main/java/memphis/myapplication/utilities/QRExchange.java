@@ -64,7 +64,7 @@ public class QRExchange {
         } catch (PibImpl.Error error) {
             error.printStackTrace();
         }
-        Timber.d("Certificate: " + certificate);
+
         Timber.d("Certificate: " + certificate);
         if(certificate != null) {
             TlvEncoder tlvEncodedDataContent = new TlvEncoder();

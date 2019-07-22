@@ -218,12 +218,14 @@ public class MainFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int id) {
                         // Send them to a new page to select friends to send photo to
                         ArrayList<User> friendsList = databaseViewModel.getAllFriends();
+                        ArrayList<String> friends = new ArrayList<>();
                         for (User f : friendsList) {
                             Timber.d("Adding friend to friendslist %s", f.getUsername());
+                            friends.add(f.getUsername());
                         }
                         Bundle bundle = new Bundle();
                         bundle.putString("photo", m_curr_photo_file.toString());
-                        bundle.putSerializable("friendsList", friendsList);
+                        bundle.putSerializable("friendsList", friends);
                         m_curr_photo_file = null;
                         Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_selectRecipientsFragment, bundle);
                     }

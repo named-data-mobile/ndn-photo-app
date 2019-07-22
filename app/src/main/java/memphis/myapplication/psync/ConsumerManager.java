@@ -2,11 +2,13 @@ package memphis.myapplication.psync;
 
 import android.content.Context;
 
+import android.os.Bundle;
 import android.util.Base64;
 
 import androidx.lifecycle.MutableLiveData;
 
 import memphis.myapplication.data.FriendsList;
+import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -71,12 +73,15 @@ public class ConsumerManager {
                 String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
                 Timber.d(interestData);
 
-
-
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
                 Timber.d("Filename: " + filename);
 
+                String fileName = filename.substring(filename.lastIndexOf('/') + 1).trim();
+                String producer = filename.substring(0, filename.indexOf("/file"));
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                realmRepository.saveNewFile(fileName, syncData.isFeed(), syncData.isLocation(), producer);
+                realmRepository.close();
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");

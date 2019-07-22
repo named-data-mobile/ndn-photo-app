@@ -30,6 +30,40 @@
             android:textSize="35sp"
             />
 
+        <TextView
+            android:id="@+id/friends"
+            android:gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:text="Friends "
+            android:textColor="@color/white"
+            android:textSize="35sp"
+            />
+
+        <CheckBox
+            android:id="@+id/location"
+            android:gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Add location?"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+
+        <TextView
+            android:id="@+id/current_location"
+            android:gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Not found"
+            android:layout_marginLeft="@dimen/margin_18dp"
+            android:textColor="@color/jetBlack"
+            android:textSize="17sp"
+            />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/friendList"
             android:layout_width="match_parent"

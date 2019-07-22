@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
+import memphis.myapplication.data.RealmObjects.FilesInfo;
 import memphis.myapplication.data.RealmRepository;
 import timber.log.Timber;
 
@@ -28,6 +29,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -208,11 +210,22 @@ public class FileManager {
                 }
             }
         }
-        byte[] byteContent = content.getImmutableArray();
+
+        byte[] byteContent;
+
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName().substring(file.getName().indexOf('_') + 1));
+        filesInfo.filePath = file.getPath();
+
+        Timber.d("location?: "+filesInfo.location);
+        byteContent = content.getImmutableArray();
+
         try {
             FileOutputStream fostream = new FileOutputStream(file);
             fostream.write(byteContent);
             fostream.close();
+            realmRepository.saveNewFile(filesInfo);
+            realmRepository.close();
             return true;
         }
         catch(IOException e) {

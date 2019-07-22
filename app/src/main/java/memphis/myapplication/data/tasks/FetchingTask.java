@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmRepository;
+import memphis.myapplication.utilities.SharedPrefsManager;
 import timber.log.Timber;
 import android.widget.Toast;
 
@@ -25,6 +26,8 @@ import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
 import net.named_data.jndn.util.SignedBlob;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
@@ -69,7 +72,8 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     public FetchingTask(Context applicationContext, MutableLiveData<String> toastData) {
         m_currContext = applicationContext;
         this.toastData = toastData;
-        m_appPrefix = "/" + m_currContext.getResources().getString(R.string.app_name);
+        SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(applicationContext);
+        m_appPrefix = sharedPrefsManager.getDomain();
         m_face = new Face();
         Timber.d("Face Check: %s", "m_face: " + m_face.toString() + " globals: " + Globals.face);
         m_manager = new FileManager(m_currContext);
@@ -103,6 +107,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         final Name username = m_baseInterest.getName().getSubName(npChatComp + 1, 1);
         getUserInfo(username.toUri().substring(1));
         Timber.d("KeyType: %s", m_pubKey.getKeyType().toString());
+        Timber.d("interest: %s", interest.getName());
 
         SegmentFetcher.fetch(
                 m_face,
@@ -122,6 +127,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                 new SegmentFetcher.OnComplete() {
                     @Override
                     public void onComplete(Blob content) {
+                        Timber.i("Completed");
                         m_content = content;
                         m_received = true;
                         m_shouldReturn = true;
@@ -132,7 +138,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
                         if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
                             Timber.d( "timed out");
-                             //get the name we timed out with from message
+                            //get the name we timed out with from message
                             int index = message.lastIndexOf(m_appPrefix);
                             if(index != -1) {
                                 Interest interest = new Interest(new Name(message.substring(index)));
@@ -147,7 +153,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                         m_shouldReturn = true;
                     }
                 });
-
         while(!m_shouldReturn) {
             try {
                 m_face.processEvents();
@@ -170,7 +175,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         User m_user = realmRepository.getFriend(user);
         realmRepository.close();
         // we have the user, check if we're friends. If so, retrieve their key from file.
-        Timber.d("username&PubKey: %s", "user: " + m_user);
+        Timber.d("username&PubKey: %s", "user: " + m_user.getUsername());
         if(m_user.isFriend()) {
             try {
                 m_pubKey = new PublicKey(m_user.getCert().getPublicKey());
@@ -249,7 +254,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
             } else {
                 wasSaved = m_manager.saveContentToFile(new Blob(m_content.getImmutableArray()), m_baseInterest.getName());
-
             }
 
 
