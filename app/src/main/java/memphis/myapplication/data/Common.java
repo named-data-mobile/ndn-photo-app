@@ -149,7 +149,7 @@ public class Common {
                 Name.Component finalBlockId = Name.Component.fromSegment(segment_number);
                 meta_info.setFinalBlockId(finalBlockId);
                 datas.get(0).setMetaInfo(meta_info);
-                data.setMetaInfo(meta_info);
+                datas.get(datas.size() - 1).setMetaInfo(meta_info);
             }
             segment_number++;
         } while (byteBuffer.hasRemaining());
