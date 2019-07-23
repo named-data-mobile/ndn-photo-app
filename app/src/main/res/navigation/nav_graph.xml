@@ -109,6 +109,9 @@
         <action
             android:id="@+id/action_filesFragment_to_displayQRFragment"
             app:destination="@id/displayQRFragment" />
+        <action
+            android:id="@+id/action_filesFragment_to_selectRecipientsFragment"
+            app:destination="@id/selectRecipientsFragment" />
     </fragment>
     <fragment
         android:id="@+id/selectRecipientsFragment"

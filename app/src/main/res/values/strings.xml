@@ -27,6 +27,7 @@
 
     <!--file activity-->
     <string name="share_files">Share Files</string>
+    <string name="share_pics">Share Pictures</string>
     <string name="scan_file_qr">Scan File QR</string>
     <string name="display_file_qr">Display File QR</string>
     <string name="browse_rcvd">Browse RCVD</string>

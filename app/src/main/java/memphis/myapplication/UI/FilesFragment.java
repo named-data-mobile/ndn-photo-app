@@ -3,6 +3,7 @@ package memphis.myapplication.UI;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -25,9 +26,11 @@ import androidx.navigation.Navigation;
 import android.util.DisplayMetrics;
 
 import memphis.myapplication.data.Common;
+import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.R;
+import memphis.myapplication.viewmodels.RealmViewModel;
 import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
@@ -49,12 +52,14 @@ import org.apache.commons.io.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
 public class FilesFragment extends Fragment {
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
+    private final int PICTURE_SELECT_REQUEST_CODE = 4;
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
     private final int VIEW_FILE = 3;
@@ -63,6 +68,7 @@ public class FilesFragment extends Fragment {
     private ToolbarHelper toolbarHelper;
     private Toolbar toolbar;
     private View filesView;
+    private RealmViewModel databaseViewModel;
 
     @Nullable
     @Override
@@ -77,10 +83,11 @@ public class FilesFragment extends Fragment {
                 return (T) new UserModel(getActivity());
             }
         }).get(UserModel.class);
+        databaseViewModel = ViewModelProviders.of(getActivity()).get(RealmViewModel.class);
 
         setupToolbar(userModel.getUserImage().getValue());
         setButtonWidth();
-        
+
         setupListeners();
         return filesView;
     }
@@ -89,6 +96,15 @@ public class FilesFragment extends Fragment {
         /*
           Choose a file to share.
          */
+        filesView.findViewById(R.id.picSelectButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                startActivityForResult(intent, PICTURE_SELECT_REQUEST_CODE);
+            }
+        });
+
         filesView.findViewById(R.id.fileSelectButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,7 +203,46 @@ public class FilesFragment extends Fragment {
         Timber.d("requestCode: " + requestCode);
         Uri uri;
         if (resultData != null) {
-            if (requestCode == FILE_SELECT_REQUEST_CODE) {
+            if (requestCode == PICTURE_SELECT_REQUEST_CODE) {
+
+                uri = resultData.getData();
+                String path = getFilePath(uri);
+                final File m_curr_photo_file = new File(path);
+                Timber.d("Path selected: " + path);
+
+                if (path != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), android.R.style.Theme_Material_Dialog_Alert);
+                    builder.setTitle(R.string.share_photo).setCancelable(false);
+
+                    builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Send them to a new page to select friends to send photo to
+                            ArrayList<User> friendsList = databaseViewModel.getAllFriends();
+                            ArrayList<String> friends = new ArrayList<>();
+                            for (User f : friendsList) {
+                                Timber.d("Adding friend to friendsList %s", f.getUsername());
+                                friends.add(f.getUsername());
+                            }
+                            Bundle bundle = new Bundle();
+                            bundle.putString("photo", m_curr_photo_file.toString());
+                            bundle.putSerializable("friendsList", friends);
+                            Navigation.findNavController(filesView).navigate(R.id.action_filesFragment_to_selectRecipientsFragment, bundle);
+                        }
+                    });
+                    builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Toast.makeText(getActivity(), "Photo was not shared but can be later.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    builder.show();
+                }
+                else {
+                    String msg = "File path could not be resolved";
+                    getActivity().runOnUiThread(makeToast(msg));
+                }
+            }
+            else if (requestCode == FILE_SELECT_REQUEST_CODE) {
 
                 uri = resultData.getData();
                 String path = getFilePath(uri);
