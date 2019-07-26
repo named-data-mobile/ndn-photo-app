@@ -112,6 +112,9 @@
         <action
             android:id="@+id/action_filesFragment_to_selectRecipientsFragment"
             app:destination="@id/selectRecipientsFragment" />
+        <action
+            android:id="@+id/action_filesFragment_to_receivedFilesFragment"
+            app:destination="@id/receivedFilesFragment" />
     </fragment>
     <fragment
         android:id="@+id/selectRecipientsFragment"
@@ -129,5 +132,10 @@
             app:popUpTo="@+id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/receivedFilesFragment"
+        android:name="memphis.myapplication.UI.ReceivedFilesFragment"
+        android:label="fragment_file_list"
+        tools:layout="@layout/fragment_file_list" />
 
 </navigation>

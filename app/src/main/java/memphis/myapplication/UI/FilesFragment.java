@@ -62,7 +62,6 @@ public class FilesFragment extends Fragment {
     private final int PICTURE_SELECT_REQUEST_CODE = 4;
     private final int FILE_QR_REQUEST_CODE = 1;
     private final int SCAN_QR_REQUEST_CODE = 2;
-    private final int VIEW_FILE = 3;
 
     private FileManager m_manager;
     private ToolbarHelper toolbarHelper;
@@ -156,19 +155,11 @@ public class FilesFragment extends Fragment {
             }
         });
 
-        // browse your rcv'd files; start in rcv'd files dir; for right now, we will have a typical
-        // file explorer and opener. getActivity() is intended for testing.
+        // browse your rcv'd files; start in rcv'd files dir;
         filesView.findViewById(R.id.viewRcvdButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                File rcvFilesDir = new File(m_manager.getRcvdFilesDir());
-                //Uri uri = Uri.fromFile(rcvFilesDir);
-                Uri uri = Uri.parse(rcvFilesDir.toString());
-                Timber.d("browse: %s", uri.toString());
-                // start in app's file directory and limit allowable selections to .png files
-                intent.setDataAndType(uri, "*/*");
-                startActivityForResult(intent, VIEW_FILE);
+                Navigation.findNavController(filesView).navigate(R.id.action_filesFragment_to_receivedFilesFragment);
             }
         });
     }
@@ -307,20 +298,6 @@ public class FilesFragment extends Fragment {
                     }
                 } else {
                     super.onActivityResult(requestCode, resultCode, resultData);
-                }
-            }
-            else if (requestCode == VIEW_FILE){
-                ContentResolver cr = getActivity().getContentResolver();
-                try {
-                    uri = resultData.getData();
-                    // cr.openInputStream(uri);
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(uri);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    getActivity().runOnUiThread(makeToast("Unable to open file."));
                 }
             }
             else {
