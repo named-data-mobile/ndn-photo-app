@@ -88,7 +88,6 @@ public class IntroActivity extends AppCompatActivity {
                 backgroundViewModel.friendRequest().observe(this, new Observer<Interest>() {
                     @Override
                     public void onChanged(Interest interest) {
-                        Timber.d("Got friend request");
                         final FriendRequest friendRequest = new FriendRequest(interest, getApplicationContext());
                         friendRequest.receive();
                         friendRequest.addObserver(new java.util.Observer() {
