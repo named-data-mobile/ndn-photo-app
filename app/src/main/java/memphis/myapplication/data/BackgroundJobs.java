@@ -410,7 +410,7 @@ public class BackgroundJobs {
                         @Override
                         public void onInterest(Name prefix, final Interest interest, final Face face, long interestFilterId, InterestFilter filter) {
                             Timber.d("Got interest " + interest.toUri());
-                            friendRequest.setValue(interest);
+                            friendRequest.postValue(interest);
 
                         }
                     },

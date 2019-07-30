@@ -170,7 +170,6 @@ public class RealmRepository {
         realm.beginTransaction();
         UserRealm userRealm = realm.where(UserRealm.class).equalTo("username", friend).findFirst();
         userRealm.setFriend(false);
-        // Temporary for testing purposes
         User user = userRealmToUser(userRealm);
         if (friends != null && friends.getValue() != null && friends.getValue().contains(user.getUsername())) {
             friends.getValue().remove(user.getUsername());

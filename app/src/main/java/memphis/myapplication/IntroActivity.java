@@ -88,6 +88,7 @@ public class IntroActivity extends AppCompatActivity {
                 backgroundViewModel.friendRequest().observe(this, new Observer<Interest>() {
                     @Override
                     public void onChanged(Interest interest) {
+                        Timber.d("Got friend request");
                         final FriendRequest friendRequest = new FriendRequest(interest, getApplicationContext());
                         friendRequest.receive();
                         friendRequest.addObserver(new java.util.Observer() {
@@ -97,7 +98,7 @@ public class IntroActivity extends AppCompatActivity {
                                 if (updateCode == 1) {
                                     runOnUiThread(new Thread(new Runnable() {
                                         public void run() {
-                                            AlertDialog.Builder alert = new AlertDialog.Builder(getApplicationContext());
+                                            AlertDialog.Builder alert = new AlertDialog.Builder(IntroActivity.this);
                                             alert.setTitle("Friend request");
                                             alert.setMessage("Accept friend request from " + friendRequest.getPendingFriend());
                                             alert.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
@@ -118,7 +119,6 @@ public class IntroActivity extends AppCompatActivity {
                                                     friendRequest.reject();
                                                 }
                                             });
-
                                             alert.show();
                                         }
                                     }));

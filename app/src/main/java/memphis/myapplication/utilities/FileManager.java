@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FileManager {
@@ -449,7 +448,7 @@ public class FileManager {
                     }
                     String friend = interest.getName().getSubName(-2, 1).toString().substring(1);
                     RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-                    CertificateV2 cert = RealmRepository.getInstance().getFriendCert(friend).getCert();
+                    CertificateV2 cert = realmRepository.getFriendCert(friend).getCert();
                     realmRepository.close();
                     Timber.d(cert.getName().toUri());
 

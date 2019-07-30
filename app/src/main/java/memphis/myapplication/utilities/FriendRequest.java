@@ -3,6 +3,7 @@ package memphis.myapplication.utilities;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.Toast;
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
@@ -141,6 +142,7 @@ public class FriendRequest extends Observable {
                             @Override
                             public void onData(Interest interest, Data data) {
                                 // Got our cert signed by new friend, save and add them as a friend
+                                RealmRepository innerRealmRepository = RealmRepository.getInstanceForNonUI();
                                 Blob interestData = data.getContent();
                                 byte[] certBytes = interestData.getImmutableArray();
 
@@ -151,12 +153,13 @@ public class FriendRequest extends Observable {
                                     e.printStackTrace();
                                 }
 
-                                realmRepository.setFriendCertificate(m_newFriend, certificateV2);
+                                innerRealmRepository.setFriendCertificate(m_newFriend, certificateV2);
 
-                                User user = realmRepository.setFriendship(m_newFriend);
+                                User user = innerRealmRepository.setFriendship(m_newFriend);
                                 Globals.consumerManager.createConsumer(user.getNamespace());
 
-                                Globals.producerManager.m_producer.publishName(sharedPrefsManager.getNamespace() + "/friends");
+                                Globals.producerManager.updateFriendsList();
+                                innerRealmRepository.close();
 
                             }
                         }, onCertTimeOut);
@@ -294,7 +297,7 @@ public class FriendRequest extends Observable {
         Blob d = new Blob(finalDataContentByteArray);
         certData.setContent(d);
         certData.setMetaInfo(new MetaInfo());
-        certData.getMetaInfo().setFreshnessPeriod(31536000000.0);
+        certData.getMetaInfo().setFreshnessPeriod(0);
 
         try {
             Globals.face.putData(certData);
@@ -346,9 +349,9 @@ public class FriendRequest extends Observable {
                                     } catch (EncodingException e) {
                                         e.printStackTrace();
                                     }
-                                    RealmRepository.getInstance().setFriendCertificate(m_newFriend, certificateV2);
+                                    RealmRepository.getInstanceForNonUI().setFriendCertificate(m_newFriend, certificateV2);
 
-                                    User friend = RealmRepository.getInstance().setFriendship(m_newFriend);
+                                    User friend = RealmRepository.getInstanceForNonUI().setFriendship(m_newFriend);
                                     Globals.consumerManager.createConsumer(friend.getNamespace());
 
 

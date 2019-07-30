@@ -137,10 +137,18 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
                 for (String st : trusted) {
                     ArrayList<String> newFriendsList = databaseViewModel.getFriendsofFriend(st);
                     for (String user: newFriendsList){
-                        mutualFriend = user.substring(user.lastIndexOf("/") + 1);
-                        if(mutualFriend.equals(friend)){
-                            friendsMessage = st + "\n";
-                            break;
+                        String friendOfFriend = user.substring(user.lastIndexOf("/") + 1);
+                        Timber.d("Mutual friend is: " + friendOfFriend);
+                        if(friendOfFriend.equals(friend)){
+                            if (mutualFriend == null) {
+                                mutualFriend = st;
+                            }
+                            if(friendsMessage.equals("No mutual friends")) {
+                                friendsMessage = st + "\n";
+                            }
+                            else {
+                                friendsMessage = friendsMessage + st + "\n";
+                            }
                         }
                     }
 
