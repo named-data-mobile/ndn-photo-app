@@ -283,6 +283,18 @@ public class RealmRepository {
         return filesInfo;
     }
 
+    public FilesInfo getFileInfoFromPath(String filePath) {
+        realm.beginTransaction();
+        FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filePath", filePath).findFirst();
+        FilesInfo filesInfo = null;
+        if (filesInfoRealm != null) {
+            filesInfo = fileInfoRealmToFileInfo(filesInfoRealm);
+        }
+
+        realm.commitTransaction();
+        return filesInfo;
+    }
+
     public void deleteFileInfo(String filename) {
         realm.beginTransaction();
         RealmResults<FilesInfoRealm> filesInfoRealms = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findAll();

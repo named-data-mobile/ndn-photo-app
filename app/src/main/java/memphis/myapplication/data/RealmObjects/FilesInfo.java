@@ -19,4 +19,8 @@ public class FilesInfo {
         this.feed = feed;
         this.location = location;
     }
+
+    public String getFriendName(){
+        return producer.substring(producer.indexOf("/npChat") + 8);
+    }
 }
