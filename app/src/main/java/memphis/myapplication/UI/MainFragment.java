@@ -225,6 +225,7 @@ public class MainFragment extends Fragment {
                         }
                         Bundle bundle = new Bundle();
                         bundle.putString("photo", m_curr_photo_file.toString());
+                        bundle.putBoolean("isFile", false);
                         bundle.putSerializable("friendsList", friends);
                         m_curr_photo_file = null;
                         Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_selectRecipientsFragment, bundle);

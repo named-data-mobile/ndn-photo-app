@@ -216,6 +216,7 @@ public class FilesFragment extends Fragment {
                             }
                             Bundle bundle = new Bundle();
                             bundle.putString("photo", m_curr_photo_file.toString());
+                            bundle.putBoolean("isFile", true);
                             bundle.putSerializable("friendsList", friends);
                             Navigation.findNavController(filesView).navigate(R.id.action_filesFragment_to_selectRecipientsFragment, bundle);
                         }

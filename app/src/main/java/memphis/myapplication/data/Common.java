@@ -271,7 +271,7 @@ public class Common {
      *
      * @param resultData: intent with filename and recipients list
      */
-    public static void encryptAndPublish(Intent resultData, Context context) {
+    public static void encryptAndPublish(Intent resultData, Context context, boolean isFile) {
         RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity) context).get(RealmViewModel.class);
         try {
             final String path = resultData.getStringExtra("photo");
@@ -322,6 +322,7 @@ public class Common {
                 SyncData syncData = new SyncData();
                 syncData.setFilename(filename);
                 syncData.addLocation(location);
+                syncData.setIsFile(isFile);
 
                 final boolean feed = (recipients == null);
                 if (feed) {

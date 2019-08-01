@@ -240,7 +240,7 @@ public class RealmRepository {
         return user;
     }
 
-    public void saveNewFile(String filename, boolean isFeed, boolean location, String producer) {
+    public void saveNewFile(String filename, boolean isFeed, boolean location, boolean isFile, String producer) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
         if (filesInfoRealm == null) {
@@ -249,6 +249,7 @@ public class RealmRepository {
 
             filesInfoRealm.setFeed(isFeed);
             filesInfoRealm.setLocation(location);
+            filesInfoRealm.setFile(isFile);
         }
 
         realm.commitTransaction();
@@ -342,6 +343,7 @@ public class RealmRepository {
         filesInfo.producer = filesInfoRealm.getProducer();
         filesInfo.feed = filesInfoRealm.isFeed();
         filesInfo.location = filesInfoRealm.isLocation();
+        filesInfo.isFile = filesInfoRealm.isFile();
 
         return filesInfo;
     }

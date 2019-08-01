@@ -177,7 +177,8 @@ public class FileManager {
         File file;
         int fileTypeIndex = filename.lastIndexOf(".");
         // if the data name has the .png file extension, save it in the received photos directory
-        if(filename.substring(fileTypeIndex).equals(".jpg") || filename.substring(fileTypeIndex).equals(".png")) {
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        if(!realmRepository.getFileInfo(filename).isFile) {
             dir = m_rcvdPhotosDir;
             file = new File(m_rcvdPhotosDir + "/" + filename);
         }
@@ -205,7 +206,6 @@ public class FileManager {
 
         byte[] byteContent;
 
-        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         FilesInfo filesInfo = realmRepository.getFileInfo(file.getName());
         filesInfo.filePath = file.getPath();
 
@@ -223,6 +223,7 @@ public class FileManager {
         catch(IOException e) {
             e.printStackTrace();
         }
+        realmRepository.close();
         return false;
     }
 
