@@ -187,10 +187,14 @@ public class Common {
     }
 
     public static void registerUser(User friend) {
-        try {
-            Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
-        } catch (ManagementException e) {
-            e.printStackTrace();
+        if (!Globals.useMulticast) {
+            Globals.nsdHelper.registerUser(friend);
+        } else {
+            try {
+                Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
+            } catch (ManagementException e) {
+                e.printStackTrace();
+            }
         }
     }
 
