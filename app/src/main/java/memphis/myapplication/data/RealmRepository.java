@@ -219,6 +219,18 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    public PublishedContent checkIfShared(String path) {
+        realm.beginTransaction();
+        PublishedContentRealm contentKey = realm.where(PublishedContentRealm.class).equalTo("filename", path).findFirst();
+        realm.commitTransaction();
+
+        if (contentKey != null) {
+            return publishedContentRealmTopublishedContent(contentKey);
+        } else {
+            return null;
+        }
+    }
+
     public void setFriendCertificate(String friendName, CertificateV2 certificateV2) {
         realm.beginTransaction();
         SelfCertificateRealm certificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
@@ -245,6 +257,12 @@ public class RealmRepository {
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
         if (filesInfoRealm == null) {
             filesInfoRealm = realm.createObject(FilesInfoRealm.class, filename);
+            filesInfoRealm.setProducer(producer);
+
+            filesInfoRealm.setFeed(isFeed);
+            filesInfoRealm.setLocation(location);
+            filesInfoRealm.setFile(isFile);
+        } else {
             filesInfoRealm.setProducer(producer);
 
             filesInfoRealm.setFeed(isFeed);

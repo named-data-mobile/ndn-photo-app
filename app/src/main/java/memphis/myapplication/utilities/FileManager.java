@@ -188,26 +188,14 @@ public class FileManager {
             file = new File(m_rcvdFilesDir + "/" + filename);
         }
 
-        // check if the file exists. If so, save a copy and indicate it is a copy in the name by
-        // using a number. Example: filename(1).txt
+        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName());
+        filesInfo.filePath = file.getPath();
+
         if (file.exists()) {
-            boolean exists = true;
-            int copyNum = 1;
-            while (exists) {
-                file = new File(dir + "/" +
-                        filename.substring(0, fileTypeIndex) + "(" + copyNum + ")" +
-                        filename.substring(fileTypeIndex));
-                copyNum++;
-                if (!file.exists()) {
-                    exists = false;
-                }
-            }
+            file.delete();
         }
 
         byte[] byteContent;
-
-        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName());
-        filesInfo.filePath = file.getPath();
 
         Timber.d("location?: "+filesInfo.location);
         byteContent = content.getImmutableArray();
