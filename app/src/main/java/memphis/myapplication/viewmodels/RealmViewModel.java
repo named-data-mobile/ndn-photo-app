@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmRepository;
 
@@ -74,6 +75,10 @@ public class RealmViewModel extends ViewModel {
 
     public void addKey(String path, SecretKey secretKey) {
         repository.addKey(path, secretKey);
+    }
+
+    public PublishedContent checkIfShared(String path) {
+        return repository.checkIfShared(path);
     }
 
     public void close(){

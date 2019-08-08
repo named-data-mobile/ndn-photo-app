@@ -92,8 +92,8 @@ public class ViewPhotosFragment extends Fragment {
                     File photoFile = new File(photo);
                     Picasso.get().load(photoFile).fit().centerCrop().into(m_imgView);
 
-                    Timber.d("Displating: "+photo.substring(photo.lastIndexOf('_')+ 1));
-                    FilesInfo filesInfo = RealmRepository.getInstance().getFileInfo(photo.substring(photo.lastIndexOf('_')+ 1));
+                    Timber.d("Displating: " + photo);
+                    FilesInfo filesInfo = RealmRepository.getInstance().getFileInfoFromPath(photo);
                     if(filesInfo.location){
                         ExifInterface exif;
 

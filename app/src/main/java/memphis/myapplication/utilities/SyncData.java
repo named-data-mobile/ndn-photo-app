@@ -3,11 +3,11 @@ package memphis.myapplication.utilities;
 
 import android.util.Base64;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SyncData {
     private Map<String, String> m_symKeys = new HashMap<String, String>();
@@ -25,23 +25,31 @@ public class SyncData {
         jo = new JSONObject(j);
     }
 
-    public void setFilename(String f) throws JSONException{
+    public void setFilename(String f) throws JSONException {
         jo.put("filename", f);
     }
 
-    public void addLocation(Boolean b) throws JSONException{
+    public void addLocation(Boolean b) throws JSONException {
         jo.put("location", b);
     }
 
-    public boolean isLocation() throws JSONException{
+    public boolean isLocation() throws JSONException {
         return jo.getBoolean("location");
     }
 
-    public void addFriendKey (String friend, byte[] key) throws JSONException{
+    public void setIsFile(boolean f) throws JSONException {
+        jo.put("isFile", f);
+    }
+
+    public boolean isFile() throws JSONException {
+        return jo.getBoolean("isFile");
+    }
+
+    public void addFriendKey(String friend, byte[] key) throws JSONException {
         jo.put(friend, Base64.encodeToString(key, 0));
     }
 
-    public byte[] getFriendKey (String friend) throws JSONException{
+    public byte[] getFriendKey(String friend) throws JSONException {
         return Base64.decode(jo.getString(friend), 0);
     }
 

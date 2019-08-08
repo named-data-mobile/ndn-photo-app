@@ -52,6 +52,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import memphis.myapplication.Globals;
+import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.Encrypter;
 import memphis.myapplication.utilities.FileManager;
@@ -275,7 +276,7 @@ public class Common {
      *
      * @param resultData: intent with filename and recipients list
      */
-    public static void encryptAndPublish(Intent resultData, Context context) {
+    public static void encryptAndPublish(Intent resultData, Context context, boolean isFile) {
         RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity) context).get(RealmViewModel.class);
         try {
             final String path = resultData.getStringExtra("photo");
@@ -319,13 +320,19 @@ public class Common {
                 final String filename = sharedPrefsManager.getNamespace() + "/file" + path;
 
                 // Generate symmetric key
-                final SecretKey secretKey = encrypter.generateKey();
+                final SecretKey secretKey;
+                PublishedContent publishedContent = databaseViewModel.checkIfShared(path);
+                if (publishedContent != null)
+                    secretKey = publishedContent.getKey();
+                else
+                    secretKey = encrypter.generateKey();
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
                 SyncData syncData = new SyncData();
                 syncData.setFilename(filename);
                 syncData.addLocation(location);
+                syncData.setIsFile(isFile);
 
                 final boolean feed = (recipients == null);
                 if (feed) {
@@ -362,7 +369,8 @@ public class Common {
                     Timber.d(prefix);
                     if (!feed) {
                         Timber.d("Publishing to friend(s)");
-                        databaseViewModel.addKey(path, secretKey);
+                        if (publishedContent == null)
+                            databaseViewModel.addKey(path, secretKey);
 
                         Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
                         Timber.d("m_content size: " + encryptedBlob.size());

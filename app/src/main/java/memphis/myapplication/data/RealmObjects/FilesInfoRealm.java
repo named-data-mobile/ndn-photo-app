@@ -17,6 +17,7 @@ public class FilesInfoRealm extends RealmObject {
     private boolean feed;
 
     private boolean location;
+    private boolean isFile;
 
     public String getFilename() {
         return filename;
@@ -56,5 +57,13 @@ public class FilesInfoRealm extends RealmObject {
 
     public void setLocation(boolean location) {
         this.location = location;
+    }
+
+    public boolean isFile() {
+        return isFile;
+    }
+
+    public void setFile(boolean file) {
+        isFile = file;
     }
 }

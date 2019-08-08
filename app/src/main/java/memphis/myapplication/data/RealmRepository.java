@@ -218,6 +218,18 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    public PublishedContent checkIfShared(String path) {
+        realm.beginTransaction();
+        PublishedContentRealm contentKey = realm.where(PublishedContentRealm.class).equalTo("filename", path).findFirst();
+        realm.commitTransaction();
+
+        if (contentKey != null) {
+            return publishedContentRealmTopublishedContent(contentKey);
+        } else {
+            return null;
+        }
+    }
+
     public void setFriendCertificate(String friendName, CertificateV2 certificateV2) {
         realm.beginTransaction();
         SelfCertificateRealm certificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
@@ -239,7 +251,7 @@ public class RealmRepository {
         return user;
     }
 
-    public void saveNewFile(String filename, boolean isFeed, boolean location, String producer) {
+    public void saveNewFile(String filename, boolean isFeed, boolean location, boolean isFile, String producer) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
         if (filesInfoRealm == null) {
@@ -248,6 +260,13 @@ public class RealmRepository {
 
             filesInfoRealm.setFeed(isFeed);
             filesInfoRealm.setLocation(location);
+            filesInfoRealm.setFile(isFile);
+        } else {
+            filesInfoRealm.setProducer(producer);
+
+            filesInfoRealm.setFeed(isFeed);
+            filesInfoRealm.setLocation(location);
+            filesInfoRealm.setFile(isFile);
         }
 
         realm.commitTransaction();
@@ -273,6 +292,18 @@ public class RealmRepository {
     public FilesInfo getFileInfo(String filename) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
+        FilesInfo filesInfo = null;
+        if (filesInfoRealm != null) {
+            filesInfo = fileInfoRealmToFileInfo(filesInfoRealm);
+        }
+
+        realm.commitTransaction();
+        return filesInfo;
+    }
+
+    public FilesInfo getFileInfoFromPath(String filePath) {
+        realm.beginTransaction();
+        FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filePath", filePath).findFirst();
         FilesInfo filesInfo = null;
         if (filesInfoRealm != null) {
             filesInfo = fileInfoRealmToFileInfo(filesInfoRealm);
@@ -329,6 +360,7 @@ public class RealmRepository {
         filesInfo.producer = filesInfoRealm.getProducer();
         filesInfo.feed = filesInfoRealm.isFeed();
         filesInfo.location = filesInfoRealm.isLocation();
+        filesInfo.isFile = filesInfoRealm.isFile();
 
         return filesInfo;
     }

@@ -183,7 +183,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                             String path = bundle.getString("photo");
                             Intent data = new Intent();
                             data.putExtra("photo", path);
-                            Common.encryptAndPublish(data, getActivity());
+                            Common.encryptAndPublish(data, getActivity(), bundle.getBoolean("isFile", true));
                             Navigation.findNavController(selectReceipientsView).popBackStack();
                         }
                     } catch (Exception e) {
@@ -236,7 +236,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                                 data.putExtras(params);
                             }
                             data.putExtra("photo", path);
-                            Common.encryptAndPublish(data, getActivity());
+                            Common.encryptAndPublish(data, getActivity(), bundle.getBoolean("isFile", true));
                             Navigation.findNavController(selectReceipientsView).popBackStack();
                         }
                     } catch (Exception e) {

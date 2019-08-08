@@ -8,15 +8,21 @@ public class FilesInfo {
     public String producer;
     public boolean feed;
     public boolean location;
+    public boolean isFile;
 
     public FilesInfo() {
     }
 
-    public FilesInfo(String filename, String filePath, String producer, boolean feed, boolean location) {
+    public FilesInfo(String filename, String filePath, String producer, boolean feed, boolean location, boolean isFile) {
         this.filename = filename;
         this.filePath = filePath;
         this.producer = producer;
         this.feed = feed;
         this.location = location;
+        this.isFile = isFile;
+    }
+
+    public String getFriendName(){
+        return producer.substring(producer.indexOf("/npChat") + 8);
     }
 }

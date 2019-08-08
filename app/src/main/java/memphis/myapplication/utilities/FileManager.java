@@ -176,17 +176,10 @@ public class FileManager {
         File file;
         int fileTypeIndex = filename.lastIndexOf(".");
         // if the data name has the .png file extension, save it in the received photos directory
-        if(filename.substring(fileTypeIndex).equals(".jpg") || filename.substring(fileTypeIndex).equals(".png")) {
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        if(!realmRepository.getFileInfo(filename).isFile) {
             dir = m_rcvdPhotosDir;
-            int npChatComp = 0;
-            for (int i = 0; i <= path.size(); i++) {
-                if (path.getSubName(i, 1).toUri().equals("/npChat")){
-                    npChatComp = i;
-                    break;
-                }
-            }
-            String friend = path.getSubName(npChatComp + 1, 1).toUri().substring(1);
-            file = new File(m_rcvdPhotosDir + "/" + friend + "_" + filename);
+            file = new File(m_rcvdPhotosDir + "/" + filename);
         }
         // else save to the received files directory
         else {
@@ -194,27 +187,14 @@ public class FileManager {
             file = new File(m_rcvdFilesDir + "/" + filename);
         }
 
-        // check if the file exists. If so, save a copy and indicate it is a copy in the name by
-        // using a number. Example: filename(1).txt
+        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName());
+        filesInfo.filePath = file.getPath();
+
         if (file.exists()) {
-            boolean exists = true;
-            int copyNum = 1;
-            while (exists) {
-                file = new File(dir + "/" +
-                        filename.substring(0, fileTypeIndex) + "(" + copyNum + ")" +
-                        filename.substring(fileTypeIndex));
-                copyNum++;
-                if (!file.exists()) {
-                    exists = false;
-                }
-            }
+            file.delete();
         }
 
         byte[] byteContent;
-
-        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName().substring(file.getName().indexOf('_') + 1));
-        filesInfo.filePath = file.getPath();
 
         Timber.d("location?: "+filesInfo.location);
         byteContent = content.getImmutableArray();
@@ -230,6 +210,7 @@ public class FileManager {
         catch(IOException e) {
             e.printStackTrace();
         }
+        realmRepository.close();
         return false;
     }
 
@@ -243,17 +224,20 @@ public class FileManager {
         File[] files = m_rcvdPhotosDir.listFiles();
         // let me change how I save these files first and then we'll know how to parse to get friend
         // wait a second. just use the file extension (.png)
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         ConcurrentHashMap<String, ArrayList<String>> map = new ConcurrentHashMap<>();
         for(File file : files) {
             String filename = file.getName();
             Timber.d("getReceivedPhotos: %s", filename);
-            String key = filename.substring(0, filename.indexOf('_'));
-            ArrayList<String> list = map.get(key);
+            FilesInfo filesInfo = realmRepository.getFileInfo(filename);
+            if ( filesInfo == null ) continue;
+
+            ArrayList<String> list = map.get(filesInfo.getFriendName());
 
             if(list == null || list.isEmpty()) {
                 list = new ArrayList<>();
                 list.add(file.getAbsolutePath());
-                map.put(key, list);
+                map.put(filesInfo.getFriendName(), list);
             }
             else {
                 list.add(file.getAbsolutePath());

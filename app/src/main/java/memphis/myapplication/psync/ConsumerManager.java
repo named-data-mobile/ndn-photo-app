@@ -80,7 +80,8 @@ public class ConsumerManager {
                 String fileName = filename.substring(filename.lastIndexOf('/') + 1).trim();
                 String producer = filename.substring(0, filename.indexOf("/file"));
                 RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-                realmRepository.saveNewFile(fileName, syncData.isFeed(), syncData.isLocation(), producer);
+                Timber.d("isFile:  " + syncData.isFile());
+                realmRepository.saveNewFile(fileName, syncData.isFeed(), syncData.isLocation(), syncData.isFile(), producer);
                 realmRepository.close();
 
                 if (syncData.isFeed()) {

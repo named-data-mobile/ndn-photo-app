@@ -29,4 +29,5 @@
     <dimen name="margin_24sp">24sp</dimen>
     <dimen name="margin_36sp">36sp</dimen>
     <dimen name="margin_20sp">20sp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>
