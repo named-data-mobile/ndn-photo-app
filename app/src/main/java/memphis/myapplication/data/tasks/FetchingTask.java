@@ -272,13 +272,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         byte[] iv = Arrays.copyOfRange(content, 0, 16);
         byte[] data = Arrays.copyOfRange(content, iv.length, content.length);
 
-        Timber.d("Message key digest: " + m_fileKeyDigest);
-        try {
-            Timber.d("Saved key digest: " + Common.getKeyDigest(RealmRepository.getInstanceForNonUI().getSymKey(m_user)));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-
         // Decrypt content
         Decrypter decrypter = new Decrypter(m_currContext);
         Blob decryptedContent = null;

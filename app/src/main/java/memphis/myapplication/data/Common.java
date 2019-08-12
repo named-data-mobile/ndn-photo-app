@@ -2,7 +2,6 @@ package memphis.myapplication.data;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -53,7 +52,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import io.realm.Realm;
 import memphis.myapplication.Globals;
 import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
@@ -238,7 +236,6 @@ public class Common {
             Timber.d("Saved our certificate back signed by friend and adding them as a consumer");
             consumerManager.createConsumer(friend.getNamespace());
 
-            Timber.d("Requesting their sym key here " + friend.getNamespace() + " " + userName);
             FriendRequest.requestSymKey(friend.getNamespace(), "default", userName);
 
             // Share friend's list
