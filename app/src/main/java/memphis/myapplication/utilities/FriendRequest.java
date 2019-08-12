@@ -1,6 +1,7 @@
 package memphis.myapplication.utilities;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -163,6 +164,8 @@ public class FriendRequest extends Observable {
 
                             }
                         }, onCertTimeOut);
+
+                        requestSymKey(user.getNamespace());
                     }
 
                 }
@@ -366,6 +369,7 @@ public class FriendRequest extends Observable {
                             e.printStackTrace();
                         }
                         realmRepository.close();
+                        requestSymKey(user.getNamespace());
                         handler.removeCallbacks(this);
                         Looper.myLooper().quit();
                     }
@@ -386,8 +390,6 @@ public class FriendRequest extends Observable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void acceptTrusted() {
@@ -403,6 +405,31 @@ public class FriendRequest extends Observable {
         notifyObservers(c);
     }
 
+    private void requestSymKey(String friendNamespace) {
+        requestSymKey(friendNamespace, "default", SharedPrefsManager.getInstance(context).getUsername());
+    }
+
+    public static void requestSymKey(final String friendNameSpace, String keyName, String username) {
+        Interest symKeyInterest = new Interest(new Name(friendNameSpace));
+        symKeyInterest.getName().append("keys");
+        symKeyInterest.getName().append(keyName);
+        symKeyInterest.getName().append(username);
+        Timber.d("Requesting their sym key");
+        try {
+            Globals.face.expressInterest(symKeyInterest, new OnData() {
+                @Override
+                public void onData(Interest interest, Data data) {
+                    // Store friend's symmetric key
+                    RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                    Timber.d("Saving key of " + friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1));
+                    realmRepository.setSymKey(friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1), data.getContent().getImmutableArray());
+                    realmRepository.close();
+                }
+            }, onSymKeyTimeOut);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     OnTimeout onCertTimeOut = new OnTimeout() {
 
@@ -421,6 +448,13 @@ public class FriendRequest extends Observable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    };
+
+    static OnTimeout onSymKeyTimeOut = new OnTimeout() {
+        @Override
+        public void onTimeout(Interest interest) {
+
         }
     };
 

@@ -16,6 +16,7 @@ public class User {
     private byte[] cert;
     private boolean friend;
     private boolean trust;
+    private byte[] symKey;
 
     public String getUsername() {
         return username;
@@ -32,6 +33,8 @@ public class User {
     public void setDomain(String domain) {
         this.domain = domain;
     }
+
+    public void setSymKey(byte[] key) { this.symKey = key; }
 
     public ArrayList<String> getFriends() {
         return friends;
@@ -52,6 +55,8 @@ public class User {
         certObj.wireDecode(ByteBuffer.wrap(cert));
         return certObj;
     }
+
+    public byte[] getSymKey() { return symKey; }
 
     public void setCert(byte[] cert) {
         this.cert = cert;

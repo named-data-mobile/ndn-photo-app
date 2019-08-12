@@ -44,6 +44,7 @@ import memphis.myapplication.data.Common;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.Globals;
+import memphis.myapplication.utilities.FriendRequest;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.R;
 import memphis.myapplication.utilities.SharedPrefsManager;
@@ -325,6 +326,7 @@ public class AddFriendFragment extends Fragment {
                             Timber.d("Friend result ok");
                             User friend = databaseViewModel.setFriendship(friendName);
                             Globals.consumerManager.createConsumer(friend.getNamespace());
+                            FriendRequest.requestSymKey(friendDomain, "default", SharedPrefsManager.getInstance(getContext()).getUsername());
                             Navigation.findNavController(addFriendView).popBackStack();
 
                         } else {

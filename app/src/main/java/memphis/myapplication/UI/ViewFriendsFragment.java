@@ -1,7 +1,6 @@
 package memphis.myapplication.UI;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,9 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import memphis.myapplication.Globals;
 import memphis.myapplication.R;
-import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.data.Common;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.viewmodels.RealmViewModel;
 
@@ -84,9 +82,7 @@ public class ViewFriendsFragment extends Fragment implements ListDisplayRecycler
         alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // Continue with delete operation
-                User user = databaseViewModel.deleteFriendship(friend);
-                Globals.consumerManager.removeConsumer(user.getNamespace());
-                Globals.producerManager.updateFriendsList();
+                Common.unfriend(friend);
             }
         });
 

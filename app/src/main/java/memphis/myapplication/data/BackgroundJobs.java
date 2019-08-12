@@ -20,6 +20,10 @@ import net.named_data.jndn.OnInterestCallback;
 import net.named_data.jndn.OnRegisterFailed;
 import net.named_data.jndn.OnRegisterSuccess;
 import net.named_data.jndn.OnTimeout;
+import net.named_data.jndn.encoding.EncodingException;
+import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
+import net.named_data.jndn.encrypt.algo.EncryptParams;
+import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.pib.AndroidSqlite3Pib;
@@ -30,13 +34,25 @@ import net.named_data.jndn.security.pib.PibKey;
 import net.named_data.jndn.security.tpm.Tpm;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
+import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+import io.realm.Realm;
 import memphis.myapplication.Globals;
 import memphis.myapplication.R;
 import memphis.myapplication.data.RealmObjects.User;
@@ -130,7 +146,7 @@ public class BackgroundJobs {
         // Creating producer
         Timber.d("Creating producer %s", appPrefix.toUri());
         String producerPrefix = appPrefix.toUri();
-        producerManager = new ProducerManager(producerPrefix);
+        producerManager = new ProducerManager(producerPrefix, applicationContext);
         Globals.setProducerManager(producerManager);
 
 
@@ -218,6 +234,7 @@ public class BackgroundJobs {
         face.setCommandSigningInfo(keyChain, defaultCertificateName);
         Globals.setFace(face);
         Globals.setMemoryCache(new MemoryCache(face, applicationContext));
+        sharedPrefsManager.generateKey();
         Globals.setHasSecurity(true);
 
         try {
@@ -233,13 +250,6 @@ public class BackgroundJobs {
 
         // Share friends list
         producerManager.updateFriendsList();
-
-//        Realm tempRealm = Realm.getDefaultInstance();
-//        tempRealm.beginTransaction();
-//        RealmResults<UserRealm> users = tempRealm.where(UserRealm.class).equalTo("username", "mw").or().equalTo("username","mb").findAll();
-//        users.deleteAllFromRealm();
-//        tempRealm.commitTransaction();
-//        tempRealm.close();
     }
 
     // Eventually, we should move this to a Service, but for now, this thread consistently calls
@@ -322,12 +332,14 @@ public class BackgroundJobs {
             Name certName = new Name(name);
             Name friendsListName = new Name(name);
             Name friendRequestName = new Name(name);
+            Name keyName = new Name(name);
             final Name networkDiscoveryName = new Name("network-discovery");
             dataName.append("data");
             fileName.append("file");
             certName.append("cert");
             friendsListName.append("friends");
             friendRequestName.append("friend-request");
+            keyName.append("keys");
             networkDiscoveryName.append("discover");
 
             Timber.d("Starting registration process.");
@@ -414,6 +426,21 @@ public class BackgroundJobs {
 
                         }
                     },
+                    new OnRegisterFailed() {
+                        @Override
+                        public void onRegisterFailed(Name prefix) {
+
+                        }
+                    },
+                    new OnRegisterSuccess() {
+                        @Override
+                        public void onRegisterSuccess(Name prefix, long registeredPrefixId) {
+                            Timber.d("Registration Success for prefix: " + prefix.toUri() + ", id: " + registeredPrefixId);
+                        }
+                    }
+            );
+
+            Globals.face.registerPrefix(keyName, producerManager.onKeyInterest,
                     new OnRegisterFailed() {
                         @Override
                         public void onRegisterFailed(Name prefix) {

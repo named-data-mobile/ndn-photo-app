@@ -2,6 +2,7 @@ package memphis.myapplication.data;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -43,6 +44,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
@@ -51,11 +53,13 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import io.realm.Realm;
 import memphis.myapplication.Globals;
 import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.utilities.Encrypter;
 import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.utilities.FriendRequest;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.utilities.SharedPrefsManager;
 import memphis.myapplication.utilities.SyncData;
@@ -210,6 +214,7 @@ public class Common {
             RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
 
             String friendName = interest.getName().getSubName(-2, 1).toUri().substring(1);
+            String userName = interest.getName().getSubName(-5, 1).toUri().substring(1);
             Blob interestData = data.getContent();
             byte[] certBytes = interestData.getImmutableArray();
 
@@ -232,6 +237,9 @@ public class Common {
 
             Timber.d("Saved our certificate back signed by friend and adding them as a consumer");
             consumerManager.createConsumer(friend.getNamespace());
+
+            Timber.d("Requesting their sym key here " + friend.getNamespace() + " " + userName);
+            FriendRequest.requestSymKey(friend.getNamespace(), "default", userName);
 
             // Share friend's list
             producerManager.updateFriendsList();
@@ -317,28 +325,30 @@ public class Common {
                 SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(context);
 
                 String name = sharedPrefsManager.getNamespace() + "/data";
-                final String filename = sharedPrefsManager.getNamespace() + "/file" + path;
+                String filename = sharedPrefsManager.getNamespace() + "/file" + path;
 
                 // Generate symmetric key
                 final SecretKey secretKey;
                 PublishedContent publishedContent = databaseViewModel.checkIfShared(path);
-                if (publishedContent != null)
-                    secretKey = publishedContent.getKey();
-                else
-                    secretKey = encrypter.generateKey();
+
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
                 SyncData syncData = new SyncData();
-                syncData.setFilename(filename);
                 syncData.addLocation(location);
                 syncData.setIsFile(isFile);
 
                 final boolean feed = (recipients == null);
                 if (feed) {
+                    secretKey = sharedPrefsManager.getKey();
                     Timber.d("For feed");
                     syncData.setFeed(true);
                 } else {
+                    if (publishedContent != null) {
+                        secretKey = publishedContent.getKey();
+                    }
+                    else
+                        secretKey = encrypter.generateKey();
                     syncData.setFeed(false);
                     Timber.d("For friends");
                     for (String friend : recipients) {
@@ -348,6 +358,10 @@ public class Common {
                         syncData.addFriendKey(friend, encryptedKey);
                     }
                 }
+                filename = filename + "/" + Common.getKeyDigest(secretKey);
+                Timber.d("Filename: " + filename);
+                syncData.setFilename(filename);
+
                 // Stringify sync data
                 producerManager.setDataSeqMap(syncData.stringify());
                 Timber.d("Publishing file: %s", filename);
@@ -365,25 +379,18 @@ public class Common {
                 try {
                     String prefixApp = sharedPrefsManager.getNamespace();
 
-                    final String prefix = prefixApp + "/file" + path;
-                    Timber.d(prefix);
-                    if (!feed) {
+//                    final String prefix = prefixApp + "/file" + filename;
+                    Timber.d(filename);
                         Timber.d("Publishing to friend(s)");
                         if (publishedContent == null)
                             databaseViewModel.addKey(path, secretKey);
 
-                        Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                        Timber.d("m_content size: " + encryptedBlob.size());
-                        Common.publishData(encryptedBlob, new Name(prefix));
-                    } else {
-                        Timber.d("Publishing to feed");
-                        Blob unencryptedBlob = new Blob(bytes);
-                        Common.publishData(unencryptedBlob, new Name(prefix));
-
-                    }
+                    Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                    Timber.d("m_content size: " + encryptedBlob.size());
+                    Common.publishData(encryptedBlob, new Name(filename));
                     final FileManager manager = new FileManager(context.getApplicationContext());
-                    Bitmap bitmap = QRExchange.makeQRCode(prefix);
-                    manager.saveFileQR(bitmap, prefix);
+                    Bitmap bitmap = QRExchange.makeQRCode(filename);
+                    manager.saveFileQR(bitmap, filename);
                     ((AppCompatActivity) context).runOnUiThread(makeToast("Sending photo", context));
                 } catch (NoSuchAlgorithmException e) {
                     e.printStackTrace();
@@ -428,6 +435,49 @@ public class Common {
         sb.append(second);
         sb.append("/1000");
         return sb.toString();
+    }
+
+    /**
+     * Parses interest to get the username
+     *
+     * @param interest
+     */
+    public static String interestToUsername(Interest interest) throws Exception {
+        for (int i = 0; i<interest.getName().size(); i++) {
+            if (interest.getName().get(i).toEscapedString().equals("npChat")) {
+                return interest.getName().get(i+1).toEscapedString();
+            }
+        }
+        throw new Exception();
+    }
+
+    /**
+     * Get symmetric key digest
+     *
+     * @param secretKey
+     * @returns String of the key's digest
+     */
+    public static String getKeyDigest(SecretKey secretKey) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(secretKey.getEncoded());
+        byte[] digest = md.digest();
+        String digestString = "";
+        for (int b:digest)
+            digestString += b;
+        return digestString;
+    }
+
+    /**
+     * Unfriend a user
+     *
+     * @param friend
+     */
+    public static void unfriend(String friend) {
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        User user = realmRepository.deleteFriendship(friend);
+        Globals.consumerManager.removeConsumer(user.getNamespace());
+        Globals.producerManager.updateFriendsList();
+        Globals.producerManager.updateKey();
     }
 
     /**

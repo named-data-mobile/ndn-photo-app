@@ -17,6 +17,7 @@ import net.named_data.jndn.util.Blob;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -56,6 +57,17 @@ public class Decrypter {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
         return new Blob(cipher.doFinal(content.getImmutableArray()), true);
+    }
+
+    public static SecretKey decryptSymKey(byte[] symKeyBytes, TpmKeyHandle privateKey) {
+        try {
+            Blob encryptedKeyBob = privateKey.decrypt(new Blob(symKeyBytes).buf());
+            byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
+            return new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+        } catch (TpmBackEnd.Error error) {
+            error.printStackTrace();
+            return null;
+        }
     }
 
     /**

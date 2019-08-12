@@ -170,7 +170,7 @@ public class FileManager {
      */
 
     public boolean saveContentToFile(Blob content, Name path) {
-        String filename = path.getSubName(-1).toUri().substring(1);
+        String filename = path.toUri().substring(0, path.toUri().lastIndexOf("/"));
         Timber.d( "Saving " + filename);
         File dir;
         File file;
@@ -255,8 +255,10 @@ public class FileManager {
      */
     public boolean saveFileQR(Bitmap bitmap, String path) {
         // do file operations here to remove .txt or .pdf or whatever and append .png
-        int dotIndex = path.lastIndexOf(".");
-        String filename = path.substring(path.lastIndexOf("/")+1, dotIndex) + ".png";
+        String file = path.substring(0, path.lastIndexOf("/"));
+        Timber.d("Filename for QR code: " + file);
+        int dotIndex = file.lastIndexOf(".");
+        String filename = file.substring(file.lastIndexOf("/")+1, dotIndex) + ".png";
         File fileQR = new File(m_filesDir + "/" + filename);
         if (!fileQR.exists()) {
             try {
