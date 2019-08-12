@@ -3,6 +3,26 @@ package memphis.myapplication.utilities;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Base64;
+
+import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
+import net.named_data.jndn.encrypt.algo.EncryptParams;
+import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
+import net.named_data.jndn.security.pib.Pib;
+import net.named_data.jndn.security.pib.PibImpl;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
+import net.named_data.jndn.util.Blob;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+
+import memphis.myapplication.Globals;
 
 
 public class SharedPrefsManager {
@@ -10,11 +30,13 @@ public class SharedPrefsManager {
     private static final String KEY_PASSWORD = "password";
     private static final String KEY_LOGIN_STATUS = "login_status";
     private static final String KEY_DOMAIN = "domain";
+    private static final String KEY_KEY = "key";
 
     private String mUsername;
     private String mPassword;
     private Boolean mLogInStatus;
     private String mDomain;
+    private String mKey;
 
     private SharedPreferences mSharedPreferences;
     private static SharedPrefsManager sharedPrefsManager;
@@ -30,8 +52,8 @@ public class SharedPrefsManager {
         mUsername = mSharedPreferences.getString(KEY_USERNAME, null);
         mPassword = mSharedPreferences.getString(KEY_PASSWORD, null);
         mDomain = mSharedPreferences.getString(KEY_DOMAIN, null);
+        mKey = mSharedPreferences.getString(KEY_KEY, null);
         mLogInStatus = mSharedPreferences.getBoolean(KEY_LOGIN_STATUS, false);
-
     }
 
     public String getUsername() {
@@ -42,12 +64,48 @@ public class SharedPrefsManager {
         return mPassword;
     }
 
+    public SecretKey getKey() throws TpmBackEnd.Error {
+        return Decrypter.decryptSymKey(Base64.decode(mKey, 0), Globals.tpm.getKeyHandle(Globals.pubKeyName));
+    }
+
 
     public String getDomain() { return mDomain; }
   
     public String getNamespace() { return mDomain + "/npChat/" + mUsername; }
     public Boolean getLogInStatus() {
         return mLogInStatus;
+    }
+
+    public void generateKey() {
+        if (mKey == null) {
+            Encrypter encrypter = new Encrypter();
+            SecretKey secretKey = encrypter.generateKey();
+            try {
+                byte[] encryptedKey = RsaAlgorithm.encrypt
+                            (Globals.pubKeyBlob, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
+                mKey = Base64.encodeToString(encryptedKey, 0);
+                SharedPreferences.Editor editor = mSharedPreferences.edit();
+                editor.putString(KEY_KEY, mKey);
+                editor.apply();
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (NoSuchPaddingException e) {
+                e.printStackTrace();
+            } catch (InvalidKeyException e) {
+                e.printStackTrace();
+            } catch (IllegalBlockSizeException e) {
+                e.printStackTrace();
+            } catch (BadPaddingException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void generateNewKey() {
+        mKey = null;
+        generateKey();
     }
 
     public void setCredentials(String username, String password, String domain) {

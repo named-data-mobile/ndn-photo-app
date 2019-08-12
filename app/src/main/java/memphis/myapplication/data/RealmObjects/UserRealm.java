@@ -26,6 +26,7 @@ public class UserRealm extends RealmObject {
     private byte[] cert;
     private boolean friend;
     private boolean trust;
+    private byte[] symKey;
 
     public void setCert(CertificateV2 c) {
         TlvEncoder tlvEncodedDataContent = new TlvEncoder();
@@ -42,6 +43,8 @@ public class UserRealm extends RealmObject {
     }
 
     public void setDomain(String d) { domain = d; }
+
+    public void setSymKey(byte[] k) { symKey = k; }
 
     public String getDomain() {
         return domain;
@@ -60,6 +63,8 @@ public class UserRealm extends RealmObject {
     public byte[] getCertByreArray() {
         return cert;
     }
+
+    public byte[] getSymKey() { return symKey; }
 
     public boolean isFriend() {
         return friend;

@@ -3,6 +3,7 @@ package memphis.myapplication.data;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.v2.CertificateV2;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import javax.crypto.SecretKey;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import memphis.myapplication.Globals;
 import memphis.myapplication.data.RealmObjects.FilesInfo;
 import memphis.myapplication.data.RealmObjects.FilesInfoRealm;
 import memphis.myapplication.data.RealmObjects.PublishedContent;
@@ -20,7 +22,7 @@ import memphis.myapplication.data.RealmObjects.SelfCertificate;
 import memphis.myapplication.data.RealmObjects.SelfCertificateRealm;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmObjects.UserRealm;
-import timber.log.Timber;
+import memphis.myapplication.utilities.Decrypter;
 
 public class RealmRepository {
 
@@ -193,6 +195,28 @@ public class RealmRepository {
         return selfCertificate;
     }
 
+    public void setSymKey(String friendName, byte[] key) {
+        realm.beginTransaction();
+        UserRealm friend = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
+        friend.setSymKey(key);
+        realm.commitTransaction();
+    }
+
+    public SecretKey getSymKey(String friendName) {
+        try {
+            realm.beginTransaction();
+            User user = userRealmToUser(realm.where(UserRealm.class).equalTo("username", friendName).findFirst());
+            byte[] encryptedKey = user.getSymKey();
+            realm.commitTransaction();
+            return Decrypter.decryptSymKey(encryptedKey, Globals.tpm.getKeyHandle(Globals.pubKeyName));
+        } catch (TpmBackEnd.Error error) {
+            realm.commitTransaction();
+            error.printStackTrace();
+            return null;
+        }
+    }
+
+
     public void setFriendCert(String friendName, CertificateV2 certificateV2) {
         realm.beginTransaction();
         SelfCertificateRealm realmCertificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
@@ -331,6 +355,7 @@ public class RealmRepository {
         user.setDomain(userRealm.getDomain());
         user.setCert(userRealm.getCertByreArray());
         user.setFriend(userRealm.isFriend());
+        user.setSymKey(userRealm.getSymKey());
         user.setFriends(userRealm.getFriends());
         return user;
     }

@@ -7,8 +7,10 @@ import android.util.Base64;
 
 import androidx.lifecycle.MutableLiveData;
 
+import memphis.myapplication.data.Common;
 import memphis.myapplication.data.FriendsList;
 import memphis.myapplication.data.RealmRepository;
+import memphis.myapplication.utilities.Decrypter;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -72,6 +74,9 @@ public class ConsumerManager {
             try {
                 String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
                 Timber.d(interestData);
+                String friendName = Common.interestToUsername(interest);
+                if (!RealmRepository.getInstanceForNonUI().getFriend(friendName).isFriend())
+                    return;
 
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
@@ -86,17 +91,18 @@ public class ConsumerManager {
 
                 if (syncData.isFeed()) {
                     Timber.d("For feed");
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), null));
+                    RealmRepository feedLoopRealmRepository = RealmRepository.getInstanceForNonUI();
+                    Timber.d(interest.getName().toUri());
+                    Timber.d("Friend name: " + friendName);
+                    Timber.d(feedLoopRealmRepository.getSymKey(friendName).toString());
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName)));
+
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
                         try {
-                            Blob symmetricKey = new Blob(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), false);
                             TpmBackEndFile m_tpm = Globals.tpm;
-                            TpmKeyHandle privateKey = m_tpm.getKeyHandle(Globals.pubKeyName);
-                            Blob encryptedKeyBob = privateKey.decrypt(symmetricKey.buf());
-                            byte[] encryptedKey = encryptedKeyBob.getImmutableArray();
-                            SecretKey secretKey = new SecretKeySpec(encryptedKey, 0, encryptedKey.length, "AES");
+                            SecretKey secretKey = Decrypter.decryptSymKey(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), m_tpm.getKeyHandle(Globals.pubKeyName));
                             Timber.d("Filename : " + filename);
                             new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
                         } catch (TpmBackEnd.Error error) {
@@ -107,6 +113,8 @@ public class ConsumerManager {
             } catch (JSONException e) {
                 e.printStackTrace();
 
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     };
@@ -128,6 +136,13 @@ public class ConsumerManager {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+        }
+    };
+
+    private OnData onKeyData = new OnData() {
+        @Override
+        public void onData(Interest interest, Data data) {
 
         }
     };
@@ -157,10 +172,18 @@ public class ConsumerManager {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                } else if (name.getSubName(-2,1).toUri().equals("/keys")) {
+                    Timber.d("Expressing interest for friend's key");
+                    name.append(SharedPrefsManager.getInstance(context).getUsername());
+                    try {
+                        face.expressInterest(name, onKeyData);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                 }
 
             }
-
         }
     };
 
