@@ -11,6 +11,7 @@ import memphis.myapplication.data.Common;
 import memphis.myapplication.data.FriendsList;
 import memphis.myapplication.data.RealmRepository;
 import memphis.myapplication.utilities.Decrypter;
+import memphis.myapplication.utilities.FileManager;
 import timber.log.Timber;
 
 import net.named_data.jndn.Data;
@@ -80,13 +81,12 @@ public class ConsumerManager {
 
                 SyncData syncData = new SyncData(interestData);
                 String filename = syncData.getFilename();
-                Timber.d("Filename: " + filename);
+                String fileInfoName = FileManager.getFileName(new Name(syncData.getFilename()), FileManager.FILENAME);
 
-                String fileName = filename.substring(filename.lastIndexOf('/') + 1).trim();
-                String producer = filename.substring(0, filename.indexOf("/file"));
+                String producer = syncData.getFilename().substring(0, syncData.getFilename().indexOf("/file"));
                 RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
                 Timber.d("isFile:  " + syncData.isFile());
-                realmRepository.saveNewFile(fileName, syncData.isFeed(), syncData.isLocation(), syncData.isFile(), producer);
+                realmRepository.saveNewFile(fileInfoName, syncData.isFeed(), syncData.isLocation(), syncData.isFile(), producer);
                 realmRepository.close();
 
                 if (syncData.isFeed()) {

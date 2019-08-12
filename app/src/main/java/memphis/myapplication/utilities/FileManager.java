@@ -44,6 +44,9 @@ public class FileManager {
     private File m_rcvdPhotosDir;
     private static Context mContext;
     public static boolean dirsCreated = false;
+    public static int FILENAME = 0;
+    public static int FILENAMEKEYDIGEST = 1;
+    public static int FILEPATH = 2;
 
     public FileManager(Context context) {
         /* Eventually, we will set m_appRootPath to getFilesDir(). This is the internal storage of
@@ -170,8 +173,7 @@ public class FileManager {
      */
 
     public boolean saveContentToFile(Blob content, Name path) {
-        String filename = path.toUri().substring(0, path.toUri().lastIndexOf("/"));
-        Timber.d( "Saving " + filename);
+        String filename = FileManager.getFileName(path, FILENAME);
         File dir;
         File file;
         int fileTypeIndex = filename.lastIndexOf(".");
@@ -187,8 +189,10 @@ public class FileManager {
             file = new File(m_rcvdFilesDir + "/" + filename);
         }
 
-        FilesInfo filesInfo = realmRepository.getFileInfo(file.getName());
-        filesInfo.filePath = file.getPath();
+        FilesInfo filesInfo = realmRepository.getFileInfo(filename);
+        Timber.d("Files info filename: " + filesInfo.filename);
+        Timber.d("File length: " + file.length());
+        filesInfo.filePath = file.getAbsolutePath();
 
         if (file.exists()) {
             file.delete();
@@ -213,6 +217,27 @@ public class FileManager {
         realmRepository.close();
         return false;
     }
+
+    public static String getFileName(Name name, int flag){
+        if (flag == FILENAME) {
+            String filePath = name.toUri().substring(0, name.toUri().lastIndexOf("/"));
+            String filename = filePath.substring(filePath.lastIndexOf("/")+1);
+            Timber.d( "Filename " + filename);
+            return filename;
+        } else if (flag == FILENAMEKEYDIGEST) {
+            String fileInfoName = name.getSubName(-2).toUri().substring(1);
+            Timber.d("Fileinfo: " + fileInfoName);
+            return fileInfoName;
+        } else if (flag == FILEPATH) {
+            for (int i = 0; i<name.size(); i++) {
+                if (name.get(i).toEscapedString().equals("npChat")) {
+                    String filepathWithKeyDigest = name.getSubName(i+3).toUri().substring(1);
+                    return filepathWithKeyDigest.substring(0, filepathWithKeyDigest.lastIndexOf("/"));
+                }
+            }
+        }
+        return null;
+    };
 
     /**
      * Browses the received files directory and looks for photos and adds them to an ArrayList
