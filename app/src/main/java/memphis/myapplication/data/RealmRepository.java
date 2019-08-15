@@ -13,16 +13,19 @@ import javax.crypto.SecretKey;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import io.realm.exceptions.RealmException;
 import memphis.myapplication.Globals;
 import memphis.myapplication.data.RealmObjects.FilesInfo;
 import memphis.myapplication.data.RealmObjects.FilesInfoRealm;
 import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.PublishedContentRealm;
+import memphis.myapplication.data.RealmObjects.SavedSyncDataRealm;
 import memphis.myapplication.data.RealmObjects.SelfCertificate;
 import memphis.myapplication.data.RealmObjects.SelfCertificateRealm;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmObjects.UserRealm;
 import memphis.myapplication.utilities.Decrypter;
+import timber.log.Timber;
 
 public class RealmRepository {
 
@@ -357,6 +360,7 @@ public class RealmRepository {
         user.setFriend(userRealm.isFriend());
         user.setSymKey(userRealm.getSymKey());
         user.setFriends(userRealm.getFriends());
+        user.setSeqNo(userRealm.getSeqNo());
         return user;
     }
 
@@ -388,6 +392,40 @@ public class RealmRepository {
         filesInfo.isFile = filesInfoRealm.isFile();
 
         return filesInfo;
+    }
+
+    public void saveSyncData(long seq, String syncData) {
+        realm.beginTransaction();
+        SavedSyncDataRealm savedSyncDataRealm = realm.where(SavedSyncDataRealm.class).equalTo("seqNum", seq).findFirst();
+        if (savedSyncDataRealm == null) {
+            savedSyncDataRealm = realm.createObject(SavedSyncDataRealm.class, seq);
+        }
+        savedSyncDataRealm.setSyncData(syncData);
+        realm.commitTransaction();
+    }
+
+    public String getSyncData(long seq) {
+        realm.beginTransaction();
+        SavedSyncDataRealm savedSyncDataRealm = realm.where(SavedSyncDataRealm.class).equalTo("seqNum", seq).findFirst();
+        realm.commitTransaction();
+        if (savedSyncDataRealm == null)
+            throw new RealmException("No seqNum");
+        return savedSyncDataRealm.getSyncData();
+    }
+
+    public long getSeqNo(String friendName) {
+        realm.beginTransaction();
+        User user = userRealmToUser(realm.where(UserRealm.class).equalTo("username", friendName).findFirst());
+        realm.commitTransaction();
+        return user.getSeqNo();
+    }
+
+    public void setSeqNo(String friendName, long seq) {
+        realm.beginTransaction();
+        Timber.d("Setting seq no: " + seq);
+        UserRealm user = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
+        user.setSeqNo(seq);
+        realm.commitTransaction();
     }
 
     public void close() {

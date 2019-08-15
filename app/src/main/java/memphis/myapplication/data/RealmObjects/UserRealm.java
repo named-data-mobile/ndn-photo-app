@@ -27,6 +27,7 @@ public class UserRealm extends RealmObject {
     private boolean friend;
     private boolean trust;
     private byte[] symKey;
+    private long seqNo;
 
     public void setCert(CertificateV2 c) {
         TlvEncoder tlvEncodedDataContent = new TlvEncoder();
@@ -88,4 +89,8 @@ public class UserRealm extends RealmObject {
     public ArrayList<String> getFriends() {
         return new ArrayList<>(friends);
     }
+
+    public void setSeqNo(long s) { this.seqNo = s; }
+
+    public long getSeqNo() { return seqNo; }
 }

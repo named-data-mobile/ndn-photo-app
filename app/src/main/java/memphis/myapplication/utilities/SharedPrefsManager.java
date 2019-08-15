@@ -23,6 +23,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import memphis.myapplication.Globals;
+import timber.log.Timber;
 
 
 public class SharedPrefsManager {
@@ -31,12 +32,14 @@ public class SharedPrefsManager {
     private static final String KEY_LOGIN_STATUS = "login_status";
     private static final String KEY_DOMAIN = "domain";
     private static final String KEY_KEY = "key";
+    private static final String KEY_SEQ = "sequence";
 
     private String mUsername;
     private String mPassword;
     private Boolean mLogInStatus;
     private String mDomain;
     private String mKey;
+    private Long mSeqNum;
 
     private SharedPreferences mSharedPreferences;
     private static SharedPrefsManager sharedPrefsManager;
@@ -53,6 +56,7 @@ public class SharedPrefsManager {
         mPassword = mSharedPreferences.getString(KEY_PASSWORD, null);
         mDomain = mSharedPreferences.getString(KEY_DOMAIN, null);
         mKey = mSharedPreferences.getString(KEY_KEY, null);
+        mSeqNum = mSharedPreferences.getLong(KEY_SEQ, 0);
         mLogInStatus = mSharedPreferences.getBoolean(KEY_LOGIN_STATUS, false);
     }
 
@@ -106,6 +110,19 @@ public class SharedPrefsManager {
     public void generateNewKey() {
         mKey = null;
         generateKey();
+        Globals.producerManager.updateKey();
+    }
+
+    public long getSeqNum() {
+        return mSeqNum;
+    }
+
+    public void setSeqNum(long s) {
+        Timber.d("Setting seq num: " + s);
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        mSeqNum = s;
+        editor.putLong(KEY_SEQ, s);
+        editor.apply();
     }
 
     public void setCredentials(String username, String password, String domain) {

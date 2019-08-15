@@ -21,6 +21,7 @@ import java.util.List;
 import memphis.myapplication.R;
 import memphis.myapplication.data.Common;
 import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.utilities.SharedPrefsManager;
 import memphis.myapplication.viewmodels.RealmViewModel;
 
 public class ViewFriendsFragment extends Fragment implements ListDisplayRecyclerView.ItemClickListener {
@@ -82,7 +83,7 @@ public class ViewFriendsFragment extends Fragment implements ListDisplayRecycler
         alert.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 // Continue with delete operation
-                Common.unfriend(friend);
+                Common.unfriend(friend, SharedPrefsManager.getInstance(getContext()));
             }
         });
 

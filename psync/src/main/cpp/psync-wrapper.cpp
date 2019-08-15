@@ -270,6 +270,15 @@ JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024PartialProducer
   partialProducerWrapper->partialProducer->publishName(ndn::Name(env->GetStringUTFChars(prefix, nullptr)));
 }
 
+JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024PartialProducer_publishNameSeq
+  (JNIEnv *env, jobject, jobject handle, jstring prefix, jlong seq)
+{
+  PartialProducerWrapper* partialProducerWrapper = (PartialProducerWrapper*) env->GetDirectBufferAddress(handle);
+  partialProducerWrapper->partialProducer->publishName(ndn::Name(env->GetStringUTFChars(prefix, nullptr)), seq);
+}
+
+
+
 // ---------------------------------Consumer-start-------------------------------------------
 class ConsumerWrapper {
 public:

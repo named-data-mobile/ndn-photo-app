@@ -358,9 +358,6 @@ public class Common {
                 filename = filename + "/" + Common.getKeyDigest(secretKey);
                 Timber.d("Filename: " + filename);
                 syncData.setFilename(filename);
-
-                // Stringify sync data
-                producerManager.setDataSeqMap(syncData.stringify());
                 Timber.d("Publishing file: %s", filename);
 
                 byte[] bytes;
@@ -376,7 +373,6 @@ public class Common {
                 try {
                     String prefixApp = sharedPrefsManager.getNamespace();
 
-//                    final String prefix = prefixApp + "/file" + filename;
                     Timber.d(filename);
                         Timber.d("Publishing to friend(s)");
                         if (publishedContent == null)
@@ -402,7 +398,7 @@ public class Common {
                 } catch (InvalidAlgorithmParameterException e) {
                     e.printStackTrace();
                 }
-                producerManager.publishFile(name);
+                producerManager.publishFile(name, syncData.stringify());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -469,12 +465,12 @@ public class Common {
      *
      * @param friend
      */
-    public static void unfriend(String friend) {
+    public static void unfriend(String friend, SharedPrefsManager sharedPrefsManager) {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         User user = realmRepository.deleteFriendship(friend);
         Globals.consumerManager.removeConsumer(user.getNamespace());
         Globals.producerManager.updateFriendsList();
-        Globals.producerManager.updateKey();
+        sharedPrefsManager.generateNewKey();
     }
 
     /**

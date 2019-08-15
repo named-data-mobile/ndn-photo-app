@@ -141,6 +141,8 @@ public class PSync {
             publishName(m_buffer, prefix);
         }
 
+        public void publishName(String prefix, long seq) { publishNameSeq(m_buffer, prefix, seq); }
+
         private native void stop(ByteBuffer buffer);
 
         private native boolean addUserNode(ByteBuffer buffer, String prefix);
@@ -150,6 +152,8 @@ public class PSync {
         private native long getSeqNo(ByteBuffer buffer, String prefix);
 
         private native void publishName(ByteBuffer buffer, String prefix);
+
+        private native void publishNameSeq(ByteBuffer buffer, String prefix, long seq);
     }
 
     public static class Consumer {

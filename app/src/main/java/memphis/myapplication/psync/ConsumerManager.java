@@ -7,6 +7,7 @@ import android.util.Base64;
 
 import androidx.lifecycle.MutableLiveData;
 
+import io.realm.Realm;
 import memphis.myapplication.data.Common;
 import memphis.myapplication.data.FriendsList;
 import memphis.myapplication.data.RealmRepository;
@@ -19,6 +20,7 @@ import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
+import net.named_data.jndn.encoding.EncodingException;
 import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.tpm.TpmBackEndFile;
 import net.named_data.jndn.security.tpm.TpmKeyHandle;
@@ -151,28 +153,44 @@ public class ConsumerManager {
         @Override
         public void onSyncDataCallBack(ArrayList<MissingDataInfo> updates) {
 
-            Timber.d("Got sync callback");
+            Timber.d("Got sync callback " + updates.size());
             for (MissingDataInfo update : updates) {
+                Timber.d("Name: " + update.prefix);
 
                 Name name = new Name(update.prefix);
-                name.appendSequenceNumber(update.highSeq);
                 face = Globals.face;
-                Timber.d(name.getSubName(-2,1).toUri());
-                if (name.getSubName(-2,1).toUri().equals("/friends")) {
+                Timber.d(name.getSubName(-1,1).toUri());
+                if (name.getSubName(-1,1).toUri().equals("/friends")) {
                     try {
                         Timber.d("Expressing interest for friends list");
+
                         face.expressInterest(name,  onFriendsData);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                } else if (name.getSubName(-2,1).toUri().equals("/data")) {
+                } else if (name.getSubName(-1,1).toUri().equals("/data")) {
                     try {
-                        Timber.d("Expressing interest for published file");
-                        face.expressInterest(name, onFileData);
+                        Timber.d("Expressing interest for published file(s)");
+                        Timber.d("Got sync update " + update.highSeq);
+                        Timber.d("Low seqno? " + update.lowSeq);
+                        long hiNo = update.highSeq;
+                        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                        String friendName = Common.interestToUsername(new Interest(name));
+                        long lowNo = realmRepository.getSeqNo(friendName);
+                        Timber.d("Low seqNo from db: " + lowNo);
+                        RealmRepository.getInstanceForNonUI().setSeqNo(friendName, hiNo);
+                        for (long i = lowNo+1; i <= hiNo; i++) {
+                            Timber.d("Fetching seqNo: " + i);
+                            face.expressInterest(new Name(name).appendSequenceNumber(i), onFileData);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (EncodingException e) {
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } else if (name.getSubName(-2,1).toUri().equals("/keys")) {
+                } else if (name.getSubName(-1,1).toUri().equals("/keys")) {
                     Timber.d("Expressing interest for friend's key");
                     name.append(SharedPrefsManager.getInstance(context).getUsername());
                     try {
