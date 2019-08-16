@@ -67,6 +67,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private String m_appPrefix;
     private int m_numRetries = 50;
     private String m_fileKeyDigest;
+    private boolean m_feed;
 
     private SecretKey m_secretKey;
 
@@ -86,6 +87,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
         m_secretKey = params[0].secretKey;
+        m_feed = params[0].feed;
         m_fileKeyDigest = m_baseInterest.getName().get(-1).toEscapedString();
         Timber.d(m_baseInterest.toUri());
         fetch(m_baseInterest, m_secretKey);
@@ -227,11 +229,17 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             // FileManager manager = new FileManager(applicationContext);
             Timber.d("m_content size; " + m_content.size());
 
-            // Check symkey
-            try {
-                checkKey(m_fileKeyDigest);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
+            // Check symkey if for feed
+            if (m_feed) {
+                try {
+                    checkKey(m_fileKeyDigest);
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                }
+            }
+            // else decrypt with key received in sync data
+            else {
+                succeed();
             }
 
         }
@@ -259,6 +267,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     public void checkKey(String keyDigest) throws NoSuchAlgorithmException {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+
         if (keyDigest.equals(Common.getKeyDigest(realmRepository.getSymKey(m_user))))
             succeed();
         else
