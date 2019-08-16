@@ -97,7 +97,7 @@ public class ConsumerManager {
                     Timber.d(interest.getName().toUri());
                     Timber.d("Friend name: " + friendName);
                     Timber.d(feedLoopRealmRepository.getSymKey(friendName).toString());
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName)));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName), false));
 
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
@@ -106,7 +106,7 @@ public class ConsumerManager {
                             TpmBackEndFile m_tpm = Globals.tpm;
                             SecretKey secretKey = Decrypter.decryptSymKey(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), m_tpm.getKeyHandle(Globals.pubKeyName));
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, true));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }
