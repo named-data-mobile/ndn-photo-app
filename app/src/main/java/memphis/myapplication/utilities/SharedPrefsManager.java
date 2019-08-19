@@ -33,6 +33,7 @@ public class SharedPrefsManager {
     private static final String KEY_DOMAIN = "domain";
     private static final String KEY_KEY = "key";
     private static final String KEY_SEQ = "sequence";
+    private static final String KEY_SHARE = "share";
 
     private String mUsername;
     private String mPassword;
@@ -40,6 +41,7 @@ public class SharedPrefsManager {
     private String mDomain;
     private String mKey;
     private Long mSeqNum;
+    private Boolean mShareFriendsList;
 
     private SharedPreferences mSharedPreferences;
     private static SharedPrefsManager sharedPrefsManager;
@@ -57,6 +59,7 @@ public class SharedPrefsManager {
         mDomain = mSharedPreferences.getString(KEY_DOMAIN, null);
         mKey = mSharedPreferences.getString(KEY_KEY, null);
         mSeqNum = mSharedPreferences.getLong(KEY_SEQ, 0);
+        mShareFriendsList = mSharedPreferences.getBoolean(KEY_SHARE, true);
         mLogInStatus = mSharedPreferences.getBoolean(KEY_LOGIN_STATUS, false);
     }
 
@@ -125,11 +128,24 @@ public class SharedPrefsManager {
         editor.apply();
     }
 
+    public void shareFriendsList(boolean b) {
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        mShareFriendsList = b;
+        editor.putBoolean(KEY_SHARE, b);
+        Timber.d("Sharing friends");
+        editor.apply();
+    }
+
+    public boolean getSharing() {
+        return mShareFriendsList;
+    }
+
     public void setCredentials(String username, String password, String domain) {
         mLogInStatus = true;
         mUsername = username;
         mPassword = password;
         mDomain = domain;
+        mShareFriendsList = true;
         SharedPreferences.Editor editor =  mSharedPreferences.edit();
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_PASSWORD, password);

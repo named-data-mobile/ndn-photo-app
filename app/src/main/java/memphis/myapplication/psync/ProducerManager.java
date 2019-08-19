@@ -63,8 +63,8 @@ public class ProducerManager {
     }
 
     public void updateFriendsList() {
-        m_producer.publishName(friendsPrefix);
-
+        if (sharedPrefsManager.getSharing())
+            m_producer.publishName(friendsPrefix);
     }
 
     public void updateKey() {
