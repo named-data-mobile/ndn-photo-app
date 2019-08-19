@@ -70,4 +70,5 @@
     <string name="license_info">This app is licenced under GNU GPL v3.0</string>
     <string name="license_link"><u><i>Tap to view the complete license</i></u></string>
     <string name="contribution"><i>(Contribution and issues welcome)</i></string>
+    <string name="share_friends_list">Share friends list</string>
 </resources>

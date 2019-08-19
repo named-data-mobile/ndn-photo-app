@@ -38,4 +38,16 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profilePhoto"
         />
+
+    <CheckBox
+        android:id="@+id/check_box_share_friends"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_20dp"
+        android:textColor="@color/white"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/changePhotoButton"
+        app:buttonTint="@color/white"
+        android:text="@string/share_friends_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

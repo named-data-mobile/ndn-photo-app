@@ -1,6 +1,7 @@
 package memphis.myapplication.UI;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -15,13 +16,16 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import memphis.myapplication.R;
+import memphis.myapplication.utilities.SharedPrefsManager;
 import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
@@ -32,11 +36,15 @@ public class SettingsFragment extends Fragment {
     private ImageView m_imageView;
     private View settingsView;
     private UserModel userModel;
+    private boolean sharing;
+    private SharedPrefsManager sharedPrefsManager;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         settingsView = inflater.inflate(R.layout.fragment_settings, container, false);
+        sharedPrefsManager = SharedPrefsManager.getInstance(getContext());
+        sharing = sharedPrefsManager.getSharing();
 
         userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
             @NonNull
@@ -59,6 +67,25 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 changePhoto(v);
+            }
+        });
+
+        final CheckBox checkBox = settingsView.findViewById(R.id.check_box_share_friends);
+        checkBox.setChecked(sharing);
+        checkBox.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (checkBox.isChecked()) {
+                    sharing = true;
+                } else {
+                    sharing = false;
+                }
+                if (sharing == true) {
+                    sharedPrefsManager.shareFriendsList(true);
+                } else {
+                    sharedPrefsManager.shareFriendsList(false);
+                }
             }
         });
         return settingsView;
