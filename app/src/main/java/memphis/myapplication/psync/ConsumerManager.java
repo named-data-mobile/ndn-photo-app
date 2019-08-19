@@ -153,9 +153,9 @@ public class ConsumerManager {
         @Override
         public void onSyncDataCallBack(ArrayList<MissingDataInfo> updates) {
 
-            Timber.d("Got sync callback " + updates.size());
+            Timber.d("Got sync callback");
             for (MissingDataInfo update : updates) {
-                Timber.d("Name: " + update.prefix);
+                Timber.d("Name: %s",update.prefix);
 
                 Name name = new Name(update.prefix);
                 face = Globals.face;
@@ -171,16 +171,13 @@ public class ConsumerManager {
                 } else if (name.getSubName(-1,1).toUri().equals("/data")) {
                     try {
                         Timber.d("Expressing interest for published file(s)");
-                        Timber.d("Got sync update " + update.highSeq);
-                        Timber.d("Low seqno? " + update.lowSeq);
                         long hiNo = update.highSeq;
                         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
                         String friendName = Common.interestToUsername(new Interest(name));
                         long lowNo = realmRepository.getSeqNo(friendName);
-                        Timber.d("Low seqNo from db: " + lowNo);
                         RealmRepository.getInstanceForNonUI().setSeqNo(friendName, hiNo);
                         for (long i = lowNo+1; i <= hiNo; i++) {
-                            Timber.d("Fetching seqNo: " + i);
+                            Timber.d("Fetching seqNo: %s", i);
                             face.expressInterest(new Name(name).appendSequenceNumber(i), onFileData);
                         }
                     } catch (IOException e) {
