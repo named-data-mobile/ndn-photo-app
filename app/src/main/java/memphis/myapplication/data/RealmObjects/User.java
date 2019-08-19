@@ -17,6 +17,7 @@ public class User {
     private boolean friend;
     private boolean trust;
     private byte[] symKey;
+    private long seqNo;
 
     public String getUsername() {
         return username;
@@ -79,5 +80,9 @@ public class User {
     }
 
     public String getNamespace() { return domain + "/npChat/" + username; }
+
+    public void setSeqNo(long s) { this.seqNo = s; }
+
+    public long getSeqNo() { return seqNo; }
 
 }

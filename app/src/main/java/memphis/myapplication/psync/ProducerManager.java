@@ -2,6 +2,7 @@ package memphis.myapplication.psync;
 import android.content.Context;
 import android.util.Base64;
 
+import io.realm.Realm;
 import memphis.myapplication.data.FriendsList;
 import memphis.myapplication.data.RealmRepository;
 import memphis.myapplication.utilities.SharedPrefsManager;
@@ -26,8 +27,6 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -37,15 +36,16 @@ import javax.crypto.SecretKey;
 
 public class ProducerManager {
     public  PSync.PartialProducer m_producer;
-    private  Map<Long, String> m_seqToFileName = new HashMap<Long, String>();
     private  String producerPrefix;
     private  String dataPrefix;
     private  String friendsPrefix;
     private String keysPrefix;
     private Context context;
+    SharedPrefsManager sharedPrefsManager;
 
     public ProducerManager(String p, Context c) {
         context = c;
+        sharedPrefsManager = SharedPrefsManager.getInstance(context);
         producerPrefix = p;
         dataPrefix = producerPrefix + "/data";
         friendsPrefix = producerPrefix + "/friends";
@@ -56,8 +56,10 @@ public class ProducerManager {
         m_producer.addUserNode(keysPrefix);
     }
 
-    public void setDataSeqMap(String syncData) {
-        m_seqToFileName.put(m_producer.getSeqNo(dataPrefix) + 1, syncData);
+    private void setDataSeqMap(String syncData, long seq) {
+        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+        realmRepository.saveSyncData(seq, syncData);
+        realmRepository.close();
     }
 
     public void updateFriendsList() {
@@ -69,13 +71,13 @@ public class ProducerManager {
         m_producer.publishName(keysPrefix);
     }
 
-    public void publishFile(String name) {
-        m_producer.publishName(name);
+    public void publishFile(String name, String syncData) {
+        long seq = sharedPrefsManager.getSeqNum() + 1;
+        setDataSeqMap(syncData, seq);
 
-    }
-
-    public String getSeqMap(long seq) {
-        return m_seqToFileName.get(seq);
+        Timber.d("Publishing seqNo: " + seq);
+        m_producer.publishName(name, seq);
+        sharedPrefsManager.setSeqNum(seq);
     }
 
     public final OnInterestCallback onDataInterest = new OnInterestCallback() {
@@ -85,11 +87,17 @@ public class ProducerManager {
             Timber.d("Called OnInterestCallback with Interest: %s", interest.getName().toUri());
             try {
                 Data data = new Data(interest.getName());
-                Blob content = new Blob(Base64.encode(m_seqToFileName.get(m_producer.getSeqNo(dataPrefix)).getBytes(), 0));
+                long seqNo = interest.getName().get(-1).toSequenceNumber();
+                Timber.d("SeqNo: " + seqNo);
+                // Get string from DB here
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                Blob content = new Blob(Base64.encode(realmRepository.getSyncData(seqNo).getBytes(), 0));
                 data.setContent(new Blob(content));
                 face.putData(data);
 
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (EncodingException e) {
                 e.printStackTrace();
             }
         }

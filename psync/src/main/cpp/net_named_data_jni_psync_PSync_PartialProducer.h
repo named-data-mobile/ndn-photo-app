@@ -55,6 +55,14 @@ JNIEXPORT jlong JNICALL Java_net_named_1data_jni_psync_PSync_00024PartialProduce
 JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024PartialProducer_publishName
   (JNIEnv *, jobject, jobject, jstring);
 
+/*
+ * Class:     net_named_data_jni_psync_PSync_PartialProducer
+ * Method:    publishNameSeq
+ * Signature: (Ljava/nio/ByteBuffer;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_net_named_1data_jni_psync_PSync_00024PartialProducer_publishNameSeq
+  (JNIEnv *, jobject, jobject, jstring, jlong);
+
 #ifdef __cplusplus
 }
 #endif

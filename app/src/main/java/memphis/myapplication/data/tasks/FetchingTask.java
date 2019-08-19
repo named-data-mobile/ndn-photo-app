@@ -142,15 +142,10 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                     public void onError(SegmentFetcher.ErrorCode errorCode, String message) {
                         if(errorCode == SegmentFetcher.ErrorCode.INTEREST_TIMEOUT) {
                             Timber.d( "timed out");
-                            //get the name we timed out with from message
-                            int index = message.lastIndexOf(m_appPrefix);
-                            if(index != -1) {
-                                Interest interest = new Interest(new Name(message.substring(index)));
-                                if(m_numRetries > 0) {
-                                    m_numRetries--;
-                                    fetch(interest, m_secretKey);
+                            if(m_numRetries > 0) {
+                                m_numRetries--;
+                                fetch(m_baseInterest, m_secretKey);
 
-                                }
                             }
                         }
                         m_resultMsg = message;

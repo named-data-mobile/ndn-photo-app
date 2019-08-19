@@ -14,6 +14,7 @@ import net.named_data.jndn.Interest;
 import net.named_data.jndn.InterestFilter;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnInterestCallback;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.MemoryContentCache;
 
@@ -66,10 +67,17 @@ public class MemoryCache {
      * it in the face. If not, publish the file, which will result in its placement in the cache.
      * @param filename
      */
-    public void process(String filename) {
+    public void process(String filename, String digest) {
         SharedPrefsManager sharedPrefsManager = SharedPrefsManager.getInstance(m_currContext);
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         SecretKey secretKey = realmRepository.getPublishedContent(filename).getKey();
+        if (secretKey == null) {
+            try {
+                secretKey = SharedPrefsManager.getInstance(m_currContext).getKey();
+            } catch (TpmBackEnd.Error error) {
+                error.printStackTrace();
+            }
+        }
         realmRepository.close();
         Name iName = new Name(filename);
 
@@ -104,7 +112,7 @@ public class MemoryCache {
             byte[] iv = encrypter.generateIV();
             try {
                 Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
-                Common.publishData(encryptedBlob, new Name(prefix));
+                Common.publishData(encryptedBlob, new Name(prefix).append(digest));
 
             } catch (NoSuchPaddingException e) {
                 e.printStackTrace();
@@ -121,7 +129,7 @@ public class MemoryCache {
             }
         } else {
             Blob unencryptedBlob = new Blob(bytes);
-            Common.publishData(unencryptedBlob, new Name(prefix));
+            Common.publishData(unencryptedBlob, new Name(prefix).append(digest));
         }
 
     }
@@ -150,7 +158,9 @@ public class MemoryCache {
                     start = i + 3;
                 }
             }
-            String filename = interest.getName().getSubName(start).toUri();
+            Name filenameWithKeyDigest = interest.getName().getSubName(start);
+            String filename = filenameWithKeyDigest.getPrefix(filenameWithKeyDigest.size()-1).toUri();
+            String digest = filenameWithKeyDigest.getSubName(-1).toUri().substring(1);
             Timber.d("What is the filename? %s", filename);
 
             // If file has been previously published, republish it
@@ -161,7 +171,7 @@ public class MemoryCache {
             if (publishedContent != null) {
                 Timber.i(publishedContent.getFilename());
                 Timber.i(publishedContent.getKey()+"");
-                process(filename);
+                process(filename, digest);
             } else {
                 Timber.d("Can't find file. Ignoring");
             }
