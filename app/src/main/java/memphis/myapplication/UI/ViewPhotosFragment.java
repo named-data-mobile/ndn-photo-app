@@ -146,7 +146,9 @@ public class ViewPhotosFragment extends Fragment {
                         File fileToDelete = new File(photoToDelete);
                         boolean wasDeleted = fileToDelete.delete();
                         if(wasDeleted){
-                            RealmRepository.getInstance().deleteFileInfo(photoToDelete.substring(photoToDelete.lastIndexOf('_')+ 1));
+                            RealmRepository realmRepository = RealmRepository.getInstance();
+                            realmRepository.deleteFileInfo(photoToDelete.substring(photoToDelete.lastIndexOf('_')+ 1));
+                            realmRepository.close();
                         }
                         Timber.d("file with path: " + photoToDelete + " was deleted? " + wasDeleted);
                     }

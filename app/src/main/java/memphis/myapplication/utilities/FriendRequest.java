@@ -1,10 +1,10 @@
 package memphis.myapplication.utilities;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
+
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
@@ -40,7 +40,7 @@ public class FriendRequest extends Observable {
     private String m_newFriend;
     private String m_mutualFriend;
     private Interest m_signedInterest;
-    private SharedPrefsManager sharedPrefsManager;
+
 
     protected int updateCode;
 
@@ -186,7 +186,6 @@ public class FriendRequest extends Observable {
     // Incoming friend request
     public FriendRequest(Interest interest, Context _context) {
         context = _context;
-        sharedPrefsManager = SharedPrefsManager.getInstance(context);
         m_signedInterest = interest;
     }
 
@@ -357,7 +356,6 @@ public class FriendRequest extends Observable {
                                     User friend = RealmRepository.getInstanceForNonUI().setFriendship(m_newFriend);
                                     Globals.consumerManager.createConsumer(friend.getNamespace());
 
-
                                 }
                             }, new OnTimeout() {
                                 @Override
@@ -461,5 +459,4 @@ public class FriendRequest extends Observable {
     public String getPendingFriend() {
         return m_newFriend;
     }
-
 }

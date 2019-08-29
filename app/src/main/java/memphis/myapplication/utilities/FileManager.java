@@ -482,7 +482,5 @@ public class FileManager {
         }
     };
 
-
-
             // we need to hash to some common directory or we will need to have a table that contain links to the files
 }

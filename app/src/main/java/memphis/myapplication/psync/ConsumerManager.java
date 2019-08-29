@@ -4,6 +4,7 @@ import android.content.Context;
 
 import android.os.Bundle;
 import android.util.Base64;
+import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -62,6 +63,14 @@ public class ConsumerManager {
         public void onHelloDataCallBack(ArrayList<String> names, PSync.Consumer callbackConsumer) {
             for (String name : names) {
                 callbackConsumer.addSubscription(name);
+                if (name.substring(name.lastIndexOf("/")).equals("/data")) {
+                    RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                    String firstCut = name.substring(0, name.lastIndexOf("/"));
+                    String friendName = firstCut.substring(firstCut.lastIndexOf("/")).substring(1);
+                    if (realmRepository.getSeqNo(friendName) == 0) {
+                        realmRepository.setSeqNo(friendName, callbackConsumer.getSeqNo(name));
+                    }
+                }
                 Timber.d("Subscription added for %s", name);
 
             }
@@ -97,7 +106,7 @@ public class ConsumerManager {
                     Timber.d(interest.getName().toUri());
                     Timber.d("Friend name: " + friendName);
                     Timber.d(feedLoopRealmRepository.getSymKey(friendName).toString());
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName), false));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName), true));
 
                 } else {
                     if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
@@ -106,7 +115,7 @@ public class ConsumerManager {
                             TpmBackEndFile m_tpm = Globals.tpm;
                             SecretKey secretKey = Decrypter.decryptSymKey(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), m_tpm.getKeyHandle(Globals.pubKeyName));
                             Timber.d("Filename : " + filename);
-                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, true));
+                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, false));
                         } catch (TpmBackEnd.Error error) {
                             error.printStackTrace();
                         }
@@ -127,9 +136,9 @@ public class ConsumerManager {
             try {
             Timber.d( "Got sync data for /friends");
             String interestData = new String(Base64.decode(data.getContent().getImmutableArray(), 0));
-            String friendName = interest.getName().getSubName(-3, 1).toUri().substring(1);
+            String friendName = interest.getName().getSubName(-2, 1).toUri().substring(1);
             Timber.d(interestData);
-            Timber.d(friendName);
+            Timber.d("Friend " + friendName);
 
             FriendsList friendsList = new FriendsList(interestData);
             FriendsList myFriendsList = new FriendsList();
