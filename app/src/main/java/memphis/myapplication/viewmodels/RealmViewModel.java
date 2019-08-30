@@ -17,6 +17,10 @@ import memphis.myapplication.data.RealmRepository;
 public class RealmViewModel extends ViewModel {
     public final RealmRepository repository;
 
+    public LiveData<String> toast() {
+        return repository.toast();
+    }
+
     public RealmViewModel() {
         repository = RealmRepository.getInstance();
     }

@@ -235,6 +235,7 @@ public class Common {
 
             Timber.d("Saved our certificate back signed by friend and adding them as a consumer");
             consumerManager.createConsumer(friend.getNamespace());
+            realmRepository.toast().postValue("Successfully added " + friendName);
 
             FriendRequest.requestSymKey(friend.getNamespace(), "default", userName);
 

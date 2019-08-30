@@ -32,9 +32,12 @@ public class RealmRepository {
     private static RealmRepository instance;
     public Realm realm;
     private static MutableLiveData<List<String>> friends;
+    private static MutableLiveData<String> toastData;
 
     private RealmRepository() {
         realm = Realm.getDefaultInstance();
+        if (toastData == null)
+            toastData = new MutableLiveData<>();
     }
 
     public static RealmRepository getInstance() {
@@ -430,5 +433,9 @@ public class RealmRepository {
 
     public void close() {
         realm.close();
+    }
+
+    public MutableLiveData<String> toast() {
+        return toastData;
     }
 }
