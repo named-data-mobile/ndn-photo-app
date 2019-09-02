@@ -53,6 +53,12 @@ public class IntroActivity extends AppCompatActivity {
 
         realmViewModel = ViewModelProviders.of(this).get(RealmViewModel.class);
         realmViewModel.createInstance();
+        realmViewModel.toast().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                Toast.makeText(IntroActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         if (navController.getCurrentDestination().getId() != R.id.blankFragment) return;
         // Check if NDN Forwarding Daemon is installed.
