@@ -1,6 +1,7 @@
 package memphis.myapplication.data;
 
 import android.content.Context;
+import android.os.Handler;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -46,6 +47,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -79,7 +82,7 @@ public class BackgroundJobs {
     public Face face;
     public MemoryCache memoryCache;
     private int networkDiscoveryTries = 0;
-    private int maxnetworkDiscoveryTries = 10;
+    private int maxnetworkDiscoveryTries = 2;
 
     private boolean netThreadShouldStop = true;
 
@@ -493,9 +496,37 @@ public class BackgroundJobs {
         // Register outgoing routes
         registerRoutesToMulticastFace();
         registerWithNSD();
-        expressNetworkDiscoveryInterest();
+        startMulticastDiscovery();
 
 
+    }
+
+    private Timer timer;
+    private TimerTask timerTask;
+    private Handler handler = new Handler();
+
+    //To stop timer
+    private void stopMulticastDiscovery(){
+        if(timer != null){
+            timer.cancel();
+            timer.purge();
+        }
+    }
+
+    //To start timer
+    private void startMulticastDiscovery(){
+        Timber.d("Starting timer");
+        timer = new Timer();
+        timerTask = new TimerTask() {
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run(){
+                        expressNetworkDiscoveryInterest();
+                    }
+                });
+            }
+        };
+        timer.schedule(timerTask, 0, 30000);
     }
 
     public void expressNetworkDiscoveryInterest() {
