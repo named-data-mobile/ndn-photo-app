@@ -45,9 +45,9 @@ public class FriendRequest extends Observable {
     protected int updateCode;
 
     final int UPDATE_NEW = 1;
-    final int UPDATE_FAILED = 2;
-    final int UPDATE_FRIEND = 3;
-    final int UPDATE_TRUST = 4;
+    final int UPDATE_FAILED = 1;
+    final int UPDATE_FRIEND = 1;
+    final int UPDATE_TRUST = 1;
 
     // Outgoing friend request
     public FriendRequest(String nF, String mF, Context _context) {

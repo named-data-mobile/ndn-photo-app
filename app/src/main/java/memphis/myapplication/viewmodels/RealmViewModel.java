@@ -85,6 +85,8 @@ public class RealmViewModel extends ViewModel {
         return repository.checkIfShared(path);
     }
 
+    public void delete() { repository.deleteAll(); }
+
     public void close(){
         repository.close();
     }

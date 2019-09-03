@@ -105,20 +105,6 @@ public class AddFriendFragment extends Fragment {
     }
 
     private void setListeners() {
-        addFriendView.findViewById(R.id.scanFriendButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                scanFriendQR(v);
-            }
-        });
-
-        addFriendView.findViewById(R.id.showYourCode).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayMyQR(v);
-            }
-        });
-
         addFriendView.findViewById(R.id.addFriend).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -173,10 +159,6 @@ public class AddFriendFragment extends Fragment {
     private void setButtonWidth() {
         DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
         int width = metrics.widthPixels / 3;
-        Button btn1 = addFriendView.findViewById(R.id.showYourCode);
-        btn1.setWidth(width);
-        Button btn2 = addFriendView.findViewById(R.id.scanFriendButton);
-        btn2.setWidth(width);
         Button btn3 = addFriendView.findViewById(R.id.viewFriendsButton);
         btn3.setWidth(width);
     }

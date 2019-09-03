@@ -17,16 +17,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import io.realm.Realm;
 import memphis.myapplication.R;
+import memphis.myapplication.data.RealmRepository;
+import memphis.myapplication.viewmodels.RealmViewModel;
 import memphis.myapplication.viewmodels.UserModel;
+import timber.log.Timber;
 
 public class AboutFragment extends Fragment {
 
     private View aboutView;
+    private RealmViewModel databaseViewModel;
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        databaseViewModel = ViewModelProviders.of(getActivity()).get(RealmViewModel.class);
         aboutView = inflater.inflate(R.layout.fragment_about, container, false);
         UserModel userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
             @NonNull
@@ -54,6 +61,13 @@ public class AboutFragment extends Fragment {
             }
         });
 
+        aboutView.findViewById(R.id.reset).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Timber.d("Removing");
+                databaseViewModel.delete();
+            }
+        });
         return aboutView;
     }
 

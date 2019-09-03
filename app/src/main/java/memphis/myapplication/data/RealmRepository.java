@@ -438,4 +438,11 @@ public class RealmRepository {
     public MutableLiveData<String> toast() {
         return toastData;
     }
+
+    public void deleteAll() {
+        realm.beginTransaction();
+        Timber.d("Deleting all");
+        realm.deleteAll();
+        realm.commitTransaction();
+    }
 }
