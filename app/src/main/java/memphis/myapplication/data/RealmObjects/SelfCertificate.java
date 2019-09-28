@@ -7,7 +7,7 @@ import net.named_data.jndn.security.v2.CertificateV2;
 import java.nio.ByteBuffer;
 
 /**
- * This class is for storing the user's own certificates signed by their friends.
+ * This POJO class is for storing the user's own certificates signed by their friends.
  */
 
 

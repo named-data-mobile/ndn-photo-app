@@ -189,12 +189,16 @@ public class Common {
         Globals.face.expressInterest(interest, onCertData, onCertTimeOut);
     }
 
-    public static void registerUser(User friend) {
+    /**
+     * Register a route on a forwarder to the user's namespace
+     * @param user The user to register
+     */
+    public static void registerUser(User user) {
         if (!Globals.useMulticast) {
-            Globals.nsdHelper.registerUser(friend);
+            Globals.nsdHelper.registerUser(user);
         } else {
             try {
-                Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
+                Nfdc.register(Globals.face, Globals.multicastFaceID, new Name(user.getNamespace()), 0);
             } catch (ManagementException e) {
                 e.printStackTrace();
             }
@@ -281,6 +285,8 @@ public class Common {
      * encodes sync data, encrypts photo, and publishes filename and symmetric keys
      *
      * @param resultData: intent with filename and recipients list
+     * @param context
+     * @param isFile true if the data is a file. False if its a story-picture
      */
     public static void encryptAndPublish(Intent resultData, Context context, boolean isFile) {
         RealmViewModel databaseViewModel = ViewModelProviders.of((FragmentActivity) context).get(RealmViewModel.class);
@@ -409,6 +415,11 @@ public class Common {
         }
     }
 
+    /**
+     * Convert the latitude to Exif supported format
+     * @param latitude
+     * @return latitude in Exif supported string format
+     */
     public static final String convert(double latitude) {
         latitude = Math.abs(latitude);
         int degree = (int) latitude;

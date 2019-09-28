@@ -11,7 +11,7 @@ import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
 /**
- * This class is for storing the user's own certificates signed by their friends.
+ * This Realm class is for storing the user's own certificates signed by their friends.
  */
 
 

@@ -30,6 +30,9 @@ import android.widget.Toast;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
+/**
+ * SettingsFragment handles views of the settings screen
+ */
 public class SettingsFragment extends Fragment {
 
     final int PICK_PHOTO = 0;
@@ -112,6 +115,11 @@ public class SettingsFragment extends Fragment {
             }
         }
     }
+
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         ToolbarHelper toolbarHelper = new ToolbarHelper("Settings", settingsView);
         Toolbar toolbar = toolbarHelper.setupToolbar(uri);

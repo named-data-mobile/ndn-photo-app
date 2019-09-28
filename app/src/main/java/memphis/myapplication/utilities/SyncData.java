@@ -9,6 +9,10 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * SyncData contains meta data for the file to be shared. It is used by the producers to inform the
+ * consumers for a new file to be shared
+ */
 public class SyncData {
     private Map<String, String> m_symKeys = new HashMap<String, String>();
     private String filename;

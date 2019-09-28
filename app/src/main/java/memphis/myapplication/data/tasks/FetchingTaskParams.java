@@ -4,6 +4,9 @@ import net.named_data.jndn.Interest;
 
 import javax.crypto.SecretKey;
 
+/**
+ * Store parameters to pass to FetchingTask
+ */
 public class FetchingTaskParams
 {
     Interest interest;

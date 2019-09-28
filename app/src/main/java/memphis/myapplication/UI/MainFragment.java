@@ -48,6 +48,9 @@ import memphis.myapplication.viewmodels.RealmViewModel;
 import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
 
+/**
+ * Fragment to handle the home screen for the app
+ */
 public class MainFragment extends Fragment {
 
     public Face face;
@@ -103,6 +106,9 @@ public class MainFragment extends Fragment {
         return mainView;
     }
 
+    /**
+     * Set up the on click listeners for the buttons
+     */
     private void setUpListeners() {
         // start activity for add friends
         mainView.findViewById(R.id.friends).setOnClickListener(new View.OnClickListener() {
@@ -160,6 +166,10 @@ public class MainFragment extends Fragment {
         sharedPrefsManager = SharedPrefsManager.getInstance(getActivity());
     }
 
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         ToolbarHelper toolbarHelper = new ToolbarHelper(getString(R.string.app_name), mainView);
         Toolbar toolbar = toolbarHelper.setupToolbar(uri);
@@ -288,7 +298,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onDestroyView() {
         Timber.d("Destroying memory cache");
-        //memoryCache.destroy();
         super.onDestroyView();
     }
 }

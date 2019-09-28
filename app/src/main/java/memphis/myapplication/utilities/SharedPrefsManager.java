@@ -26,6 +26,9 @@ import memphis.myapplication.Globals;
 import timber.log.Timber;
 
 
+/**
+ * Manage the shared preferences for the app
+ */
 public class SharedPrefsManager {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_PASSWORD = "password";

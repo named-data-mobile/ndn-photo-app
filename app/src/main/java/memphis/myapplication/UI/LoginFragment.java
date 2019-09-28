@@ -23,7 +23,9 @@ import android.widget.Toast;
 
 import memphis.myapplication.R;
 import memphis.myapplication.utilities.SharedPrefsManager;
-
+/**
+ * Fragment to handle user sign up
+ */
 public class LoginFragment extends Fragment {
 
     final private int MISSING_ELEMENT = 1;
@@ -87,6 +89,9 @@ public class LoginFragment extends Fragment {
         return loginView;
     }
 
+    /**
+     * Set up the button width programmatically
+     */
     private void setButtonWidth() {
         DisplayMetrics metrics = this.getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;
@@ -120,6 +125,9 @@ public class LoginFragment extends Fragment {
         return false;
     }
 
+    /**
+     * Attempt login on button click
+     */
     public void login(View view) {
         EditText dom = loginView.findViewById(R.id.domain_text);
         EditText name = loginView.findViewById(R.id.username_text);
@@ -144,6 +152,13 @@ public class LoginFragment extends Fragment {
         }
     }
 
+    /**
+     * Attempt login upon data verification
+     * @param domain The user domain (owned namespace)
+     * @param username The user name (for the app)
+     * @param password password for the app
+     * @return login status
+     */
     private int loginAttempt(String domain, String username, String password) {
         String[] array = {username, password};
         if(!domain.startsWith(PREFIX) || domain.toLowerCase().contains("/npchat") ||
@@ -157,6 +172,10 @@ public class LoginFragment extends Fragment {
             return 0;
         }
     }
+
+    /**
+     * Attempt login using background async task
+     */
     private class LoginTask extends AsyncTask<Void, Void, Void>{
         @Override
         protected Void doInBackground(Void... voids) {

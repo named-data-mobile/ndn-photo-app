@@ -4,6 +4,9 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
+/**
+ * FilesInfoRealm is the RealmObject Class to store meta information on received files
+ */
 public class FilesInfoRealm extends RealmObject {
 
     @PrimaryKey

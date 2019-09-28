@@ -31,6 +31,9 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * This class helps interact with the file system to access important files.
+ */
 public class FileManager {
 
     private String m_appName;
@@ -218,6 +221,11 @@ public class FileManager {
         return false;
     }
 
+    /**
+     * Get the file name info from a name
+     * @param name
+     * @param flag
+     */
     public static String getFileName(Name name, int flag){
         if (flag == FILENAME) {
             String filePath = name.toUri().substring(0, name.toUri().lastIndexOf("/"));
@@ -386,6 +394,9 @@ public class FileManager {
         return temp.substring(0, lastIndex);
     }
 
+    /**
+     * Callback for cert interests
+     */
     public static final OnInterestCallback onCertInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
@@ -481,6 +492,4 @@ public class FileManager {
 
         }
     };
-
-            // we need to hash to some common directory or we will need to have a table that contain links to the files
 }

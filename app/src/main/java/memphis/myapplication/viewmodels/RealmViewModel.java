@@ -14,6 +14,9 @@ import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
 import memphis.myapplication.data.RealmRepository;
 
+/**
+ * RealmViewModel is a ViewModel to connect RealmRepository database to the UI
+ */
 public class RealmViewModel extends ViewModel {
     public final RealmRepository repository;
 
@@ -33,8 +36,8 @@ public class RealmViewModel extends ViewModel {
         return repository.setFriendship(friendName);
     }
 
-    public int saveFriend(String friendName) {
-        return repository.saveFriend(friendName);
+    public int checkFriendship(String friendName) {
+        return repository.checkFriendship(friendName);
     }
 
     public void saveNewFriend(String friendName, String friendDomain, CertificateV2 certificateV2) {

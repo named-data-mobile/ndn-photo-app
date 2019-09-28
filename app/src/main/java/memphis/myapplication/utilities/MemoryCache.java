@@ -146,6 +146,9 @@ public class MemoryCache {
         return mCache.getMinimumCacheLifetime();
     }
 
+    /**
+     * Process an interest for a file
+     */
     public final OnInterestCallback onNoDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {

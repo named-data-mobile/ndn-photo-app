@@ -13,7 +13,9 @@ import java.io.IOException;
 
 import memphis.myapplication.utilities.FileManager;
 import timber.log.Timber;
-
+/**
+ * UserRepository handles all realm database related stuff for user data
+ */
 public class UserRepository {
 
     private static UserRepository instance;
@@ -26,6 +28,11 @@ public class UserRepository {
         userImage.setValue(Uri.fromFile(file));
     }
 
+    /**
+     * Create or get a single common instance of UserRepository
+     * @param context
+     * @return The UserRepository instance
+     */
     public static synchronized UserRepository getInstance(Context context) {
         if (instance == null) {
             instance = new UserRepository(context);
@@ -34,10 +41,18 @@ public class UserRepository {
         return instance;
     }
 
+    /**
+     * Get the user profile image livedata
+     */
     public LiveData<Uri> getUserImage() {
         return userImage;
     }
 
+    /**
+     * Update the user profile image
+     * @param photoUri Uri for the picture
+     * @param activity
+     */
     public void updateImage(Uri photoUri, Context activity) {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(activity.getContentResolver(), photoUri);

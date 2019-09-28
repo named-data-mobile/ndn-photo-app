@@ -19,11 +19,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import memphis.myapplication.R;
+import memphis.myapplication.adapters.ListDisplayRecyclerView;
 import memphis.myapplication.data.Common;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.SharedPrefsManager;
 import memphis.myapplication.viewmodels.RealmViewModel;
 
+/**
+ * List all the friends and delete if required
+ */
 public class ViewFriendsFragment extends Fragment implements ListDisplayRecyclerView.ItemClickListener {
 
     ListDisplayRecyclerView adapter;

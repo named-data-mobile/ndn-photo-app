@@ -2,13 +2,10 @@ package memphis.myapplication.psync;
 
 import android.content.Context;
 
-import android.os.Bundle;
 import android.util.Base64;
-import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
 
-import io.realm.Realm;
 import memphis.myapplication.data.Common;
 import memphis.myapplication.data.FriendsList;
 import memphis.myapplication.data.RealmRepository;
@@ -44,6 +41,10 @@ import memphis.myapplication.utilities.SyncData;
 import memphis.myapplication.data.tasks.FetchingTask;
 import memphis.myapplication.data.tasks.FetchingTaskParams;
 
+/**
+ * ConsumerManager manages the callbacks for friendship and manages consumer for each friend
+ * using psync
+ */
 public class ConsumerManager {
 
     static PSync.Consumer consumer;
@@ -58,6 +59,9 @@ public class ConsumerManager {
         this.context = _context;
     }
 
+    /**
+     * OnHelloDataCallBack for psync to subscribe to friend's streams
+     */
     static PSync.OnHelloDataCallBack helloDataCallBack = new PSync.OnHelloDataCallBack() {
         @Override
         public void onHelloDataCallBack(ArrayList<String> names, PSync.Consumer callbackConsumer) {
@@ -78,6 +82,9 @@ public class ConsumerManager {
         }
     };
 
+    /**
+     * OnData for receiving meta data for a new file from a friend
+     */
     private OnData onFileData = new OnData() {
 
         @Override
@@ -130,6 +137,9 @@ public class ConsumerManager {
         }
     };
 
+    /**
+     * OnData for processing friend list of a friend
+     */
     private OnData onFriendsData = new OnData() {
         @Override
         public void onData(Interest interest, Data data) {
@@ -158,6 +168,9 @@ public class ConsumerManager {
         }
     };
 
+    /**
+     * syncDataCallBack for processing the sync state of a friend
+     */
     PSync.OnSyncDataCallBack syncDataCallBack = new PSync.OnSyncDataCallBack() {
         @Override
         public void onSyncDataCallBack(ArrayList<MissingDataInfo> updates) {
@@ -223,6 +236,9 @@ public class ConsumerManager {
         consumer.sendHelloInterest();
     }
 
+    /**
+     * @param friend
+     */
     public void removeConsumer(String friend) {
         Timber.d("Removing " + friend + " as consumer");
         PSync.Consumer removedConsumer = consumers.get(friend);

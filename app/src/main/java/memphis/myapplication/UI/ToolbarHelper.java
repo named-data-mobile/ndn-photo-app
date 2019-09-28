@@ -11,7 +11,9 @@ import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import memphis.myapplication.R;
-
+/**
+ * ToolbarHelper helps setting up a custom toolbar
+ */
 public class ToolbarHelper {
 
     private String title;
@@ -22,6 +24,11 @@ public class ToolbarHelper {
         this.view = view;
     }
 
+    /**
+     * Get a custom toolbar with an image
+     * @param uri URI for the profile picture
+     * @return new custom toolbar
+     */
     public Toolbar setupToolbar(Uri uri) {
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setTitle("");
@@ -30,10 +37,5 @@ public class ToolbarHelper {
         textView.setText(this.title);
         Picasso.get().load(uri).placeholder(R.drawable.avatar).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(imageView);
         return toolbar;
-    }
-
-    public void setupToolbarImage(String photoUri) {
-        ImageView imageView = view.findViewById(R.id.toolbar_main_photo);
-        Picasso.get().load(photoUri).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(imageView);
     }
 }

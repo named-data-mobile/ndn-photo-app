@@ -9,6 +9,9 @@ import net.named_data.jndn.Interest;
 
 import memphis.myapplication.data.BackgroundJobs;
 
+/**
+ * BackgroundViewModel is the ViewModel to connect the UI to BackgroundJobs class
+ */
 public class BackgroundViewModel extends ViewModel {
 
     private final BackgroundJobs repository;

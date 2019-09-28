@@ -171,6 +171,9 @@ public class ViewPhotosFragment extends Fragment {
         }.start();
     }
 
+    /**
+     * Handler to update the UI from a different thread
+     */
     private class GeocoderHandler extends Handler {
         @Override
         public void handleMessage(Message message) {
@@ -190,6 +193,13 @@ public class ViewPhotosFragment extends Fragment {
         }
     }
 
+    /**
+     * Use Geocoder to get and display address from the location data
+     * @param latitude
+     * @param longitude
+     * @param context
+     * @param handler Handler to update the UI
+     */
     private static void getAddressFromLocation(final float latitude, final float longitude,
                                                final Context context, final Handler handler) {
         Thread thread = new Thread() {
@@ -228,6 +238,11 @@ public class ViewPhotosFragment extends Fragment {
         thread.start();
     }
 
+    /**
+     * Convert the Exif supported location to degrees
+     * @param stringDMS The string Exif supported location
+     * @return location in degrees
+     */
     private static float convertToDegree(String stringDMS){
         Float result;
         String[] dms = stringDMS.split(",", 3);

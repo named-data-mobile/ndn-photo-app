@@ -15,6 +15,9 @@ import java.util.List;
 import memphis.myapplication.R;
 import memphis.myapplication.viewmodels.FileViewModel;
 
+/**
+ * Adapter to display received files
+ */
 public class FileDisplayAdapter extends RecyclerView.Adapter<FileDisplayAdapter.ViewHolder> {
 
     private List<File> files;
@@ -63,6 +66,11 @@ public class FileDisplayAdapter extends RecyclerView.Adapter<FileDisplayAdapter.
         }
     }
 
+    /**
+     * Convert the file size from Bytes to human readable format
+     * @param bytes File size in Bytes
+     * @return File size in human readable form
+     */
     public static String humanReadableByteCount(long bytes) {
         int unit = 1024;
         if (bytes < unit) return bytes + " B";

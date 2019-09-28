@@ -50,6 +50,9 @@ public class Globals extends Application {
         setupTimber();
     }
 
+    /**
+     * Set up a Timber instance to get custom log behaviour
+     */
     private void setupTimber() {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree() {

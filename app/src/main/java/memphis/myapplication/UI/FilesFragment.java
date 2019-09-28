@@ -56,6 +56,9 @@ import java.util.ArrayList;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
+/**
+ * Fragment to display the files menu to the user
+ */
 public class FilesFragment extends Fragment {
 
     private final int FILE_SELECT_REQUEST_CODE = 0;
@@ -91,6 +94,9 @@ public class FilesFragment extends Fragment {
         return filesView;
     }
 
+    /**
+     * Set up the on click listeners for the buttons
+     */
     private void setupListeners() {
         /*
           Choose a file to share.
@@ -164,12 +170,19 @@ public class FilesFragment extends Fragment {
         });
     }
 
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         toolbarHelper = new ToolbarHelper(getString(R.string.files), filesView);
         toolbar = toolbarHelper.setupToolbar(uri);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 
+    /**
+     * Set up the button width programmatically
+     */
     private void setButtonWidth() {
         DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
         int width = metrics.widthPixels/3;

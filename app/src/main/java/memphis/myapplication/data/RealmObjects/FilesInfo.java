@@ -1,5 +1,8 @@
 package memphis.myapplication.data.RealmObjects;
 
+/**
+ * FilesInfo POJO class to represent Files meta information
+ */
 public class FilesInfo {
 
     public String filename;

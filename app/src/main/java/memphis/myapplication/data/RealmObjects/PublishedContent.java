@@ -3,6 +3,9 @@ package memphis.myapplication.data.RealmObjects;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * PublishedContent POJO class to represent meta information on files shared
+ */
 public class PublishedContent {
 
     private String filename;

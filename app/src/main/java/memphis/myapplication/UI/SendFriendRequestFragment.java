@@ -27,6 +27,9 @@ import memphis.myapplication.utilities.FriendRequest;
 import memphis.myapplication.viewmodels.RealmViewModel;
 import timber.log.Timber;
 
+/**
+ * SendFriendRequestFragment handles sending friend request to users except via QR exchange
+ */
 public class SendFriendRequestFragment extends Fragment implements AdapterView.OnItemSelectedListener {
     Spinner newFriendSpinner;
     String mutualFriend;
@@ -121,6 +124,9 @@ public class SendFriendRequestFragment extends Fragment implements AdapterView.O
         // TODO Auto-generated method stub
     }
 
+    /**
+     * Display a list of friends of trusted friends
+     */
     private void getMutual(){
 
         String friendsMessage;

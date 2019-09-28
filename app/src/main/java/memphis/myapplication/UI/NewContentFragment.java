@@ -1,6 +1,5 @@
 package memphis.myapplication.UI;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -17,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
 
 import memphis.myapplication.R;
+import memphis.myapplication.adapters.ListDisplayRecyclerView;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.viewmodels.UserModel;
 import timber.log.Timber;
@@ -28,6 +28,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Fragment to display a list of users who sent new story picture content
+ */
 public class NewContentFragment extends Fragment implements ListDisplayRecyclerView.ItemClickListener {
 
     private int VIEW_PHOTOS = 0;
@@ -77,18 +80,10 @@ public class NewContentFragment extends Fragment implements ListDisplayRecyclerV
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode,
-                                 Intent resultData) {
-//        if (requestCode == VIEW_PHOTOS) {
-            // this refreshes our page so we no longer see the user whose photos we just viewed
-            // the current activity finishes and we start a new one which triggers onCreate again
-            //TODO: update list
-//            finish();
-//            startActivity(getIntent());
-//        }
-    }
-
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         ToolbarHelper toolbarHelper = new ToolbarHelper("Photos", newContentView);
         Toolbar toolbar = toolbarHelper.setupToolbar(uri);
@@ -97,11 +92,9 @@ public class NewContentFragment extends Fragment implements ListDisplayRecyclerV
 
     @Override
     public void onItemClick(View view, int position) {
-        Timber.d("we hit onClick");
         Bundle bundle = new Bundle();
         bundle.putSerializable("photos", userContent.get(adapter.getItem(position)));
         Timber.d("content: " + userContent.get(adapter.getItem(position)));
         Navigation.findNavController(newContentView).navigate(R.id.action_newContentFragment_to_viewPhotosFragment, bundle);
-//        startActivityForResult(intent, VIEW_PHOTOS);
     }
 }

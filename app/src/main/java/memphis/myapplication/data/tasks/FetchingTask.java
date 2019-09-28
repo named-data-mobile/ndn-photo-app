@@ -49,7 +49,9 @@ import memphis.myapplication.Globals;
 
 import static java.lang.Thread.sleep;
 
-// revisit params
+/**
+ * AsyncTask to fetch the file on the background thread
+ */
 public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private final MutableLiveData<String> toastData;
@@ -97,6 +99,11 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         return m_received;
     }
 
+    /**
+     * Fetch the data for the interest
+     * @param interest The interest to fetch
+     * @param secretKey
+     */
     private void fetch(Interest interest, SecretKey secretKey) {
         m_shouldReturn = false;
         interest.setInterestLifetimeMilliseconds(15000);
@@ -189,6 +196,14 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         }
     }
 
+    /**
+     * Verify the received data buffer
+     * @param buffer received signed buffer
+     * @param signature sender's signature
+     * @param publicKey sender's public key
+     * @param digestAlgorithm
+     * @return True if the data is actually from the sender
+     */
     public static boolean verifySignature(ByteBuffer buffer, byte[] signature, PublicKey publicKey,
                                           DigestAlgorithm digestAlgorithm) {
         if(digestAlgorithm == DigestAlgorithm.SHA256) {
@@ -244,22 +259,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         }
     }
 
-
-
-    /**
-     * Android is very particular about UI processes running on a separate thread. This function
-     * creates and returns a Runnable thread object that will display a Toast message.
-     */
-    public Runnable makeToast(final String s) {
-        return new Runnable() {
-            public void run() {
-                Toast.makeText(m_currContext, s, Toast.LENGTH_LONG).show();
-            }
-        };
-    }
-
-
-
     public void checkKey(String keyDigest) throws NoSuchAlgorithmException {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
 
@@ -269,6 +268,9 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             fetchKey();
     }
 
+    /**
+     * Extract the data from successfully received and verified file
+     */
     public void succeed() {
         boolean wasSaved;
         // Get IV
@@ -309,10 +311,19 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     }
 
+    /**
+     * Request symmetric key for the data from the friend
+     */
     public void fetchKey() {
        requestSymKey(RealmRepository.getInstanceForNonUI().getFriend(m_user).getNamespace(), m_fileKeyDigest, SharedPrefsManager.getInstance(m_currContext).getUsername());
     }
 
+    /**
+     * Request symmetric key for data
+     * @param friendNameSpace
+     * @param keyName
+     * @param username user requesting the key
+     */
     public void requestSymKey(final String friendNameSpace, String keyName, String username) {
         Interest symKeyInterest = new Interest(new Name(friendNameSpace));
         symKeyInterest.getName().append("keys");

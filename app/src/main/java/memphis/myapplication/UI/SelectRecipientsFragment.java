@@ -38,18 +38,22 @@ import java.util.List;
 import java.util.Locale;
 
 import memphis.myapplication.R;
+import memphis.myapplication.adapters.ListDisplayRecyclerView;
 import memphis.myapplication.data.Common;
 import timber.log.Timber;
 
 import static android.content.Context.LOCATION_SERVICE;
 
+/**
+ * Fragment to display a dialog box asking the user to select recipient and add location
+ */
 public class SelectRecipientsFragment extends Fragment implements ListDisplayRecyclerView.ItemClickListener, LocationListener {
 
     private ArrayList<String> m_selectedFriends;
     private Button m_sendButton;
     private ListDisplayRecyclerView adapter;
     private boolean m_feedSelected;
-    private View selectReceipientsView;
+    private View selectRecipientsView;
     private CheckBox locationCheckView;
     private TextView currentLocation;
     private boolean locationAdded;
@@ -65,10 +69,10 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        selectReceipientsView = inflater.inflate(R.layout.fragment_select_recipients, container, false);
+        selectRecipientsView = inflater.inflate(R.layout.fragment_select_recipients, container, false);
 
         m_selectedFriends = new ArrayList<>();
-        m_sendButton = selectReceipientsView.findViewById(R.id.send_button);
+        m_sendButton = selectRecipientsView.findViewById(R.id.send_button);
         feed();
         showFriends();
 
@@ -78,11 +82,11 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                 returnList();
             }
         });
-        return selectReceipientsView;
+        return selectRecipientsView;
     }
 
     private void feed() {
-        feed = selectReceipientsView.findViewById(R.id.feed);
+        feed = selectRecipientsView.findViewById(R.id.feed);
         drawable1 = new GradientDrawable();
         drawable1.setColor(Color.CYAN);
         drawable1.setStroke(2, Color.BLACK);
@@ -110,8 +114,11 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
 
     }
 
+    /**
+     * Display and add listeners to the friends section
+     */
     private void showFriends() {
-        friends = selectReceipientsView.findViewById(R.id.friends);
+        friends = selectRecipientsView.findViewById(R.id.friends);
         friends.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,8 +135,8 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                 }
             }
         });
-        locationCheckView = selectReceipientsView.findViewById(R.id.location);
-        currentLocation = selectReceipientsView.findViewById(R.id.current_location);
+        locationCheckView = selectRecipientsView.findViewById(R.id.location);
+        currentLocation = selectRecipientsView.findViewById(R.id.current_location);
 
         if (!m_feedSelected) {
             Bundle bundle = this.getArguments();
@@ -154,7 +161,7 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                             }
                         }
                     });
-                    RecyclerView recyclerView = selectReceipientsView.findViewById(R.id.friendList);
+                    RecyclerView recyclerView = selectRecipientsView.findViewById(R.id.friendList);
                     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
                     adapter = new ListDisplayRecyclerView(getActivity(), friendsList);
@@ -162,10 +169,13 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                     recyclerView.setAdapter(adapter);
                 }
                 m_sendButton.setVisibility(View.GONE);
-            } else Navigation.findNavController(selectReceipientsView).popBackStack();
+            } else Navigation.findNavController(selectRecipientsView).popBackStack();
         }
     }
 
+    /**
+     * Display a confirmation dialog to the user
+     */
     private void returnList() {
         // first ask for confirmation; do they want to send the photo to (show list of selected)
         // friends
@@ -184,14 +194,14 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                             Intent data = new Intent();
                             data.putExtra("photo", path);
                             Common.encryptAndPublish(data, getActivity(), bundle.getBoolean("isFile", true));
-                            Navigation.findNavController(selectReceipientsView).popBackStack();
+                            Navigation.findNavController(selectRecipientsView).popBackStack();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                         Intent data = new Intent();
                         data.putStringArrayListExtra("recipients", m_selectedFriends);
                         getActivity().runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
-                        Navigation.findNavController(selectReceipientsView).popBackStack();
+                        Navigation.findNavController(selectRecipientsView).popBackStack();
                     }
                 }
             });
@@ -237,14 +247,14 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
                             }
                             data.putExtra("photo", path);
                             Common.encryptAndPublish(data, getActivity(), bundle.getBoolean("isFile", true));
-                            Navigation.findNavController(selectReceipientsView).popBackStack();
+                            Navigation.findNavController(selectRecipientsView).popBackStack();
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                         Intent data = new Intent();
                         data.putStringArrayListExtra("recipients", m_selectedFriends);
                         getActivity().runOnUiThread(makeToast("Something went wrong with sending photo. Try resending"));
-                        Navigation.findNavController(selectReceipientsView).popBackStack();
+                        Navigation.findNavController(selectRecipientsView).popBackStack();
                     }
                 }
             });
@@ -306,6 +316,9 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
         }
     }
 
+    /**
+     * Get the current device location
+     */
     private void getLocation() {
         locationAdded = true;
         if (m_feedSelected) {
@@ -368,6 +381,10 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
 
     }
 
+    /**
+     * Update the location variables
+     * @param location the new location data
+     */
     private void updateLocation(Location location) {
         if (location != null) {
             this.location = location;
@@ -384,6 +401,9 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
         }
     }
 
+    /**
+     * Handler to update the UI from a different thread
+     */
     private class GeocoderHandler extends Handler {
         @Override
         public void handleMessage(Message message) {
@@ -400,6 +420,13 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
         }
     }
 
+    /**
+     * Use Geocoder to get and display address from the location data
+     * @param latitude
+     * @param longitude
+     * @param context
+     * @param handler Handler to update the UI
+     */
     private static void getAddressFromLocation(final double latitude, final double longitude,
                                                final Context context, final Handler handler) {
         Thread thread = new Thread() {
@@ -455,6 +482,12 @@ public class SelectRecipientsFragment extends Fragment implements ListDisplayRec
     public void onProviderDisabled(String provider) {
     }
 
+    /**
+     * Results for the request to the user to grant location permission
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] grantResults) {

@@ -54,6 +54,9 @@ import timber.log.Timber;
 
 import static com.google.zxing.integration.android.IntentIntegrator.QR_CODE_TYPES;
 
+/**
+ * Fragment to handle add friend screen view
+ */
 public class AddFriendFragment extends Fragment {
 
     private final int FRIEND_QR_REQUEST_CODE = 0;
@@ -104,6 +107,9 @@ public class AddFriendFragment extends Fragment {
         return addFriendView;
     }
 
+    /**
+     * Set up the on click listeners for the buttons
+     */
     private void setListeners() {
         addFriendView.findViewById(R.id.scanFriendButton).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,12 +170,19 @@ public class AddFriendFragment extends Fragment {
         });
     }
 
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         toolbarHelper = new ToolbarHelper(getString(R.string.friends_title), addFriendView);
         toolbar = toolbarHelper.setupToolbar(uri);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
     }
 
+    /**
+     * Set up the button width programmatically
+     */
     private void setButtonWidth() {
         DisplayMetrics metrics = getActivity().getResources().getDisplayMetrics();
         int width = metrics.widthPixels / 3;
@@ -184,6 +197,9 @@ public class AddFriendFragment extends Fragment {
     // To do: add new Intent for the remote friend button; getActivity() new activity should allow the user
     // to search for usernames and befriend them (send friendship interest)
 
+    /**
+     * Scan for the QR of a friend to get his certificate
+     */
     public void scanFriendQR(View view) {
         IntentIntegrator scanner = new IntentIntegrator(getActivity());
         // only want QR code scanner
@@ -196,6 +212,9 @@ public class AddFriendFragment extends Fragment {
 
     }
 
+    /**
+     * Display a QR for the user's certificate
+     */
     public void displayMyQR(View view) {
         // need to retrieve our QR file, and if it does not exist, create one first.
         FileManager manager = new FileManager(getActivity().getApplicationContext());
@@ -208,15 +227,18 @@ public class AddFriendFragment extends Fragment {
         Navigation.findNavController(addFriendView).navigate(R.id.action_addFriendFragment_to_displayQRFragment, bundle);
     }
 
-    // save friends
+    /**
+     * save a friend after signing his certificate
+     * @param friendContent Friend's certificate Base64 encoded
+     * @return success status
+     */
+    //
     public int saveFriend(String friendContent) {
         KeyChain keyChain = Globals.keyChain;
         Timber.d("Saving: %s", friendContent);
 
         if (friendContent.length() > 0) {
             try {
-
-
                 byte[] certBytes = Base64.decode(friendContent, 0);
                 CertificateV2 certificateV2 = null;
 
@@ -233,7 +255,7 @@ public class AddFriendFragment extends Fragment {
                     }
                 }
 
-                int result = databaseViewModel.saveFriend(friendName);
+                int result = databaseViewModel.checkFriendship(friendName);
                 if(result != -1) return result;
                 // A friend's filename will be their username. Another reason why we must ensure uniqueness
 

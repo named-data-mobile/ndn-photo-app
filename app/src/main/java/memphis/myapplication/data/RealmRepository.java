@@ -27,6 +27,9 @@ import memphis.myapplication.data.RealmObjects.UserRealm;
 import memphis.myapplication.utilities.Decrypter;
 import timber.log.Timber;
 
+/**
+ * RealmRepository handles all realm database related stuff for friends, certificates and files data
+ */
 public class RealmRepository {
 
     private static RealmRepository instance;
@@ -39,7 +42,10 @@ public class RealmRepository {
         if (toastData == null)
             toastData = new MutableLiveData<>();
     }
-
+    /**
+    * Create or get a single common instance of RealmRepository
+     * @return The RealmRepository instance
+     */
     public static RealmRepository getInstance() {
         if (instance == null) {
             instance = new RealmRepository();
@@ -48,16 +54,29 @@ public class RealmRepository {
         return instance;
     }
 
+    /**
+     * Get a new RealmRepository instance for non UI threads. Be sure to call the close method
+     * after interacting with the Database
+     * @return A new RealmRepository instance
+     */
     public static RealmRepository getInstanceForNonUI() {
         return new RealmRepository();
     }
 
+    /**
+     * Create the common instance to be used later
+     */
     public void createInstance() {
         if (realm.isClosed()) {
             realm = Realm.getDefaultInstance();
         }
     }
 
+    /**
+     * Set friendship with a user
+     * @param friendName
+     * @return the friend User object
+     */
     public User setFriendship(String friendName) {
         realm.beginTransaction();
         UserRealm friend = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
@@ -67,9 +86,13 @@ public class RealmRepository {
         return user;
     }
 
-    public int saveFriend(String friendName) {
+    /**
+     * Check the friendship status of a user
+     * @param user
+     */
+    public int checkFriendship(String user) {
         realm.beginTransaction();
-        UserRealm friend = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
+        UserRealm friend = realm.where(UserRealm.class).equalTo("username", user).findFirst();
         if (friend == null) {
             realm.cancelTransaction();
             return -1;
@@ -122,6 +145,9 @@ public class RealmRepository {
         return user;
     }
 
+    /**
+     * Get the list of all friends of the user
+     */
     public ArrayList<User> getAllFriends() {
         ArrayList<User> users = new ArrayList<>();
         realm.beginTransaction();
@@ -133,6 +159,10 @@ public class RealmRepository {
         return users;
     }
 
+    /**
+     * Get the dynamic list of all the friends of the users
+     * @return Livedata for the list
+     */
     public LiveData<List<String>> observeAllFriends() {
         if (friends == null) {
             friends = new MutableLiveData<>();
@@ -144,6 +174,9 @@ public class RealmRepository {
         return friends;
     }
 
+    /**
+     * Get the list of all the users discovered but not added as friend
+     */
     public ArrayList<User> getPotentialFriends() {
         ArrayList<User> users = new ArrayList<>();
         realm.beginTransaction();
@@ -155,6 +188,9 @@ public class RealmRepository {
         return users;
     }
 
+    /**
+     * Get the list of all the friends of a friend
+     */
     public ArrayList<String> getFriendsofFriend(String friendName) {
         realm.beginTransaction();
         UserRealm newFriend = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
@@ -163,6 +199,10 @@ public class RealmRepository {
         return user.getFriends();
     }
 
+    /**
+     * Get the list of all the trusted friends of the user
+     * @return
+     */
     public ArrayList<User> getTrustedFriends() {
         realm.beginTransaction();
         RealmResults<UserRealm> trustedFriends = realm.where(UserRealm.class).equalTo("trust", true).findAll();
@@ -174,6 +214,9 @@ public class RealmRepository {
         return users;
     }
 
+    /**
+     * Delete friendship with a friend
+     */
     public User deleteFriendship(String friend) {
         realm.beginTransaction();
         UserRealm userRealm = realm.where(UserRealm.class).equalTo("username", friend).findFirst();
@@ -187,6 +230,9 @@ public class RealmRepository {
         return user;
     }
 
+    /**
+     * Get the details of a friend
+     */
     public User getFriend(String friendName) {
         realm.beginTransaction();
         User user = userRealmToUser(realm.where(UserRealm.class).equalTo("username", friendName).findFirst());
@@ -194,6 +240,10 @@ public class RealmRepository {
         return user;
     }
 
+    /**
+     * Get our certificate signed by a friend
+     * @param friendName
+     */
     public SelfCertificate getFriendCert(String friendName) {
         realm.beginTransaction();
         SelfCertificate selfCertificate = selfCertificateRealmToSelfCertificate(realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst());
@@ -201,6 +251,9 @@ public class RealmRepository {
         return selfCertificate;
     }
 
+    /**
+     * Set symmetric mutual keys for a friend
+     */
     public void setSymKey(String friendName, byte[] key) {
         realm.beginTransaction();
         UserRealm friend = realm.where(UserRealm.class).equalTo("username", friendName).findFirst();
@@ -208,6 +261,11 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Get symmetric mutual keys for a friend
+     * @param friendName
+     * @return
+     */
     public SecretKey getSymKey(String friendName) {
         try {
             realm.beginTransaction();
@@ -223,6 +281,9 @@ public class RealmRepository {
     }
 
 
+    /**
+     * Save our certificate signed by a friend
+     */
     public void setFriendCert(String friendName, CertificateV2 certificateV2) {
         realm.beginTransaction();
         SelfCertificateRealm realmCertificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
@@ -234,6 +295,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Get PublishedContent info for a file
+     */
     public PublishedContent getPublishedContent(String filename) {
         realm.beginTransaction();
         PublishedContent publishedContent = publishedContentRealmTopublishedContent(realm.where(PublishedContentRealm.class).equalTo("filename", filename).findFirst());
@@ -241,6 +305,9 @@ public class RealmRepository {
         return publishedContent;
     }
 
+    /**
+     * Add secret key for a shared file
+     */
     public void addKey(String path, SecretKey secretKey) {
         realm.beginTransaction();
         PublishedContentRealm contentKey = realm.createObject(PublishedContentRealm.class, path);
@@ -248,6 +315,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Check if a file with the path was shared before
+     */
     public PublishedContent checkIfShared(String path) {
         realm.beginTransaction();
         PublishedContentRealm contentKey = realm.where(PublishedContentRealm.class).equalTo("filename", path).findFirst();
@@ -260,20 +330,16 @@ public class RealmRepository {
         }
     }
 
-    public void setFriendCertificate(String friendName, CertificateV2 certificateV2) {
+    /**
+     * Add a friend of friend
+     * @param friend the friend
+     * @param friendsFriend the friend of friend
+     * @return friend's user data
+     */
+    public User addFriendToUser(String friend, String friendsFriend) {
         realm.beginTransaction();
-        SelfCertificateRealm certificate = realm.where(SelfCertificateRealm.class).equalTo("username", friendName).findFirst();
-        if (certificate == null) {
-            certificate = realm.createObject(SelfCertificateRealm.class, friendName);
-        }
-        certificate.setCert(certificateV2);
-        realm.commitTransaction();
-    }
-
-    public User addFriendToUser(String username, String friend) {
-        realm.beginTransaction();
-        UserRealm sharingUser = realm.where(UserRealm.class).equalTo("username", username).findFirst();
-        sharingUser.addFriend(friend);
+        UserRealm sharingUser = realm.where(UserRealm.class).equalTo("username", friend).findFirst();
+        sharingUser.addFriend(friendsFriend);
 
         User user = userRealmToUser(sharingUser);
         realm.commitTransaction();
@@ -281,6 +347,14 @@ public class RealmRepository {
         return user;
     }
 
+    /**
+     * Save meta information of the received files
+     * @param filename The name of the file
+     * @param isFeed true if the file is a public feed, false if shared to particular group of users
+     * @param location true if the file contains location information
+     * @param isFile true if the data is a file, false when its a story-picture
+     * @param producer the name of the producer
+     */
     public void saveNewFile(String filename, boolean isFeed, boolean location, boolean isFile, String producer) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
@@ -303,6 +377,9 @@ public class RealmRepository {
     }
 
 
+    /**
+     * Save meta information of the received files
+     */
     public void saveNewFile(FilesInfo filesInfo) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filesInfo.filename).findFirst();
@@ -319,6 +396,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Get the meta information of a file from the file name
+     */
     public FilesInfo getFileInfo(String filename) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findFirst();
@@ -331,6 +411,9 @@ public class RealmRepository {
         return filesInfo;
     }
 
+    /**
+     * Get the meta information of a file from the file path
+     */
     public FilesInfo getFileInfoFromPath(String filePath) {
         realm.beginTransaction();
         FilesInfoRealm filesInfoRealm = realm.where(FilesInfoRealm.class).equalTo("filePath", filePath).findFirst();
@@ -343,6 +426,9 @@ public class RealmRepository {
         return filesInfo;
     }
 
+    /**
+     * Delete file's meta information
+     */
     public void deleteFileInfo(String filename) {
         realm.beginTransaction();
         RealmResults<FilesInfoRealm> filesInfoRealms = realm.where(FilesInfoRealm.class).equalTo("filename", filename).findAll();
@@ -353,6 +439,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Convert UserRealm object to User object
+     */
     public static User userRealmToUser(UserRealm userRealm) {
         User user = new User();
         if (userRealm == null) return user;
@@ -367,6 +456,9 @@ public class RealmRepository {
         return user;
     }
 
+    /**
+     * Convert selfCertificateRealm object to SelfCertificate object
+     */
     public static SelfCertificate selfCertificateRealmToSelfCertificate(SelfCertificateRealm selfCertificateRealm) {
         SelfCertificate selfCertificate = new SelfCertificate();
         if (selfCertificateRealm == null) return selfCertificate;
@@ -375,6 +467,9 @@ public class RealmRepository {
         return selfCertificate;
     }
 
+    /**
+     * Convert publishedContentRealm object to PublishedContent object
+     */
     public static PublishedContent publishedContentRealmTopublishedContent(PublishedContentRealm publishedContentRealm) {
         PublishedContent publishedContent = new PublishedContent();
         if (publishedContentRealm == null) return publishedContent;
@@ -385,6 +480,9 @@ public class RealmRepository {
         return publishedContent;
     }
 
+    /**
+     * Convert FilesInfoRealm object to FilesInfo object
+     */
     public static FilesInfo fileInfoRealmToFileInfo(FilesInfoRealm filesInfoRealm) {
         FilesInfo filesInfo = new FilesInfo();
         filesInfo.filename = filesInfoRealm.getFilename();
@@ -397,6 +495,9 @@ public class RealmRepository {
         return filesInfo;
     }
 
+    /**
+     * Save the syncData for a seq
+     */
     public void saveSyncData(long seq, String syncData) {
         realm.beginTransaction();
         SavedSyncDataRealm savedSyncDataRealm = realm.where(SavedSyncDataRealm.class).equalTo("seqNum", seq).findFirst();
@@ -407,6 +508,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * Get the syncData for the seq
+     */
     public String getSyncData(long seq) {
         realm.beginTransaction();
         SavedSyncDataRealm savedSyncDataRealm = realm.where(SavedSyncDataRealm.class).equalTo("seqNum", seq).findFirst();
@@ -431,6 +535,9 @@ public class RealmRepository {
         realm.commitTransaction();
     }
 
+    /**
+     * End a Realm instance
+     */
     public void close() {
         realm.close();
     }

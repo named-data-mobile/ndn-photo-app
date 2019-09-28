@@ -27,6 +27,9 @@ import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.viewmodels.FileViewModel;
 import timber.log.Timber;
 
+/**
+ * Fragment to display received files
+ */
 public class ReceivedFilesFragment extends Fragment {
 
     private View receivedFilesView;

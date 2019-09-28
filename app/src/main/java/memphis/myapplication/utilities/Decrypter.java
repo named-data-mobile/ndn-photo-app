@@ -29,6 +29,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 import memphis.myapplication.data.tasks.FetchingTaskParams;
 
+/**
+ * This class helps decrypted received files and keys
+ */
 public class Decrypter {
     IvParameterSpec ivspec;
     Context context;
@@ -59,6 +62,12 @@ public class Decrypter {
         return new Blob(cipher.doFinal(content.getImmutableArray()), true);
     }
 
+    /**
+     * Get the decrypted symmetric secret key
+     * @param symKeyBytes public key encrypted secret key
+     * @param privateKey
+     * @return decrypted secret key
+     */
     public static SecretKey decryptSymKey(byte[] symKeyBytes, TpmKeyHandle privateKey) {
         try {
             Blob encryptedKeyBob = privateKey.decrypt(new Blob(symKeyBytes).buf());

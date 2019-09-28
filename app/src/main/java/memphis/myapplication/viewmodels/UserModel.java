@@ -8,6 +8,9 @@ import androidx.lifecycle.ViewModel;
 
 import memphis.myapplication.data.UserRepository;
 
+/**
+ * UserModel is the ViewModel used to pass the user profile information from UI to UserRepository
+ */
 public class UserModel extends ViewModel {
 
     private final UserRepository repository;

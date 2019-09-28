@@ -34,6 +34,9 @@ import memphis.myapplication.viewmodels.BackgroundViewModel;
 import memphis.myapplication.viewmodels.RealmViewModel;
 import timber.log.Timber;
 
+/**
+ * Base activity for the app
+ */
 public class IntroActivity extends AppCompatActivity {
 
 
@@ -186,6 +189,12 @@ public class IntroActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Check if NFd is installed on the device
+     * @param packageName The package name for NFD app
+     * @param packageManager package manager instance
+     * @return true if NFD is installed, otherwise false
+     */
     private boolean isPackageInstalled(String packageName, PackageManager packageManager) {
         boolean found = true;
         try {

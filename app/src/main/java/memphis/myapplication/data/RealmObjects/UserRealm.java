@@ -12,6 +12,9 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
+/**
+ * UserRealm is the RealmObject Class to store user information
+ */
 public class UserRealm extends RealmObject {
 
     @PrimaryKey

@@ -69,6 +69,9 @@ import timber.log.Timber;
 import static java.lang.Thread.sleep;
 
 
+/**
+ * BackgroundJobs creates Face, keys and handle network related stuff
+ */
 public class BackgroundJobs {
 
     private static BackgroundJobs instance;
@@ -101,6 +104,10 @@ public class BackgroundJobs {
         initialise(applicationContext);
     }
 
+    /**
+     * Initialise and setup keys and networking stuff
+     * @param applicationContext
+     */
     private void initialise(Context applicationContext) {
         psync = PSync.getInstance(applicationContext.getFilesDir().getAbsolutePath());
         Globals.setPSync(psync);
@@ -127,9 +134,14 @@ public class BackgroundJobs {
 
     }
 
-    public static synchronized BackgroundJobs getInstance(Context context) {
+    /**
+     * Create or get a single common instance of BackgroundJobs
+     * @param applicationContext Application context is required to continuously run stuff
+     * @return The BackgroundJobs instance
+     */
+    public static synchronized BackgroundJobs getInstance(Context applicationContext) {
         if (instance == null) {
-            instance = new BackgroundJobs(context);
+            instance = new BackgroundJobs(applicationContext);
 
         }
         return instance;
@@ -284,6 +296,9 @@ public class BackgroundJobs {
         }
     });
 
+    /**
+     * Start networking thread if not alive
+     */
     private void startNetworkThread() {
         if (!networkThread.isAlive()) {
             netThreadShouldStop = false;
@@ -300,26 +315,12 @@ public class BackgroundJobs {
     }
 
     /**
-     * Android is very particular about UI processes running on a separate thread. This function
-     * creates and returns a Runnable thread object that will display a Toast message.
-     */
-//    public Runnable makeToast(final String s) {
-//        return new Runnable() {
-//            public void run() {
-//                Toast.makeText(applicationContext, s, Toast.LENGTH_LONG).show();
-//            }
-//        };
-//    }
-
-    /**
      * Registers the provided name with NFD. This is intended to occur whenever the app starts up.
      *
-     * @param name The provided name should be /npChat/<username>
-     * @throws IOException
-     * @throws PibImpl.Error
+     * @param name The provided name should be /<domain>/npChat/<username>
      */
     public void register_with_NFD(Name name) {
-
+        Timber.i(name.toUri());
         if (!Globals.has_setup_security) {
             setup_security(applicationContext);
             while (!Globals.has_setup_security)
@@ -529,6 +530,9 @@ public class BackgroundJobs {
         timer.schedule(timerTask, 0, 30000);
     }
 
+    /**
+     * Discovers other npChat instances running in the same local network
+     */
     public void expressNetworkDiscoveryInterest() {
         final OnData onData = new OnData() {
             @Override
@@ -623,6 +627,9 @@ public class BackgroundJobs {
         }
     }
 
+    /**
+     * Register a route on a forwarder to each friend's namespace
+     */
     public void registerFriends() {
 
         int myFace = Globals.multicastFaceID;
@@ -639,14 +646,9 @@ public class BackgroundJobs {
         }
     }
 
-    public void registerUser(User friend) {
-        try {
-            Nfdc.register(face, Globals.multicastFaceID, new Name(friend.getNamespace()), 0);
-        } catch (ManagementException e) {
-            e.printStackTrace();
-        }
-    }
-
+    /**
+     * Use Network Service Discovery to discover local users
+     */
     public void registerWithNSD() {
         Timber.d("Discovering nodes");
         NSDHelper nsdHelper;

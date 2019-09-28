@@ -34,6 +34,9 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 
+/**
+ * ProducerManager manages producer to update each friend using psync
+ */
 public class ProducerManager {
     public  PSync.PartialProducer m_producer;
     private  String producerPrefix;
@@ -56,6 +59,9 @@ public class ProducerManager {
         m_producer.addUserNode(keysPrefix);
     }
 
+    /**
+     * Save the SyncData fot a particular data seq
+     */
     private void setDataSeqMap(String syncData, long seq) {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         realmRepository.saveSyncData(seq, syncData);
@@ -80,6 +86,9 @@ public class ProducerManager {
         sharedPrefsManager.setSeqNum(seq);
     }
 
+    /**
+     * onDataInterest responds to interests requesting SyncData for data
+     */
     public final OnInterestCallback onDataInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId,
@@ -103,6 +112,9 @@ public class ProducerManager {
         }
     };
 
+    /**
+     * onFriendsListInterest responds to interest sending the friend list
+     */
     public OnInterestCallback onFriendsListInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
@@ -121,6 +133,9 @@ public class ProducerManager {
         }
     };
 
+    /**
+     * onKeyInterest responds to interest sending the symmetric key to the friend
+     */
     public OnInterestCallback onKeyInterest = new OnInterestCallback() {
         @Override
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {

@@ -1,4 +1,4 @@
-package memphis.myapplication.UI;
+package memphis.myapplication.adapters;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
@@ -14,6 +14,9 @@ import java.util.List;
 
 import memphis.myapplication.R;
 
+/**
+ * Adapter to display data in a list
+ */
 public class ListDisplayRecyclerView extends RecyclerView.Adapter<ListDisplayRecyclerView.ViewHolder> {
 
     // This ListDisplayRecyclerView can be used to display a text in a cardView.
@@ -23,7 +26,7 @@ public class ListDisplayRecyclerView extends RecyclerView.Adapter<ListDisplayRec
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
-    ListDisplayRecyclerView(Context context, List<String> data){
+    public ListDisplayRecyclerView(Context context, List<String> data){
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -46,7 +49,7 @@ public class ListDisplayRecyclerView extends RecyclerView.Adapter<ListDisplayRec
         return mData.size();
     }
 
-    String getItem(int id) {
+    public String getItem(int id) {
         return mData.get(id);
     }
 
@@ -68,7 +71,7 @@ public class ListDisplayRecyclerView extends RecyclerView.Adapter<ListDisplayRec
     }
 
     // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
+    public void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 

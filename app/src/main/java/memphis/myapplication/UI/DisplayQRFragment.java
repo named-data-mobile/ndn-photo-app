@@ -20,7 +20,6 @@ import memphis.myapplication.R;
  */
 
 public class DisplayQRFragment extends Fragment {
-    private int QR_SCANNED = 99;
     private View displayQRView;
 
     @Nullable
@@ -35,11 +34,4 @@ public class DisplayQRFragment extends Fragment {
         }
         return displayQRView;
     }
-
-//    @Override
-//    public void onBackPressed() {
-//        super.onBackPressed();
-//        setResult(QR_SCANNED);
-//    }
-
 }

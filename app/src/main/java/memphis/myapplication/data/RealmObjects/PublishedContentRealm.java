@@ -6,6 +6,9 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 import io.realm.annotations.Required;
 
+/**
+ * PublishedContentRealm is the RealmObject Class to store meta information on the files shared
+ */
 public class PublishedContentRealm extends RealmObject {
 
     @PrimaryKey

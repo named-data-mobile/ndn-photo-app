@@ -7,6 +7,9 @@ import net.named_data.jndn.security.v2.CertificateV2;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
+/**
+ * User POJO class to represent user information
+ */
 public class User {
 
     private String username;

@@ -3,8 +3,6 @@ package memphis.myapplication.utilities;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.widget.Toast;
-
 
 import com.intel.jndn.management.ManagementException;
 import com.intel.jndn.management.Nfdc;
@@ -56,6 +54,9 @@ public class FriendRequest extends Observable {
         m_mutualFriend = mF;
     }
 
+    /**
+     * Send friend request to the new friend using the mutual friend
+     */
     public void send() {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         User user = realmRepository.saveNewFriend(m_newFriend, null, null);
@@ -103,6 +104,9 @@ public class FriendRequest extends Observable {
         realmRepository.close();
     }
 
+    /**
+     * Callback for cert interest. Save his cert and ask our cert signed by him
+     */
     OnData onCertData = new OnData() {
 
         @Override
@@ -154,7 +158,7 @@ public class FriendRequest extends Observable {
                                     e.printStackTrace();
                                 }
 
-                                innerRealmRepository.setFriendCertificate(m_newFriend, certificateV2);
+                                innerRealmRepository.setFriendCert(m_newFriend, certificateV2);
 
                                 User user = innerRealmRepository.setFriendship(m_newFriend);
                                 Globals.consumerManager.createConsumer(user.getNamespace());
@@ -189,6 +193,9 @@ public class FriendRequest extends Observable {
         m_signedInterest = interest;
     }
 
+    /**
+     * Process the friend request from a user
+     */
     public void receive() {
         Name interestName = m_signedInterest.getName();
         int friendComp = 0;
@@ -285,6 +292,10 @@ public class FriendRequest extends Observable {
         }
     }
 
+    /**
+     * Accept the friend request and exchange signed certificates
+     * @throws EncodingException
+     */
     public void accept() throws EncodingException {
         Timber.d("Accepting request and sending our cert back");
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
@@ -351,7 +362,7 @@ public class FriendRequest extends Observable {
                                     } catch (EncodingException e) {
                                         e.printStackTrace();
                                     }
-                                    RealmRepository.getInstanceForNonUI().setFriendCertificate(m_newFriend, certificateV2);
+                                    RealmRepository.getInstanceForNonUI().setFriendCert(m_newFriend, certificateV2);
 
                                     User friend = RealmRepository.getInstanceForNonUI().setFriendship(m_newFriend);
                                     Globals.consumerManager.createConsumer(friend.getNamespace());
@@ -379,6 +390,9 @@ public class FriendRequest extends Observable {
         thread.start();
     }
 
+    /**
+     * Reject the friend request
+     */
     public void reject() {
         Timber.d("Rejecting request");
         Data data = new Data(m_signedInterest.getName());
@@ -390,6 +404,9 @@ public class FriendRequest extends Observable {
         }
     }
 
+    /**
+     * Accepted a trusted user and add him as consumer
+     */
     public void acceptTrusted() {
         RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
         User friend = realmRepository.setFriendship(m_newFriend);
@@ -397,6 +414,10 @@ public class FriendRequest extends Observable {
         Globals.consumerManager.createConsumer(friend.getNamespace());
     }
 
+    /**
+     * Set update code flag and notify the user of the friend request
+     * @param c flag to represent request status
+     */
     private void setUpdateCode(int c) {
         updateCode = c;
         setChanged();
@@ -407,6 +428,12 @@ public class FriendRequest extends Observable {
         requestSymKey(friendNamespace, "default", SharedPrefsManager.getInstance(context).getUsername());
     }
 
+    /**
+     * Request sym key from friend
+     * @param friendNameSpace
+     * @param keyName
+     * @param username
+     */
     public static void requestSymKey(final String friendNameSpace, String keyName, String username) {
         Interest symKeyInterest = new Interest(new Name(friendNameSpace));
         symKeyInterest.getName().append("keys");
@@ -419,8 +446,8 @@ public class FriendRequest extends Observable {
                 public void onData(Interest interest, Data data) {
                     // Store friend's symmetric key
                     RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-                    Timber.d("Saving key of " + friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1));
-                    realmRepository.setSymKey(friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1), data.getContent().getImmutableArray());
+                    Timber.d("Saving key of " + friendNameSpace.substring(friendNameSpace.lastIndexOf("/") + 1));
+                    realmRepository.setSymKey(friendNameSpace.substring(friendNameSpace.lastIndexOf("/") + 1), data.getContent().getImmutableArray());
                     realmRepository.close();
                 }
             }, onSymKeyTimeOut);

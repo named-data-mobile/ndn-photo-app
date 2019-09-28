@@ -20,6 +20,9 @@ import android.view.ViewGroup;
 import memphis.myapplication.R;
 import memphis.myapplication.viewmodels.UserModel;
 
+/**
+ * Fragment to handle the About screen view
+ */
 public class AboutFragment extends Fragment {
 
     private View aboutView;
@@ -57,6 +60,10 @@ public class AboutFragment extends Fragment {
         return aboutView;
     }
 
+    /**
+     * Set up the custom toolbar
+     * @param uri URI for the profile image
+     */
     private void setupToolbar(Uri uri) {
         ToolbarHelper toolbarHelper = new ToolbarHelper("About", aboutView);
         Toolbar toolbar = toolbarHelper.setupToolbar(uri);

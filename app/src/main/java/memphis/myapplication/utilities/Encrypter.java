@@ -27,6 +27,9 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+/**
+ * This class helps encrypt data and generate symmetric keys
+ */
 public class Encrypter {
     private final int filenameType = 100;
     private final int friendNameType = 101;

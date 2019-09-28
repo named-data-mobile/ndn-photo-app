@@ -51,6 +51,7 @@ public class QRExchange {
     }
 
     /**
+     * Generate a QR code to share user's certificate
      * come back to this. I save a string of the DER public key. Not sure if desired end result.
      */
     // consider changing this to send an interest for the key since it's in DER format. It does not
@@ -74,21 +75,7 @@ public class QRExchange {
             // make sure we check later during registration that a username has no spaces
             Timber.d("Pubkey: " + certString);
             // replace below section with makeQRCode method
-            QRCodeWriter qrWriter = new QRCodeWriter();
-            try {
-                BitMatrix qrMatrix = qrWriter.encode(certString, BarcodeFormat.QR_CODE, BIT_WIDTH, BIT_HEIGHT);
-                Bitmap bitmap = Bitmap.createBitmap(BIT_WIDTH, BIT_HEIGHT, Bitmap.Config.ARGB_8888);
-                for (int i = 0; i < BIT_HEIGHT; i++) {
-                    for (int j = 0; j < BIT_WIDTH; j++) {
-                        bitmap.setPixel(i, j, qrMatrix.get(i, j) ? Color.BLACK : Color.WHITE);
-                    }
-                }
-                return bitmap;
-            } catch (WriterException we) {
-                Timber.d("qrWriter failed");
-            } catch (Exception ex) {
-                Timber.d("bitmap was not created");
-            }
+            return makeQRCode(certString);
         }
             // if it failed to make the bitmap
         return null;
