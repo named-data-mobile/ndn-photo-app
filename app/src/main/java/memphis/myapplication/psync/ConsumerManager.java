@@ -1,20 +1,9 @@
 package memphis.myapplication.psync;
 
 import android.content.Context;
-
-import android.os.Bundle;
 import android.util.Base64;
-import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
-
-import io.realm.Realm;
-import memphis.myapplication.data.Common;
-import memphis.myapplication.data.FriendsList;
-import memphis.myapplication.data.RealmRepository;
-import memphis.myapplication.utilities.Decrypter;
-import memphis.myapplication.utilities.FileManager;
-import timber.log.Timber;
 
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
@@ -22,10 +11,6 @@ import net.named_data.jndn.Interest;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
 import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.security.tpm.TpmBackEnd;
-import net.named_data.jndn.security.tpm.TpmBackEndFile;
-import net.named_data.jndn.security.tpm.TpmKeyHandle;
-import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.MissingDataInfo;
 import net.named_data.jni.psync.PSync;
 
@@ -35,14 +20,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import memphis.myapplication.Globals;
-import memphis.myapplication.utilities.SharedPrefsManager;
-import memphis.myapplication.utilities.SyncData;
+import memphis.myapplication.data.Common;
+import memphis.myapplication.data.FriendsList;
+import memphis.myapplication.data.RealmRepository;
 import memphis.myapplication.data.tasks.FetchingTask;
 import memphis.myapplication.data.tasks.FetchingTaskParams;
+import memphis.myapplication.utilities.BloomFilter;
+import memphis.myapplication.utilities.FileManager;
+import memphis.myapplication.utilities.Metadata;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import timber.log.Timber;
 
 public class ConsumerManager {
 
@@ -90,35 +78,26 @@ public class ConsumerManager {
                 if (!RealmRepository.getInstanceForNonUI().getFriend(friendName).isFriend())
                     return;
 
-                SyncData syncData = new SyncData(interestData);
-                String filename = syncData.getFilename();
-                String fileInfoName = FileManager.getFileName(new Name(syncData.getFilename()), FileManager.FILENAME);
+                Metadata metadata = new Metadata(interestData);
+                String filename = metadata.getFilename();
+                String fileInfoName = FileManager.getFileName(new Name(metadata.getFilename()), FileManager.FILENAME);
 
-                String producer = syncData.getFilename().substring(0, syncData.getFilename().indexOf("/file"));
+                String producer = metadata.getFilename().substring(0, metadata.getFilename().indexOf("/file"));
                 RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-                Timber.d("isFile:  " + syncData.isFile());
-                realmRepository.saveNewFile(fileInfoName, syncData.isFeed(), syncData.isLocation(), syncData.isFile(), producer);
+                Timber.d("isFile:  " + metadata.isFile());
+                realmRepository.saveNewFile(fileInfoName, metadata.isFeed(), metadata.isLocation(), metadata.isFile(), producer);
                 realmRepository.close();
 
-                if (syncData.isFeed()) {
+                if (metadata.isFeed()) {
                     Timber.d("For feed");
-                    RealmRepository feedLoopRealmRepository = RealmRepository.getInstanceForNonUI();
-                    Timber.d(interest.getName().toUri());
-                    Timber.d("Friend name: " + friendName);
-                    Timber.d(feedLoopRealmRepository.getSymKey(friendName).toString());
-                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), feedLoopRealmRepository.getSymKey(friendName), true));
+                    new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), true));
 
                 } else {
-                    if (syncData.forMe(SharedPrefsManager.getInstance(context).getUsername())) {
+                    BloomFilter bloomFilter = new BloomFilter(metadata.getBloomFilter().get(0).toNumber(), metadata.getBloomFilter().get(-1));
+                    if (bloomFilter.contains(SharedPrefsManager.getInstance(context).getUsername())) {
                         Timber.d("For me");
-                        try {
-                            TpmBackEndFile m_tpm = Globals.tpm;
-                            SecretKey secretKey = Decrypter.decryptSymKey(syncData.getFriendKey(SharedPrefsManager.getInstance(context).getUsername()), m_tpm.getKeyHandle(Globals.pubKeyName));
-                            Timber.d("Filename : " + filename);
-                            new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), secretKey, false));
-                        } catch (TpmBackEnd.Error error) {
-                            error.printStackTrace();
-                        }
+                        new FetchingTask(context, toastData).execute(new FetchingTaskParams(new Interest(new Name(filename)), false));
+
                     }
                 }
             } catch (JSONException e) {
@@ -211,12 +190,13 @@ public class ConsumerManager {
         }
     };
 
+
+
     /**
      * Creates a new consumer for each friend and adds it to the ArrayList of consumers.
      * @param prefix is the String "/npChat/friendName"
      */
     public void createConsumer(String prefix) {
-
         Timber.d("Adding friend " + prefix + " as consumer");
         consumer = new PSync.Consumer(prefix, helloDataCallBack, syncDataCallBack, 40, 0.001);
         consumers.put(prefix, consumer);
