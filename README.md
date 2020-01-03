@@ -52,6 +52,8 @@ For our tests, we have been using two MotoX (2nd Gen) phones running LineageOS v
 ## Contributing
 Please read the [NDN Contributing Guide](https://github.com/named-data/NFD/blob/master/CONTRIBUTING.md). We are not currently using Gerrit on this project, so that part can be ignored for now. Contributions should follow the [NDN Style Guide](https://named-data.net/codebase/platform/documentation/ndn-platform-development-guidelines/cpp-code-guidelines/).
 
+A list of noteable issues can be found at our [Redmine](https://redmine.named-data.net/projects/npchat/issues).
+
 ## Communication
 
 Our chat channel is on [Slack](https://named-data.slack.com/messages)
