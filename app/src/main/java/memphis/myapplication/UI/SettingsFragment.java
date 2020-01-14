@@ -61,9 +61,6 @@ public class SettingsFragment extends Fragment {
         sharedPrefsManager = SharedPrefsManager.getInstance(getContext());
         sharing = sharedPrefsManager.getSharing();
 
-
-        //rotateImageIfRequired();
-
         userModel = ViewModelProviders.of(getActivity(), new ViewModelProvider.Factory() {
             @NonNull
             @Override
@@ -81,8 +78,6 @@ public class SettingsFragment extends Fragment {
                Picasso.get().load(uri).placeholder(R.drawable.avatar).memoryPolicy(MemoryPolicy.NO_CACHE).fit().centerCrop().into(m_imageView);
                 setupToolbar(uri);
 
-                 //       Picasso.get().load(uri).placeholder(R.drawable.avatar).resize(120, 120).centerCrop()
-               //             .into(m_imageView);
 
             }
         });
@@ -90,7 +85,6 @@ public class SettingsFragment extends Fragment {
         settingsView.findViewById(R.id.Rotate1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-              // Picasso.get().load(R.drawable.avatar).rotate(90f).into(m_imageView);
                 m_imageView.setRotation(m_imageView.getRotation() + 90);
 
                 
@@ -125,9 +119,9 @@ public class SettingsFragment extends Fragment {
         return settingsView;
     }
 
-    // change photo
+
     public void changePhoto(View view) {
-        // open up photos directory
+
         Intent intent = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, PICK_PHOTO);
@@ -154,7 +148,6 @@ public class SettingsFragment extends Fragment {
 
     private  Uri rotateImageIfRequired(Context context, Bitmap img, Uri selectedImage) {
 
-        // Detect rotation
          int rotation = getRotation(context, selectedImage);
         if (rotation != 0) {
             Matrix matrix = new Matrix();
@@ -169,10 +162,7 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    /** * Get the rotation of the last image added.
-     * @param context
-     * @param selectedImage
-     * @return */private  int getRotation(Context context, Uri selectedImage) {
+private  int getRotation(Context context, Uri selectedImage) {
 
         int rotation = 0;
         ContentResolver content = context.getContentResolver();
