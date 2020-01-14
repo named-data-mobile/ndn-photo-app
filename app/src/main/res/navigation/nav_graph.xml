@@ -30,6 +30,10 @@
         <action
             android:id="@+id/action_mainFragment_to_selectRecipientsFragment"
             app:destination="@id/selectRecipientsFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_registerFragment"
+            app:destination="@id/loginFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/blankFragment"

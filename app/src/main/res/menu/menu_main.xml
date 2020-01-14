@@ -15,4 +15,9 @@
         android:orderInCategory="101"
         android:title="@string/action_about"
         app:showAsAction="collapseActionView" />
+    <item
+        android:id="@+id/action_register"
+        android:orderInCategory="101"
+        android:title="Register"
+        app:showAsAction="collapseActionView" />
 </menu>

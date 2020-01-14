@@ -184,6 +184,8 @@ public class MainFragment extends Fragment {
             case R.id.action_about:
                 Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_aboutFragment);
                 return true;
+            case R.id.action_register:
+                Navigation.findNavController(mainView).navigate(R.id.action_mainFragment_to_registerFragment);
             default:
                 return super.onOptionsItemSelected(item);
         }
