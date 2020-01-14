@@ -172,7 +172,7 @@ private  int getRotation(Context context, Uri selectedImage) {
                 null, null, "date_added desc");
 
         if (mediaCursor != null && mediaCursor.getCount() != 0) {
-            while(mediaCursor.moveToNext()){
+            while (mediaCursor.moveToNext()){
                 rotation = mediaCursor.getInt(0);
                 break;
             }
