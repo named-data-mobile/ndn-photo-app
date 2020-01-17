@@ -2,12 +2,6 @@ package memphis.myapplication.data.tasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
-
-import memphis.myapplication.data.Common;
-import memphis.myapplication.data.RealmObjects.User;
-import memphis.myapplication.data.RealmRepository;
-import memphis.myapplication.utilities.SharedPrefsManager;
-import timber.log.Timber;
 import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
@@ -24,6 +18,7 @@ import net.named_data.jndn.security.DigestAlgorithm;
 import net.named_data.jndn.security.KeyType;
 import net.named_data.jndn.security.UnrecognizedKeyFormatException;
 import net.named_data.jndn.security.certificate.PublicKey;
+import net.named_data.jndn.security.tpm.TpmBackEnd;
 import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jndn.util.SegmentFetcher;
@@ -43,13 +38,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import memphis.myapplication.Globals;
+import memphis.myapplication.data.Common;
+import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.data.RealmRepository;
 import memphis.myapplication.utilities.Decrypter;
 import memphis.myapplication.utilities.FileManager;
-import memphis.myapplication.Globals;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import timber.log.Timber;
 
 import static java.lang.Thread.sleep;
 
-// revisit params
 public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     private final MutableLiveData<String> toastData;
@@ -63,7 +62,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     private String m_user;
     private PublicKey m_pubKey;
     private FileManager m_manager;
-    private Data m_data;
     private String m_appPrefix;
     private int m_numRetries = 50;
     private String m_fileKeyDigest;
@@ -86,18 +84,17 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
     @Override
     protected Boolean doInBackground(FetchingTaskParams... params) {
         m_baseInterest = params[0].interest;
-        m_secretKey = params[0].secretKey;
         m_feed = params[0].feed;
         m_fileKeyDigest = m_baseInterest.getName().get(-1).toEscapedString();
         Timber.d(m_baseInterest.toUri());
-        fetch(m_baseInterest, m_secretKey);
+        fetch(m_baseInterest);
         // added this in since we are using a new face for fetching and don't need it afterwards
         m_face.shutdown();
 
         return m_received;
     }
 
-    private void fetch(Interest interest, SecretKey secretKey) {
+    private void fetch(Interest interest) {
         m_shouldReturn = false;
         interest.setInterestLifetimeMilliseconds(15000);
 
@@ -144,7 +141,7 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
                             Timber.d( "timed out");
                             if(m_numRetries > 0) {
                                 m_numRetries--;
-                                fetch(m_baseInterest, m_secretKey);
+                                fetch(m_baseInterest);
 
                             }
                         }
@@ -221,22 +218,25 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
             Timber.d("onPostExecute: not received");
         }
         if (m_received) {
-            // FileManager manager = new FileManager(applicationContext);
             Timber.d("m_content size; " + m_content.size());
 
-            // Check symkey if for feed
+            // Check symkey is for feed
             if (m_feed) {
-                try {
-                    checkKey(m_fileKeyDigest);
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
+                m_secretKey =  RealmRepository.getInstanceForNonUI().getSymKey(m_user);
+                if (m_secretKey == null) {
+                    fetchKey(m_fileKeyDigest);
+                }
+                else {
+                    try {
+                        checkKey(m_fileKeyDigest, Common.getKeyDigest(m_secretKey));
+                    } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            // else decrypt with key received in sync data
             else {
-                succeed();
+                fetchKey(m_fileKeyDigest);
             }
-
         }
         else {
             Timber.d(" onError: %s", m_resultMsg);
@@ -260,13 +260,12 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
 
 
-    public void checkKey(String keyDigest) throws NoSuchAlgorithmException {
-        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+    public void checkKey(String newKeyDigest, String oldKeyDigest){
 
-        if (keyDigest.equals(Common.getKeyDigest(realmRepository.getSymKey(m_user))))
+        if (newKeyDigest.equals(oldKeyDigest))
             succeed();
         else
-            fetchKey();
+            fetchKey(newKeyDigest);
     }
 
     public void succeed() {
@@ -280,7 +279,6 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
         Decrypter decrypter = new Decrypter(m_currContext);
         Blob decryptedContent = null;
         try {
-            Timber.d(Arrays.toString(m_secretKey.getEncoded()));
             decryptedContent = decrypter.decrypt(m_secretKey, iv, new Blob(data));
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -309,30 +307,34 @@ public class FetchingTask extends AsyncTask<FetchingTaskParams, Void, Boolean> {
 
     }
 
-    public void fetchKey() {
-       requestSymKey(RealmRepository.getInstanceForNonUI().getFriend(m_user).getNamespace(), m_fileKeyDigest, SharedPrefsManager.getInstance(m_currContext).getUsername());
+    public void fetchKey(String keyDigest) {
+       requestSymKey(RealmRepository.getInstanceForNonUI().getFriend(m_user).getNamespace(), keyDigest, SharedPrefsManager.getInstance(m_currContext).getUsername());
     }
 
-    public void requestSymKey(final String friendNameSpace, String keyName, String username) {
+    public void requestSymKey(final String friendNameSpace, final String keyDigest, final String username) {
         Interest symKeyInterest = new Interest(new Name(friendNameSpace));
         symKeyInterest.getName().append("keys");
-        symKeyInterest.getName().append(keyName);
+        symKeyInterest.getName().append(keyDigest);
         symKeyInterest.getName().append(username);
-        Timber.d("Requesting their sym key");
+        Timber.d("Requesting friend's sym key");
         try {
             Globals.face.expressInterest(symKeyInterest, new OnData() {
                 @Override
                 public void onData(Interest interest, Data data) {
-                    // Store friend's symmetric key
-                    RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
-                    Timber.d("Saving key of " + friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1));
-                    realmRepository.setSymKey(friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1), data.getContent().getImmutableArray());
-                    realmRepository.close();
-                    m_secretKey = RealmRepository.getInstanceForNonUI().getSymKey(m_user);
+                    // Store friend's symmetric key if for general use
+                    if (m_feed) {
+                        RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                        Timber.d("Saving key of " + friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1));
+                        realmRepository.setSymKey(friendNameSpace.substring(friendNameSpace.lastIndexOf("/")+1), data.getContent().getImmutableArray());
+                        realmRepository.close();
+                    }
                     try {
-                        checkKey(Common.getKeyDigest(m_secretKey));
+                        m_secretKey = Decrypter.decryptSymKey(data.getContent().getImmutableArray(), Globals.tpm.getKeyHandle(Globals.pubKeyName));
+                        checkKey(keyDigest, Common.getKeyDigest(m_secretKey));
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
+                    } catch (TpmBackEnd.Error error) {
+                        error.printStackTrace();
                     }
                 }
             }, onSymKeyTimeOut);

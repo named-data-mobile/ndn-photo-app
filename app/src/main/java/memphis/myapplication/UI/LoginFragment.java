@@ -2,12 +2,6 @@ package memphis.myapplication.UI;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
-
 import android.text.Editable;
 import android.text.Selection;
 import android.text.TextWatcher;
@@ -21,6 +15,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
+import memphis.myapplication.Globals;
 import memphis.myapplication.R;
 import memphis.myapplication.utilities.SharedPrefsManager;
 
@@ -162,6 +162,7 @@ public class LoginFragment extends Fragment {
         protected Void doInBackground(Void... voids) {
             // save username and go to mainpage
             SharedPrefsManager.getInstance(getActivity()).setCredentials(username, password, domain);
+            Globals.setUsername(username);
             return null;
         }
 

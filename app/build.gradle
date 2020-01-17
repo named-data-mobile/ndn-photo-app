@@ -50,6 +50,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
     androidTestImplementation 'org.mockito:mockito-core:2.7.22'
+    testImplementation 'org.powermock:powermock-mockito-release-full:1.4.9'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'com.journeyapps:zxing-android-embedded:3.5.0'
     implementation 'commons-io:commons-io:2.6'
@@ -74,4 +75,6 @@ dependencies {
     // ViewModel and LiveData
     def lifecycle_version = "2.0.0"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+
+    api 'com.google.guava:guava:28.1-android'
 }

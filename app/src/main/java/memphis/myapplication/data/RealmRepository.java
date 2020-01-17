@@ -214,6 +214,7 @@ public class RealmRepository {
             User user = userRealmToUser(realm.where(UserRealm.class).equalTo("username", friendName).findFirst());
             byte[] encryptedKey = user.getSymKey();
             realm.commitTransaction();
+            if (encryptedKey == null) return null;
             return Decrypter.decryptSymKey(encryptedKey, Globals.tpm.getKeyHandle(Globals.pubKeyName));
         } catch (TpmBackEnd.Error error) {
             realm.commitTransaction();

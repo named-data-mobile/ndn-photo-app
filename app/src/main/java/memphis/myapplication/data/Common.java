@@ -24,9 +24,6 @@ import net.named_data.jndn.Name;
 import net.named_data.jndn.OnData;
 import net.named_data.jndn.OnTimeout;
 import net.named_data.jndn.encoding.EncodingException;
-import net.named_data.jndn.encrypt.algo.EncryptAlgorithmType;
-import net.named_data.jndn.encrypt.algo.EncryptParams;
-import net.named_data.jndn.encrypt.algo.RsaAlgorithm;
 import net.named_data.jndn.security.KeyChain;
 import net.named_data.jndn.security.SecurityException;
 import net.named_data.jndn.security.VerificationHelpers;
@@ -55,12 +52,13 @@ import javax.crypto.SecretKey;
 import memphis.myapplication.Globals;
 import memphis.myapplication.data.RealmObjects.PublishedContent;
 import memphis.myapplication.data.RealmObjects.User;
+import memphis.myapplication.utilities.BloomFilter;
 import memphis.myapplication.utilities.Encrypter;
 import memphis.myapplication.utilities.FileManager;
 import memphis.myapplication.utilities.FriendRequest;
+import memphis.myapplication.utilities.Metadata;
 import memphis.myapplication.utilities.QRExchange;
 import memphis.myapplication.utilities.SharedPrefsManager;
-import memphis.myapplication.utilities.SyncData;
 import memphis.myapplication.viewmodels.RealmViewModel;
 import timber.log.Timber;
 
@@ -327,38 +325,38 @@ public class Common {
 
                 // Generate symmetric key
                 final SecretKey secretKey;
-                PublishedContent publishedContent = databaseViewModel.checkIfShared(path);
 
                 final byte[] iv = encrypter.generateIV();
 
                 // Encode sync data
-                SyncData syncData = new SyncData();
-                syncData.addLocation(location);
-                syncData.setIsFile(isFile);
+                Metadata metadata = new Metadata();
+                metadata.addLocation(location);
+                metadata.setIsFile(isFile);
 
                 final boolean feed = (recipients == null);
                 if (feed) {
                     secretKey = sharedPrefsManager.getKey();
                     Timber.d("For feed");
-                    syncData.setFeed(true);
+                    metadata.setFeed(true);
                 } else {
-                    if (publishedContent != null) {
-                        secretKey = publishedContent.getKey();
-                    }
-                    else
-                        secretKey = encrypter.generateKey();
-                    syncData.setFeed(false);
+                    secretKey = encrypter.generateKey();
+
+                    metadata.setFeed(false);
                     Timber.d("For friends");
-                    for (String friend : recipients) {
-                        Blob friendKey = databaseViewModel.getFriend(friend).getCert().getPublicKey();
-                        byte[] encryptedKey = RsaAlgorithm.encrypt
-                                (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
-                        syncData.addFriendKey(friend, encryptedKey);
-                    }
+                    BloomFilter bloomFilter = new BloomFilter(recipients.size());
+                    for (String friend : recipients)
+                        bloomFilter.insert(friend);
+
+                    Name bloomName = new Name(bloomFilter.appendToName(new Name()));
+                    Timber.d("Size: " + bloomName.get(0).toNumber() + " Prob: " + bloomName.get(1).toNumber());
+                    metadata.setBloomFilter(bloomName);
+
                 }
-                filename = filename + "/" + Common.getKeyDigest(secretKey);
+                String keyDigest = Common.getKeyDigest(secretKey);
+                PublishedContent publishedContent = databaseViewModel.checkIfShared(keyDigest);
+                filename = filename + "/" + keyDigest;
                 Timber.d("Filename: " + filename);
-                syncData.setFilename(filename);
+                metadata.setFilename(filename);
                 Timber.d("Publishing file: %s", filename);
 
                 byte[] bytes;
@@ -370,16 +368,18 @@ public class Common {
                     e.printStackTrace();
                     bytes = new byte[0];
                 }
-                Timber.d("file selection result: %s", "file path: " + path);
+                Timber.d("file selection result: %s", "file path: " + filename);
                 try {
                     String prefixApp = sharedPrefsManager.getNamespace();
 
                     Timber.d(filename);
                         Timber.d("Publishing to friend(s)");
-                        if (publishedContent == null)
-                            databaseViewModel.addKey(path, secretKey);
+                        if (publishedContent == null) {
+                            databaseViewModel.addKey(keyDigest, secretKey);
+                        }
 
                     Blob encryptedBlob = encrypter.encrypt(secretKey, iv, bytes);
+                    Timber.d(metadata.stringify());
                     Timber.d("m_content size: " + encryptedBlob.size());
                     Common.publishData(encryptedBlob, new Name(filename));
                     final FileManager manager = new FileManager(context.getApplicationContext());
@@ -399,7 +399,7 @@ public class Common {
                 } catch (InvalidAlgorithmParameterException e) {
                     e.printStackTrace();
                 }
-                producerManager.publishFile(name, syncData.stringify());
+                producerManager.publishFile(name, metadata.stringify());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -484,6 +484,21 @@ public class Common {
                 Toast.makeText(context, s, Toast.LENGTH_LONG).show();
             }
         };
+    }
+
+    public static Name setComponent(Name name, int i, String component) throws ArrayIndexOutOfBoundsException {
+        if (i > name.size() || i < 0) throw new ArrayIndexOutOfBoundsException("Out of bounds index");
+        Name modifiedName = new Name();
+        modifiedName.append(name.getPrefix(i));
+        modifiedName.append(component);
+        modifiedName.append(name.getSubName(i+1));
+        return modifiedName;
+    }
+
+    public static int discoverComponent(Name name, String component) {
+        for (int i = 0; i<name.size(); i++)
+            if (name.get(i).toEscapedString().equals(component)) return i;
+        return -1;
     }
 
 }

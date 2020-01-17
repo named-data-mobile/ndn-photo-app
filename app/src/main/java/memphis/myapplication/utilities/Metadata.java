@@ -1,26 +1,24 @@
 package memphis.myapplication.utilities;
 
 
-import android.util.Base64;
+import net.named_data.jndn.Name;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class SyncData {
-    private Map<String, String> m_symKeys = new HashMap<String, String>();
+public class Metadata {
+    private String
+            bloomFilter;
     private String filename;
     private boolean feed = false;
     JSONObject jo;
 
 
-    public SyncData() {
+    public Metadata() {
         jo = new JSONObject();
     }
 
-    public SyncData(String j) throws JSONException {
+    public Metadata(String j) throws JSONException {
 
         jo = new JSONObject(j);
     }
@@ -45,14 +43,6 @@ public class SyncData {
         return jo.getBoolean("isFile");
     }
 
-    public void addFriendKey(String friend, byte[] key) throws JSONException {
-        jo.put(friend, Base64.encodeToString(key, 0));
-    }
-
-    public byte[] getFriendKey(String friend) throws JSONException {
-        return Base64.decode(jo.getString(friend), 0);
-    }
-
     public String getFilename() throws JSONException {
         return jo.getString("filename");
     }
@@ -65,8 +55,12 @@ public class SyncData {
         return jo.getBoolean("feed");
     }
 
-    public boolean forMe(String me) {
-        return jo.has(me);
+    public void setBloomFilter(Name bf) throws JSONException {
+        jo.put("bloomFilter", bf.toUri());
+}
+
+    public Name getBloomFilter() throws JSONException {
+        return new Name(jo.getString("bloomFilter"));
     }
 
     public String stringify() {

@@ -2,10 +2,6 @@ package memphis.myapplication;
 
 import android.app.Application;
 
-import memphis.myapplication.utilities.MemoryCache;
-import memphis.myapplication.data.NSDHelper;
-import timber.log.Timber;
-
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Name;
 import net.named_data.jndn.security.KeyChain;
@@ -16,8 +12,11 @@ import net.named_data.jndn.security.v2.CertificateV2;
 import net.named_data.jndn.util.Blob;
 import net.named_data.jni.psync.PSync;
 
+import memphis.myapplication.data.NSDHelper;
 import memphis.myapplication.psync.ConsumerManager;
 import memphis.myapplication.psync.ProducerManager;
+import memphis.myapplication.utilities.MemoryCache;
+import timber.log.Timber;
 
 public class Globals extends Application {
     public static Face face;
@@ -38,6 +37,7 @@ public class Globals extends Application {
     public static int multicastFaceID;
     public static NSDHelper nsdHelper;
     public static boolean useMulticast;
+    public static String username;
 
     // add some checks for the file related keys and identity stuff; we do not want to overwrite them
     // if they are present. Face can be new, but face will need to set things with keychain again.
@@ -123,6 +123,10 @@ public class Globals extends Application {
     public static void setNSDHelper(NSDHelper n) { nsdHelper = n; }
 
     public static void setUseMulticast(boolean b) { useMulticast = b; }
+
+    public static void setUsername(String u) { username = u; }
+
+    public static String getUsername() { return username; }
 
 
 }

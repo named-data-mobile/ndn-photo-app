@@ -2,12 +2,6 @@ package memphis.myapplication.psync;
 import android.content.Context;
 import android.util.Base64;
 
-import io.realm.Realm;
-import memphis.myapplication.data.FriendsList;
-import memphis.myapplication.data.RealmRepository;
-import memphis.myapplication.utilities.SharedPrefsManager;
-import timber.log.Timber;
-
 import net.named_data.jndn.Data;
 import net.named_data.jndn.Face;
 import net.named_data.jndn.Interest;
@@ -32,6 +26,12 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+
+import memphis.myapplication.data.FriendsList;
+import memphis.myapplication.data.RealmObjects.PublishedContent;
+import memphis.myapplication.data.RealmRepository;
+import memphis.myapplication.utilities.SharedPrefsManager;
+import timber.log.Timber;
 
 
 public class ProducerManager {
@@ -126,11 +126,28 @@ public class ProducerManager {
         public void onInterest(Name prefix, Interest interest, Face face, long interestFilterId, InterestFilter filter) {
             try {
                 // Currently only saving our most recent key
+                // Consumer needs to send the filename and then we send the key.
                 Timber.d("On interest for our key " + interest.getName());
+
+                // Get the public key of the user asking for key
                 Blob friendKey = RealmRepository.getInstanceForNonUI().getFriend(interest.getName().getSubName(-1).toUri().substring(1))
                         .getCert().getPublicKey();
-                SecretKey secretKey = SharedPrefsManager.getInstance(context).getKey();
 
+                // Get the published content data for that file
+                String keyName = interest.getName().get(-2).toEscapedString();
+                RealmRepository realmRepository = RealmRepository.getInstanceForNonUI();
+                PublishedContent publishedContent = realmRepository.checkIfShared(keyName);
+                if (publishedContent == null) {
+                    face.putData(new Data());
+                    return;
+                }
+
+                SecretKey secretKey = publishedContent.getKey();
+                if (secretKey == null) {
+                    secretKey = SharedPrefsManager.getInstance(context).getKey();
+                }
+
+                // Encrypt content key with user's public key and put data
                 byte[] encryptedKey = RsaAlgorithm.encrypt
                         (friendKey, new Blob(secretKey.getEncoded()), new EncryptParams(EncryptAlgorithmType.RsaOaep)).getImmutableArray();
                 Data data = new Data();
