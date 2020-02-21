@@ -50,6 +50,10 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+        <activity android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="sensorPortrait"
+            tools:replace="android:screenOrientation"
+            />
     </application>
 
 </manifest>
