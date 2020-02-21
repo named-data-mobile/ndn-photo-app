@@ -1,6 +1,8 @@
 package memphis.myapplication.UI;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,6 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import memphis.myapplication.R;
 import memphis.myapplication.viewmodels.UserModel;
@@ -53,7 +56,14 @@ public class AboutFragment extends Fragment {
                 startActivity(i);
             }
         });
-
+        String versionName = "0.0.0";
+        try {
+            PackageInfo packageInfo = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(),0);
+            versionName = packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        ((TextView)aboutView.findViewById(R.id.version)).setText(getResources().getString(R.string.version_info) + versionName);
         return aboutView;
     }
 

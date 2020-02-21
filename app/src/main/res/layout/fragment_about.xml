@@ -35,7 +35,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_16dp"
         android:padding="@dimen/margin_5dp"
-        android:text="@string/version_info"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/source_link"
